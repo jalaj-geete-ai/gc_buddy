@@ -16,7 +16,7 @@ const params = new URLSearchParams(window.location.search)
 // Tests required to pass per level before moving up
 // Each value is an array of test_ids that must ALL be passed at ≥50%
 const LEVEL_TESTS = {
-  A1: ['A1_T1', 'A1_T2', 'A1_T3'],
+  A1: ['A1_T1','A1_T2','A1_T3','A1_T4','A1_T5','A1_T6','A1_T7','A1_T8','A1_T9','A1_T10','A1_T11','A1_T12','A1_T13','A1_T14','A1_T15','A1_T16','A1_T17','A1_T18','A1_T19','A1_T20','A1_T21'],
   A2: ['A2_T1', 'A2_T2', 'A2_T3'],
   B1: ['B1_T1', 'B1_T2', 'B1_T3'],
   B2: [], // B2 is the final level — no further promotion
