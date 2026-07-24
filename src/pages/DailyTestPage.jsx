@@ -12,7 +12,7 @@ const TESTS = [
     level: 'A1',
     totalMarks: 20,
     timeMinutes: 15,
-    passMark: 90,
+    passMark: 60,
     sections: [
       {
         title: 'Section A: Multiple Choice — Pronunciation Rules',
@@ -58,7 +58,7 @@ const TESTS = [
     level: 'A1',
     totalMarks: 30,
     timeMinutes: 25,
-    passMark: 90,
+    passMark: 60,
     sections: [
       {
         title: 'Part 1: Greetings',
@@ -113,7 +113,7 @@ const TESTS = [
     level: 'A1',
     totalMarks: 50,
     timeMinutes: 40,
-    passMark: 90,
+    passMark: 60,
     sections: [
       {
         title: 'Section A: Phonetics',
@@ -383,7 +383,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
                 {myHistory.slice(0, 10).map((h, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < myHistory.length - 1 ? `1px solid ${C.border}` : 'none', fontSize: 11 }}>
                     <span style={{ color: C.navy, fontWeight: 600 }}>{h.test_name?.split(':')[0]}</span>
-                    <span style={{ color: h.percentage >= 90 ? C.green : C.red, fontWeight: 700 }}>{h.score}/{h.total_marks} ({h.percentage}%)</span>
+                    <span style={{ color: h.percentage >= 60 ? C.green : C.red, fontWeight: 700 }}>{h.score}/{h.total_marks} ({h.percentage}%)</span>
                     <span style={{ color: C.textS }}>{new Date(h.submitted_at).toLocaleDateString('en-IN')}</span>
                   </div>
                 ))}

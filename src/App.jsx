@@ -75,7 +75,6 @@ export default function App() {
     const requiredTests = LEVEL_TESTS[currentLevel]
     const nextLevel = NEXT_LEVEL[currentLevel]
 
-    // Nothing to check if no tests defined for this level, or already at B2
     if (!requiredTests || requiredTests.length === 0 || !nextLevel) return
 
     // Fetch best score per required test for this student
@@ -87,7 +86,7 @@ export default function App() {
 
     if (error || !data) return
 
-    // For each required test, find the best attempt's percentage
+    // Best score per test
     const bestPerTest = {}
     data.forEach(row => {
       const pct = Number(row.percentage)
@@ -96,14 +95,16 @@ export default function App() {
       }
     })
 
-    // Check: every required test must have been attempted AND best score ≥ 90%
-    const allPassed = requiredTests.every(tid =>
-      bestPerTest[tid] !== undefined && bestPerTest[tid] >= 90
-    )
+    // A test is "cleared" if best score >= 60%
+    const clearedCount = requiredTests.filter(tid =>
+      bestPerTest[tid] !== undefined && bestPerTest[tid] >= 60
+    ).length
 
-    if (!allPassed) return
+    // Level-up requires clearing 90% of tests (ceiling)
+    const requiredCleared = Math.ceil(requiredTests.length * 0.9)
+    if (clearedCount < requiredCleared) return
 
-    // 🎉 All tests passed — promote to next level
+    // 🎉 Promote to next level
     const updatedUser = { ...currentUser, level: nextLevel }
     setUser(updatedUser)
     localStorage.setItem('gc_level', nextLevel)
@@ -116,8 +117,6 @@ export default function App() {
     })
     trackEvent(updatedUser.rollNumber, 'level_up', 'progression', `${currentLevel}→${nextLevel}`, nextLevel)
     setLevelUpMsg({ from: currentLevel, to: nextLevel })
-
-    // Auto-dismiss the congratulations banner after 6 seconds
     setTimeout(() => setLevelUpMsg(null), 6000)
   }
 

@@ -93,7 +93,10 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
   const byTest = tid => testData.filter(d => d.test_id === tid)
   const bestPct = tid => { const d = byTest(tid); return d.length ? Math.max(...d.map(r => Number(r.percentage))) : null }
   const avgPct  = tid => { const d = byTest(tid); return d.length ? Math.round(d.reduce((a, r) => a + Number(r.percentage), 0) / d.length) : null }
-  const passedTests = myTests.filter(tid => (bestPct(tid) || 0) >= 90).length
+  const clearedTests = myTests.filter(tid => (bestPct(tid) || 0) >= 60).length
+  const requiredCleared = Math.ceil(myTests.length * 0.9)
+  const passedTests = clearedTests  // alias for existing UI references
+  const levelUpReached = myTests.length > 0 && clearedTests >= requiredCleared
   const overallAvg  = testData.length ? Math.round(testData.reduce((a, r) => a + Number(r.percentage), 0) / testData.length) : 0
 
   // Section usage counts
@@ -131,9 +134,9 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
   // "What to do next" suggestion
   const nextSuggestion = (() => {
     if (testData.length === 0) return { icon: '📝', text: 'Take your first Daily Test to get started!' }
-    if (passedTests < myTests.length) {
-      const next = myTests.find(tid => (bestPct(tid) || 0) < 90)
-      return { icon: '🎯', text: `Pass ${TEST_LABELS[next] || next} (currently ${bestPct(next) || 0}%)` }
+    if (!levelUpReached && myTests.length > 0) {
+      const next = myTests.find(tid => (bestPct(tid) || 0) < 60)
+      return { icon: '🎯', text: next ? `Clear ${TEST_LABELS[next] || next} with ≥60% (currently ${bestPct(next) || 0}%) — need ${requiredCleared}/${myTests.length} cleared to level up` : `Almost there! Need ${requiredCleared - clearedTests} more test cleared at ≥60%` }
     }
     if (exScores.length === 0) return { icon: '💪', text: 'Try Learn Hub → Exercises for the first time' }
     const incompleteLv = levelProgress.find(l => l.done < l.total)
@@ -242,14 +245,14 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
           )}
 
           {/* Level-up status */}
-          <div style={{ background: passedTests === myTests.length && myTests.length > 0 ? C.greenL : C.amberL, borderRadius:12, padding:'12px 14px', border:`1px solid ${passedTests === myTests.length && myTests.length > 0 ? C.green : C.amber}33` }}>
-            <div style={{ fontSize:12, fontWeight:700, color: passedTests === myTests.length && myTests.length > 0 ? C.green : C.amber, marginBottom:4 }}>
-              {passedTests === myTests.length && myTests.length > 0 ? '🏆 All tests passed — level upgraded!' : passedTests > 0 ? `🎯 ${passedTests}/${myTests.length} tests passed` : '📝 No tests taken yet'}
+          <div style={{ background: levelUpReached ? C.greenL : C.amberL, borderRadius:12, padding:'12px 14px', border:`1px solid ${levelUpReached ? C.green : C.amber}33` }}>
+            <div style={{ fontSize:12, fontWeight:700, color: levelUpReached ? C.green : C.amber, marginBottom:4 }}>
+              {levelUpReached ? '🏆 Level unlocked — you\'ve been upgraded!' : clearedTests > 0 ? `🎯 ${clearedTests}/${myTests.length} tests cleared (need ${requiredCleared})` : '📝 No tests cleared yet'}
             </div>
             <div style={{ fontSize:10, color:C.textM, lineHeight:1.7 }}>
               {myTests.length === 0 ? 'You are at the final level — keep practicing!' :
-               passedTests < myTests.length ? <>Pass all {myTests.length} tests at ≥90% to move to the next level. <strong>{myTests.length - passedTests} remaining.</strong></> :
-               'Your level has been upgraded. Keep going!'}
+               !levelUpReached ? <>Clear <strong>{requiredCleared} of {myTests.length} tests</strong> with ≥60% to move to the next level. <strong>{requiredCleared - clearedTests} more to go.</strong></> :
+               'Your level has been upgraded automatically. Keep going!'}
             </div>
           </div>
         </div>
@@ -272,7 +275,7 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
                   <div style={{ fontSize:10, fontWeight:700, color:C.textS, letterSpacing:'.07em', marginBottom:8 }}>SCORE TREND (ALL ATTEMPTS)</div>
                   <MiniBar scores={testData.map(t => Number(t.percentage))} h={50}/>
                   <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:C.textS, marginTop:4 }}>
-                    <span>First attempt</span><span style={{ color:C.green }}>90% = pass</span><span>Latest</span>
+                    <span>First attempt</span><span style={{ color:C.green }}>60% = pass</span><span>Latest</span>
                   </div>
                 </div>
               )}
@@ -286,13 +289,13 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
                 )
                 const bp = bestPct(tid), ap = avgPct(tid)
                 return (
-                  <div key={tid} style={{ background:'#fff', borderRadius:12, border:`2px solid ${(bp||0) >= 90 ? C.green : C.border}`, padding:'13px', marginBottom:12 }}>
+                  <div key={tid} style={{ background:'#fff', borderRadius:12, border:`2px solid ${(bp||0) >= 60 ? C.green : C.border}`, padding:'13px', marginBottom:12 }}>
                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
                       <div>
                         <div style={{ fontSize:12, fontWeight:700, color:C.navy }}>{TEST_LABELS[tid] || tid}</div>
                         <div style={{ fontSize:10, color:C.textS }}>{attempts.length} attempt{attempts.length > 1 ? 's' : ''} · /{TEST_MARKS[tid] || '?'} marks</div>
                       </div>
-                      <span style={{ fontSize:20 }}>{(bp||0) >= 90 ? '✅' : '🔄'}</span>
+                      <span style={{ fontSize:20 }}>{(bp||0) >= 60 ? '✅' : '🔄'}</span>
                     </div>
                     <div style={{ display:'flex', gap:8, marginBottom:10 }}>
                       {[['Best', `${bp}%`, C.green],['Average', `${ap}%`, C.blue],['Attempts', attempts.length, C.navy]].map(([l,v,c]) => (
@@ -306,7 +309,7 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
                     {attempts.slice().reverse().map((a, i) => (
                       <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom: i < attempts.length - 1 ? `1px solid ${C.border}` : 'none', fontSize:11 }}>
                         <span style={{ color:C.textM }}>#{attempts.length - i}</span>
-                        <span style={{ fontWeight:700, color: Number(a.percentage) >= 90 ? C.green : C.red }}>{a.score}/{a.total_marks} ({a.percentage}%)</span>
+                        <span style={{ fontWeight:700, color: Number(a.percentage) >= 60 ? C.green : C.red }}>{a.score}/{a.total_marks} ({a.percentage}%)</span>
                         <span style={{ color:C.textS }}>{new Date(a.submitted_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}</span>
                       </div>
                     ))}
@@ -447,7 +450,7 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
             <div style={{ fontSize:10, fontWeight:700, color:C.textS, letterSpacing:'.07em', marginBottom:10 }}>🏅 MILESTONES</div>
             {[
               { label:'First test attempted', done: testData.length >= 1, icon:'📝' },
-              { label:'First test passed (90%+)', done: testData.some(t => Number(t.percentage) >= 90), icon:'✅' },
+              { label:'First test passed (60%+)', done: testData.some(t => Number(t.percentage) >= 60), icon:'✅' },
               { label:'All current level tests passed', done: passedTests === myTests.length && myTests.length > 0, icon:'🏆' },
               { label:'First exercise completed', done: exScores.length >= 1, icon:'💪' },
               { label:'10 exercise sessions', done: exScores.length >= 10, icon:'🔥' },
