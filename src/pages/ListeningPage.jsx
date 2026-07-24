@@ -1,0 +1,696 @@
+import { useState, useRef } from 'react'
+import { C } from '../lib/constants'
+import { PBar, Btn } from '../components/UI'
+import { trackEvent } from '../lib/supabase'
+
+// 200 phrases per level
+const PH = {
+A1:[
+{de:"Guten Morgen! Wie geht es Ihnen?",en:"Good morning! How are you?"},
+{de:"Mein Name ist Priya. Ich bin Ihre Krankenschwester.",en:"My name is Priya. I am your nurse."},
+{de:"Wo haben Sie Schmerzen?",en:"Where does it hurt?"},
+{de:"Ich messe jetzt Ihren Blutdruck.",en:"I will measure your blood pressure now."},
+{de:"Bitte öffnen Sie den Mund.",en:"Please open your mouth."},
+{de:"Haben Sie Allergien?",en:"Do you have any allergies?"},
+{de:"Trinken Sie bitte viel Wasser.",en:"Please drink plenty of water."},
+{de:"Der Arzt kommt gleich.",en:"The doctor will come shortly."},
+{de:"Ich gebe Ihnen jetzt Ihre Medikamente.",en:"I will give you your medication now."},
+{de:"Alles wird gut!",en:"Everything will be fine!"},
+{de:"Bitte legen Sie sich hin.",en:"Please lie down."},
+{de:"Ich nehme jetzt Ihre Temperatur.",en:"I will take your temperature now."},
+{de:"Haben Sie gut geschlafen?",en:"Did you sleep well?"},
+{de:"Brauchen Sie etwas?",en:"Do you need anything?"},
+{de:"Atmen Sie bitte tief ein.",en:"Please breathe in deeply."},
+{de:"Ich helfe Ihnen aufzustehen.",en:"I will help you to get up."},
+{de:"Haben Sie Hunger oder Durst?",en:"Are you hungry or thirsty?"},
+{de:"Ich rufe sofort den Arzt.",en:"I will call the doctor immediately."},
+{de:"Wie lange haben Sie schon Schmerzen?",en:"How long have you had the pain?"},
+{de:"Bitte drücken Sie die Klingel wenn Sie Hilfe brauchen.",en:"Press the call bell if you need help."},
+{de:"Ich wechsle jetzt Ihren Verband.",en:"I will change your bandage now."},
+{de:"Der Puls ist normal.",en:"The pulse is normal."},
+{de:"Ich gebe Ihnen etwas gegen die Schmerzen.",en:"I will give you something for the pain."},
+{de:"Wie fühlen Sie sich heute?",en:"How do you feel today?"},
+{de:"Ihr Blutdruck ist normal.",en:"Your blood pressure is normal."},
+{de:"Bitte bleiben Sie ruhig liegen.",en:"Please stay lying quietly."},
+{de:"Haben Sie Fieber?",en:"Do you have a fever?"},
+{de:"Gute Besserung!",en:"Get well soon!"},
+{de:"Ich bin gleich wieder da.",en:"I will be right back."},
+{de:"Bitte zeigen Sie mir, wo es wehtut.",en:"Please show me where it hurts."},
+{de:"Guten Abend! Wie war Ihr Tag?",en:"Good evening! How was your day?"},
+{de:"Haben Sie Ihre Tabletten genommen?",en:"Have you taken your tablets?"},
+{de:"Ich wasche jetzt Ihre Hände.",en:"I will wash your hands now."},
+{de:"Gute Nacht! Schlafen Sie gut.",en:"Good night! Sleep well."},
+{de:"Darf ich Ihren Arm sehen?",en:"May I see your arm?"},
+{de:"Bitte drehen Sie sich auf die Seite.",en:"Please turn onto your side."},
+{de:"Das ist ganz normal.",en:"That is completely normal."},
+{de:"Wir kümmern uns gut um Sie.",en:"We will take good care of you."},
+{de:"Ist das Essen in Ordnung?",en:"Is the food okay for you?"},
+{de:"Bitte rufen Sie mich, wenn Sie etwas brauchen.",en:"Please call me if you need anything."},
+{de:"Ich komme in einer Stunde zurück.",en:"I will come back in one hour."},
+{de:"Bitte bewegen Sie sich langsam.",en:"Please move slowly."},
+{de:"Das Frühstück kommt gleich.",en:"Breakfast is coming shortly."},
+{de:"Ich stelle Ihnen einen Rollstuhl bereit.",en:"I will prepare a wheelchair for you."},
+{de:"Haben Sie heute Stuhlgang gehabt?",en:"Have you had a bowel movement today?"},
+{de:"Ich messe jetzt Ihren Blutzucker.",en:"I will measure your blood sugar now."},
+{de:"Wie ist Ihr Name bitte?",en:"What is your name, please?"},
+{de:"Ihr Zimmer ist Nummer drei.",en:"Your room is number three."},
+{de:"Die Toilette ist dort drüben.",en:"The toilet is over there."},
+{de:"Ich prüfe Ihre Wunde.",en:"I will check your wound."},
+{de:"Der Arzt hat das Medikament verschrieben.",en:"The doctor prescribed the medication."},
+{de:"Ich nehme Ihnen jetzt Blut ab.",en:"I will take a blood sample now."},
+{de:"Können Sie husten?",en:"Can you cough?"},
+{de:"Wir stehen immer für Sie bereit.",en:"We are always here for you."},
+{de:"Ihr Puls ist regelmäßig.",en:"Your pulse is regular."},
+{de:"Haben Sie Schwindel?",en:"Do you have dizziness?"},
+{de:"Die Krankenschwester ist gleich da.",en:"The nurse will be here shortly."},
+{de:"Ich helfe Ihnen beim Waschen.",en:"I will help you with washing."},
+{de:"Bitte essen Sie etwas.",en:"Please eat something."},
+{de:"Wie stark sind Ihre Schmerzen?",en:"How strong is your pain?"},
+{de:"Der Verband schützt die Wunde.",en:"The bandage protects the wound."},
+{de:"Bitte drücken Sie hier.",en:"Please press here."},
+{de:"Ich erkläre Ihnen alles.",en:"I will explain everything to you."},
+{de:"Haben Sie heute Nacht gut geschlafen?",en:"Did you sleep well last night?"},
+{de:"Bitte öffnen Sie die Augen.",en:"Please open your eyes."},
+{de:"Können Sie Ihren Namen sagen?",en:"Can you tell me your name?"},
+{de:"Ich hole sofort Hilfe.",en:"I will get help immediately."},
+{de:"Bitte atmen Sie aus.",en:"Please breathe out."},
+{de:"Wie lange sind Sie schon hier?",en:"How long have you been here?"},
+{de:"Haben Sie jemanden, den wir anrufen sollen?",en:"Is there someone we should call?"},
+{de:"Die Visite beginnt um acht Uhr.",en:"The ward round begins at eight o'clock."},
+{de:"Bitte trinken Sie langsam.",en:"Please drink slowly."},
+{de:"Ich bin Ihre Krankenpflegerin.",en:"I am your nurse (female form)."},
+{de:"Bitte sagen Sie mir sofort Bescheid.",en:"Please let me know immediately."},
+{de:"Das Medikament wirkt gut.",en:"The medication works well."},
+{de:"Ihr Sauerstoffwert ist gut.",en:"Your oxygen level is good."},
+{de:"Ich helfe Ihnen beim Aufstehen.",en:"I will help you to get up."},
+{de:"Haben Sie sich heute bewegt?",en:"Have you moved around today?"},
+{de:"Bitte halten Sie den Arm still.",en:"Please hold your arm still."},
+{de:"Ich kontrolliere jetzt die Infusion.",en:"I will check the IV drip now."},
+{de:"Haben Sie Schmerzen beim Atmen?",en:"Do you have pain when breathing?"},
+{de:"Die Operation war erfolgreich.",en:"The operation was successful."},
+{de:"Wir passen gut auf Sie auf.",en:"We are taking good care of you."},
+{de:"Das Fieber ist gesunken.",en:"The fever has gone down."},
+{de:"Bitte bleiben Sie im Bett.",en:"Please stay in bed."},
+{de:"Kann ich Ihnen beim Essen helfen?",en:"Can I help you with eating?"},
+{de:"Ihr Blutdruck ist heute gut.",en:"Your blood pressure is good today."},
+{de:"Ich bringe Ihnen sofort etwas.",en:"I will bring you something right away."},
+{de:"Bitte atmen Sie ruhig.",en:"Please breathe calmly."},
+{de:"Haben Sie sich verletzt?",en:"Have you hurt yourself?"},
+{de:"Ich bin immer in der Nähe.",en:"I am always nearby."},
+{de:"Bitte sagen Sie mir, wenn etwas nicht stimmt.",en:"Please tell me if something is wrong."},
+{de:"Darf ich Ihre Temperatur messen?",en:"May I take your temperature?"},
+{de:"Sie machen gute Fortschritte.",en:"You are making good progress."},
+{de:"Bitte liegen Sie ruhig.",en:"Please lie still."},
+{de:"Ich informiere den Arzt.",en:"I will inform the doctor."},
+{de:"Die Wunde sieht gut aus.",en:"The wound looks good."},
+{de:"Bitte kommen Sie morgen wieder.",en:"Please come back tomorrow."},
+{de:"Guten Tag! Wie kann ich Ihnen helfen?",en:"Good day! How can I help you?"},
+{de:"Auf Wiedersehen und gute Besserung!",en:"Goodbye and get well soon!"},
+{de:"Bitte bleiben Sie ruhig, ich helfe Ihnen.",en:"Please stay calm, I will help you."},
+{de:"Haben Sie Fragen?",en:"Do you have any questions?"},
+{de:"Ich erkläre Ihnen die Medikamente.",en:"I will explain the medications to you."},
+{de:"Der nächste Termin ist morgen.",en:"The next appointment is tomorrow."},
+{de:"Bitte trinken Sie mindestens zwei Liter.",en:"Please drink at least two litres."},
+{de:"Ich prüfe Ihre Vitalzeichen.",en:"I will check your vital signs."},
+{de:"Sie können sich auf mich verlassen.",en:"You can count on me."},
+{de:"Bitte heben Sie den Arm.",en:"Please raise your arm."},
+{de:"Ich gebe Ihnen jetzt eine Spritze.",en:"I will give you an injection now."},
+{de:"Das Ergebnis ist normal.",en:"The result is normal."},
+{de:"Bitte ruhen Sie sich aus.",en:"Please rest."},
+{de:"Wie schlafen Sie nachts?",en:"How do you sleep at night?"},
+{de:"Ich komme morgen früh wieder.",en:"I will come again tomorrow morning."},
+{de:"Bitte melden Sie sich, wenn Sie Schmerzen haben.",en:"Please report to me if you have pain."},
+{de:"Die Physiotherapeutin kommt heute.",en:"The physiotherapist is coming today."},
+{de:"Haben Sie jemanden zu Hause?",en:"Do you have someone at home?"},
+{de:"Bitte unterschreiben Sie hier.",en:"Please sign here."},
+{de:"Ich wünsche Ihnen eine schnelle Erholung.",en:"I wish you a speedy recovery."},
+{de:"Vielen Dank für Ihre Geduld.",en:"Thank you very much for your patience."},
+{de:"Bitte klingeln Sie jederzeit.",en:"Please ring the bell at any time."},
+{de:"Ich bin heute für Sie zuständig.",en:"I am responsible for you today."},
+{de:"Bitte sagen Sie mir Ihren Geburtstag.",en:"Please tell me your date of birth."},
+{de:"Haben Sie Ihren Ausweis dabei?",en:"Do you have your ID with you?"},
+{de:"Ich komme sofort zu Ihnen.",en:"I will come to you right away."},
+{de:"Bitte nehmen Sie tief Luft.",en:"Please take a deep breath."},
+{de:"Wir sind hier, um Ihnen zu helfen.",en:"We are here to help you."},
+{de:"Bitte sagen Sie mir, was Sie brauchen.",en:"Please tell me what you need."},
+{de:"Sie sind in guten Händen.",en:"You are in good hands."},
+{de:"Ich freue mich, Ihnen zu helfen.",en:"I am happy to help you."},
+{de:"Bitte bewegen Sie die Finger.",en:"Please move your fingers."},
+{de:"Wie ist Ihre Versicherung?",en:"What is your insurance?"},
+{de:"Ich hole jetzt den Arzt.",en:"I will fetch the doctor now."},
+{de:"Bitte öffnen Sie die Faust.",en:"Please open your fist."},
+{de:"Sie können sich entspannen.",en:"You can relax."},
+{de:"Darf ich reinkommen?",en:"May I come in?"},
+{de:"Bitte decken Sie sich zu.",en:"Please cover yourself up."},
+{de:"Es tut mir leid, wenn es wehtut.",en:"I am sorry if it hurts."},
+{de:"Das dauert nur einen Moment.",en:"This will only take a moment."},
+{de:"Ich bin immer für Sie da.",en:"I am always here for you."},
+{de:"Bitte drücken Sie auf diese Stelle.",en:"Please press on this spot."},
+{de:"Darf ich Ihren Bauch abtasten?",en:"May I examine your abdomen?"},
+{de:"Bitte essen Sie langsam.",en:"Please eat slowly."},
+{de:"Rufen Sie mich, wenn Sie mich brauchen.",en:"Call me when you need me."},
+{de:"Wie ist Ihr Appetit?",en:"How is your appetite?"},
+{de:"Ich möchte Ihren Arm prüfen.",en:"I would like to check your arm."},
+{de:"Die Wunde heilt gut.",en:"The wound is healing well."},
+{de:"Bitte nehmen Sie die Tablette nach dem Essen.",en:"Please take the tablet after eating."},
+{de:"Ich komme jeden Morgen zu Ihnen.",en:"I will come to you every morning."},
+{de:"Haben Sie Schmerzen nachts?",en:"Do you have pain at night?"},
+{de:"Bitte zeigen Sie mir Ihre Hände.",en:"Please show me your hands."},
+{de:"Ich messe jetzt Ihren Puls.",en:"I will measure your pulse now."},
+{de:"Sie brauchen keine Angst zu haben.",en:"You do not need to be afraid."},
+{de:"Bitte sagen Sie mir, wie Sie sich fühlen.",en:"Please tell me how you feel."},
+{de:"Ich komme nach der Visite.",en:"I will come after the ward round."},
+{de:"Bitte bleiben Sie entspannt.",en:"Please stay relaxed."},
+{de:"Wir arbeiten als Team für Sie.",en:"We work as a team for you."},
+{de:"Haben Sie alles, was Sie brauchen?",en:"Do you have everything you need?"},
+{de:"Ich schreibe alles in Ihre Akte.",en:"I will write everything in your file."},
+{de:"Bitte husten Sie in die Ellenbeuge.",en:"Please cough into your elbow."},
+{de:"Das Medikament hilft gegen die Schmerzen.",en:"The medication helps against the pain."},
+{de:"Bitte zeigen Sie mir, wie Sie gehen.",en:"Please show me how you walk."},
+{de:"Ich erkläre Ihnen den Ablauf.",en:"I will explain the procedure to you."},
+{de:"Haben Sie Fragen zu Ihren Medikamenten?",en:"Do you have questions about your medications?"},
+{de:"Bitte atmen Sie regelmäßig.",en:"Please breathe regularly."},
+{de:"Ich bin Ihre Pflegekraft.",en:"I am your nursing care professional."},
+{de:"Wir entlassen Sie morgen.",en:"We will discharge you tomorrow."},
+{de:"Bitte essen Sie Ihr Frühstück.",en:"Please eat your breakfast."},
+{de:"Ich prüfe jetzt die Wunde.",en:"I will check the wound now."},
+{de:"Haben Sie heute Nacht Schmerzen gehabt?",en:"Did you have pain last night?"},
+{de:"Bitte kommen Sie mit mir mit.",en:"Please come with me."},
+{de:"Die Tabletten helfen Ihnen.",en:"The tablets will help you."},
+{de:"Ich bin immer in der Nähe.",en:"I am always nearby."},
+{de:"Bitte atmen Sie tief durch.",en:"Please breathe through deeply."},
+{de:"Sie erholen sich gut.",en:"You are recovering well."},
+{de:"Ich wünsche Ihnen alles Gute.",en:"I wish you all the best."},
+{de:"Bitte melden Sie sich jederzeit.",en:"Please contact me at any time."},
+{de:"Ich helfe Ihnen gerne.",en:"I am happy to help you."},
+{de:"Das Ergebnis liegt vor.",en:"The result is available."},
+{de:"Bitte nehmen Sie die Tabletten dreimal täglich.",en:"Please take the tablets three times daily."},
+{de:"Ich kümmere mich um alles.",en:"I will take care of everything."},
+{de:"Bitte ruhen Sie sich jetzt aus.",en:"Please rest now."},
+{de:"Haben Sie noch weitere Fragen?",en:"Do you have any further questions?"},
+{de:"Ich bin der Meinung, dass es Ihnen besser geht.",en:"I think you are doing better."},
+{de:"Bitte essen Sie gut und trinken Sie viel.",en:"Please eat well and drink plenty."},
+{de:"Sie sind auf dem richtigen Weg.",en:"You are on the right track."},
+{de:"Ich bin froh, dass es Ihnen besser geht.",en:"I am glad you are feeling better."},
+{de:"Bitte melden Sie sich, wenn Sie Hilfe brauchen.",en:"Please report to me if you need help."},
+{de:"Wir sehen uns morgen.",en:"We will see each other tomorrow."},
+{de:"Bitte achten Sie auf Ihre Ernährung.",en:"Please pay attention to your diet."},
+{de:"Ich freue mich auf Ihren Besuch morgen.",en:"I look forward to seeing you tomorrow."},
+{de:"Haben Sie zu Hause eine Unterstützung?",en:"Do you have support at home?"},
+{de:"Bitte zeigen Sie mir die Stelle, die wehtut.",en:"Please show me the spot that hurts."},
+{de:"Ich erkläre Ihnen jetzt den Entlassungsplan.",en:"I will now explain the discharge plan to you."},
+{de:"Bitte passen Sie auf sich auf.",en:"Please take care of yourself."},
+{de:"Auf Wiedersehen und bleiben Sie gesund!",en:"Goodbye and stay healthy!"},
+],
+A2:[
+{de:"Wie stark sind Ihre Schmerzen auf einer Skala von 1 bis 10?",en:"How strong is your pain on a scale of 1 to 10?"},
+{de:"Ich muss Ihnen eine Infusion legen.",en:"I need to put in an IV drip for you."},
+{de:"Ihre Vitalzeichen sind stabil.",en:"Your vital signs are stable."},
+{de:"Bitte rufen Sie mich, wenn Sie etwas brauchen.",en:"Please call me if you need anything."},
+{de:"Die Übergabe findet um vierzehn Uhr statt.",en:"Handover takes place at two PM."},
+{de:"Ihr Blutdruck ist heute etwas erhöht.",en:"Your blood pressure is slightly elevated today."},
+{de:"Bitte nehmen Sie diese Tabletten nach dem Essen.",en:"Please take these tablets after eating."},
+{de:"Wann haben Sie zuletzt gegessen?",en:"When did you last eat?"},
+{de:"Ich dokumentiere jetzt Ihre Pflegemaßnahmen.",en:"I am documenting your care measures now."},
+{de:"Die Ärztin kommt gleich zur Visite.",en:"The doctor will come for the ward round shortly."},
+{de:"Sie müssen ab Mitternacht nüchtern bleiben.",en:"You must stay fasting from midnight."},
+{de:"Ich messe jetzt Ihren Blutzucker.",en:"I will measure your blood sugar now."},
+{de:"Haben Sie Schwindel oder Übelkeit?",en:"Do you have dizziness or nausea?"},
+{de:"Bitte drehen Sie sich auf die Seite.",en:"Please turn onto your side."},
+{de:"Können Sie die Schmerzen beschreiben?",en:"Can you describe the pain?"},
+{de:"Die Operation ist morgen früh geplant.",en:"The operation is planned for tomorrow morning."},
+{de:"Sie dürfen heute Abend aufstehen.",en:"You may get up this evening."},
+{de:"Ihr Sauerstoffwert ist gut.",en:"Your oxygen level is good."},
+{de:"Sie können jetzt entlassen werden.",en:"You can be discharged now."},
+{de:"Ihre Wunde sieht gut aus.",en:"Your wound looks good."},
+{de:"Die Physiotherapeutin kommt heute Nachmittag.",en:"The physiotherapist will come this afternoon."},
+{de:"Haben Sie Fragen zu Ihrer Entlassung?",en:"Do you have questions about your discharge?"},
+{de:"Bitte klingeln Sie sofort, wenn etwas nicht stimmt.",en:"Please ring immediately if something is wrong."},
+{de:"Das Fieber ist heute gesunken.",en:"The fever has gone down today."},
+{de:"Ich werde dem Arzt Bescheid geben.",en:"I will inform the doctor."},
+{de:"Bitte tragen Sie diese Strümpfe.",en:"Please wear these stockings."},
+{de:"Haben Sie Schlafprobleme?",en:"Do you have sleep problems?"},
+{de:"Ich helfe Ihnen beim Waschen.",en:"I will help you with washing."},
+{de:"Gute Nacht! Ruhen Sie sich gut aus.",en:"Good night! Get some good rest."},
+{de:"Ich stehe Ihnen jederzeit für Fragen zur Verfügung.",en:"I am available for your questions at any time."},
+{de:"Ich nehme Ihnen jetzt eine Blutprobe ab.",en:"I will take a blood sample from you now."},
+{de:"Bitte zeigen Sie mir Ihre Versicherungskarte.",en:"Please show me your insurance card."},
+{de:"Die Laborbefunde kommen morgen.",en:"The lab results will come tomorrow."},
+{de:"Ich stelle den Rollstuhl für Sie bereit.",en:"I will prepare the wheelchair for you."},
+{de:"Haben Sie die Medikamente regelmäßig eingenommen?",en:"Have you taken the medications regularly?"},
+{de:"Wir wechseln jetzt den Verband.",en:"We will change the dressing now."},
+{de:"Bitte bewegen Sie die Beine regelmäßig.",en:"Please move your legs regularly."},
+{de:"Ich erkläre Ihnen die Entlassungsmedikamente.",en:"I will explain your discharge medication."},
+{de:"Die Visite ist abgeschlossen.",en:"The ward round is complete."},
+{de:"Bitte essen Sie das Frühstück auf.",en:"Please finish your breakfast."},
+{de:"Ich kontrolliere jetzt Ihren Verband.",en:"I will check your dressing now."},
+{de:"Haben Sie Vorerkrankungen?",en:"Do you have pre-existing conditions?"},
+{de:"Bitte nehmen Sie tief Luft und halten Sie kurz an.",en:"Please take a deep breath and hold briefly."},
+{de:"Ich schreibe alles in den Bericht.",en:"I will write everything in the report."},
+{de:"Ihr Puls ist heute etwas schnell.",en:"Your pulse is a bit fast today."},
+{de:"Bitte essen Sie nichts mehr bis zur Operation.",en:"Please eat nothing more until the operation."},
+{de:"Ich lege Ihnen jetzt den Tropf.",en:"I will put in the IV drip now."},
+{de:"Die Schmerzen sollten bald nachlassen.",en:"The pain should soon ease."},
+{de:"Bitte rufen Sie mich jederzeit.",en:"Please call me at any time."},
+{de:"Ihr Zustand verbessert sich.",en:"Your condition is improving."},
+{de:"Ich bringe Ihnen jetzt das Mittagessen.",en:"I will bring you lunch now."},
+{de:"Haben Sie Schmerzen beim Schlucken?",en:"Do you have pain when swallowing?"},
+{de:"Wir prüfen täglich Ihre Wunde.",en:"We check your wound daily."},
+{de:"Bitte halten Sie den Arm ruhig.",en:"Please keep your arm still."},
+{de:"Ich erkläre Ihnen den Ablauf der Untersuchung.",en:"I will explain the examination procedure to you."},
+{de:"Ihr Befund ist erfreulich.",en:"Your result is encouraging."},
+{de:"Die Behandlung schlägt gut an.",en:"The treatment is working well."},
+{de:"Bitte informieren Sie mich über Veränderungen.",en:"Please inform me about any changes."},
+{de:"Wir achten immer auf Ihre Hygiene.",en:"We always pay attention to your hygiene."},
+{de:"Ich bringe Ihnen jetzt die Abendmedikamente.",en:"I will bring you the evening medications now."},
+{de:"Haben Sie eine Patientenverfügung?",en:"Do you have an advance directive?"},
+{de:"Wir stehen rund um die Uhr für Sie bereit.",en:"We are available for you around the clock."},
+{de:"Bitte sagen Sie mir, wenn der Tropf schmerzt.",en:"Please tell me if the IV drip hurts."},
+{de:"Ich prüfe jetzt die Sauerstoffsättigung.",en:"I will check the oxygen saturation now."},
+{de:"Ihr Herz schlägt regelmäßig.",en:"Your heart beats regularly."},
+{de:"Die Diagnose steht fest.",en:"The diagnosis has been confirmed."},
+{de:"Bitte nehmen Sie die Tabletten auf nüchternem Magen.",en:"Please take the tablets on an empty stomach."},
+{de:"Ich hole Ihnen jetzt einen frischen Verband.",en:"I will get you a fresh dressing now."},
+{de:"Haben Sie Fragen zur Operation?",en:"Do you have questions about the operation?"},
+{de:"Bitte entspannen Sie sich.",en:"Please relax."},
+{de:"Ich dokumentiere alles ordentlich.",en:"I will document everything properly."},
+{de:"Ihr Blutzucker ist heute normal.",en:"Your blood sugar is normal today."},
+{de:"Die Narbe heilt sehr gut.",en:"The scar is healing very well."},
+{de:"Bitte sagen Sie mir sofort, wenn Sie Atemnot haben.",en:"Please tell me immediately if you have breathing difficulties."},
+{de:"Ich lege Ihnen gleich das EKG an.",en:"I will attach the ECG to you shortly."},
+{de:"Wir mobilisieren Sie heute zum ersten Mal.",en:"We will mobilize you for the first time today."},
+{de:"Bitte kommen Sie morgen nüchtern.",en:"Please come fasting tomorrow."},
+{de:"Ich überprüfe jetzt die Infusion.",en:"I will check the infusion now."},
+{de:"Haben Sie Verwandte, die wir informieren sollen?",en:"Do you have relatives we should inform?"},
+{de:"Bitte bewegen Sie den Fuß auf und ab.",en:"Please move your foot up and down."},
+{de:"Ich hole Ihnen sofort etwas gegen die Übelkeit.",en:"I will get you something for the nausea right away."},
+{de:"Der Arzt hat Ihre Ergebnisse geprüft.",en:"The doctor has checked your results."},
+{de:"Bitte atmen Sie tief durch die Nase.",en:"Please breathe deeply through your nose."},
+{de:"Ich werde den Verband heute noch einmal wechseln.",en:"I will change the dressing again today."},
+{de:"Ihr Zustand ist stabil.",en:"Your condition is stable."},
+{de:"Bitte essen Sie regelmäßig.",en:"Please eat regularly."},
+{de:"Ich erkläre Ihnen alles Schritt für Schritt.",en:"I will explain everything to you step by step."},
+{de:"Die Schwellung ist zurückgegangen.",en:"The swelling has gone down."},
+{de:"Bitte nehmen Sie täglich die vorgeschriebene Menge Wasser.",en:"Please drink the prescribed amount of water daily."},
+{de:"Ich hole Ihnen eine frische Decke.",en:"I will get you a fresh blanket."},
+{de:"Haben Sie Schmerzen in der Brust?",en:"Do you have chest pain?"},
+{de:"Wir führen morgen eine Untersuchung durch.",en:"We will carry out an examination tomorrow."},
+{de:"Bitte versuchen Sie, sich zu bewegen.",en:"Please try to move around."},
+{de:"Ich gebe Ihnen jetzt das Abendmedikament.",en:"I will give you the evening medication now."},
+{de:"Ihre Temperatur ist wieder normal.",en:"Your temperature is normal again."},
+{de:"Bitte zeigen Sie mir, wie Sie schlafen.",en:"Please show me how you sleep."},
+{de:"Ich bin froh, dass Sie sich erholen.",en:"I am glad you are recovering."},
+{de:"Bitte melden Sie sich sofort, wenn Sie Schmerzen haben.",en:"Please report to me immediately if you have pain."},
+{de:"Die Nacht war ruhig für Sie.",en:"The night was quiet for you."},
+{de:"Bitte nehmen Sie sich Zeit zum Erholen.",en:"Please take time to recover."},
+{de:"Ich erkläre Ihnen den Entlassungsbrief.",en:"I will explain the discharge letter to you."},
+{de:"Haben Sie zu Hause Unterstützung?",en:"Do you have support at home?"},
+{de:"Bitte achten Sie auf Ihre Ernährung zu Hause.",en:"Please pay attention to your diet at home."},
+{de:"Ich freue mich, dass es Ihnen besser geht.",en:"I am glad you are feeling better."},
+{de:"Auf Wiedersehen und gute Genesung!",en:"Goodbye and good recovery!"},
+{de:"Bitte kommen Sie zum Nachsorgetermin.",en:"Please come to the follow-up appointment."},
+{de:"Ich wünsche Ihnen alles Gute für zu Hause.",en:"I wish you all the best at home."},
+{de:"Der nächste Termin ist in zwei Wochen.",en:"The next appointment is in two weeks."},
+{de:"Bitte nehmen Sie die Medikamente weiter ein.",en:"Please continue taking the medications."},
+{de:"Ich hoffe, Sie erholen sich schnell.",en:"I hope you recover quickly."},
+{de:"Bitte rufen Sie uns an, wenn etwas nicht stimmt.",en:"Please call us if something is wrong."},
+{de:"Wir haben alles für Sie getan.",en:"We have done everything for you."},
+{de:"Bitte pass auf dich auf.",en:"Please take care of yourself."},
+{de:"Sie sind jetzt auf dem Weg der Besserung.",en:"You are now on the road to recovery."},
+{de:"Ich freue mich, Sie begleitet zu haben.",en:"I am glad to have accompanied you."},
+{de:"Bitte kommen Sie wieder, wenn Sie Hilfe brauchen.",en:"Please come back if you need help."},
+{de:"Herzlichen Glückwunsch zu Ihrer Entlassung!",en:"Congratulations on your discharge!"},
+{de:"Bitte vergessen Sie die Kontrolltermine nicht.",en:"Please don't forget the follow-up appointments."},
+{de:"Ich war gerne für Sie da.",en:"I was happy to be here for you."},
+{de:"Alles Gute für Ihre Zukunft!",en:"All the best for your future!"},
+{de:"Bitte melden Sie sich, wenn Sie Fragen haben.",en:"Please get in touch if you have questions."},
+{de:"Wir freuen uns, wenn Sie gesund bleiben.",en:"We are glad if you stay healthy."},
+{de:"Bitte passen Sie auf sich und Ihre Gesundheit auf.",en:"Please take care of yourself and your health."},
+{de:"Auf Wiedersehen! Es war uns eine Freude.",en:"Goodbye! It was our pleasure."},
+{de:"Bleiben Sie gesund und kommen Sie gut nach Hause.",en:"Stay healthy and get home safely."},
+{de:"Ich wünsche Ihnen baldige Genesung.",en:"I wish you a speedy recovery."},
+{de:"Bitte denken Sie daran, Ihre Tabletten zu nehmen.",en:"Please remember to take your tablets."},
+{de:"Sie haben sich gut erholt.",en:"You have recovered well."},
+{de:"Wir stehen Ihnen immer zur Verfügung.",en:"We are always available for you."},
+{de:"Bitte berichten Sie uns, wie es Ihnen geht.",en:"Please let us know how you are doing."},
+{de:"Ich bin stolz auf Ihre Fortschritte.",en:"I am proud of your progress."},
+{de:"Sie haben großartige Arbeit geleistet.",en:"You have done great work."},
+{de:"Bitte bleiben Sie positiv.",en:"Please stay positive."},
+{de:"Ich freue mich auf Ihren nächsten Besuch.",en:"I look forward to your next visit."},
+{de:"Alles wird gut gehen.",en:"Everything will go well."},
+{de:"Bitte glauben Sie an Ihre Genesung.",en:"Please believe in your recovery."},
+{de:"Sie sind in unseren Gedanken.",en:"You are in our thoughts."},
+{de:"Bitte vergessen Sie nicht, regelmäßig zu trinken.",en:"Please don't forget to drink regularly."},
+{de:"Ich bin sehr zufrieden mit Ihrem Verlauf.",en:"I am very satisfied with your progress."},
+{de:"Bitte sprechen Sie Ihren Hausarzt an.",en:"Please speak to your GP."},
+{de:"Die Entlassung läuft reibungslos.",en:"The discharge is going smoothly."},
+{de:"Bitte ruhen Sie sich zu Hause gut aus.",en:"Please get some good rest at home."},
+{de:"Ich danke Ihnen für Ihr Vertrauen.",en:"I thank you for your trust."},
+{de:"Bitte kommen Sie gesund wieder.",en:"Please come back healthy."},
+{de:"Auf Wiedersehen und viel Erfolg!",en:"Goodbye and good luck!"},
+],
+B1:[
+{de:"Ich möchte Sie über Ihren Behandlungsplan informieren.",en:"I would like to inform you about your treatment plan."},
+{de:"Bitte unterzeichnen Sie diese Einwilligungserklärung.",en:"Please sign this consent form."},
+{de:"Ihre Wunde zeigt Anzeichen einer Verbesserung.",en:"Your wound shows signs of improvement."},
+{de:"Wir werden Sie schrittweise mobilisieren.",en:"We will mobilize you gradually."},
+{de:"Die Laborergebnisse sind noch ausstehend.",en:"The lab results are still pending."},
+{de:"Wir müssen die Vitalzeichen engmaschig überwachen.",en:"We need to monitor the vital signs closely."},
+{de:"Die Pflegedokumentation muss vollständig sein.",en:"The nursing documentation must be complete."},
+{de:"Ich informiere Sie über mögliche Nebenwirkungen.",en:"I will inform you about possible side effects."},
+{de:"Die Mobilisation erfolgt in kleinen Schritten.",en:"Mobilization happens in small steps."},
+{de:"Der Dekubitus muss täglich dokumentiert werden.",en:"The pressure sore must be documented daily."},
+{de:"Die Schmerzen strahlen in den linken Arm aus.",en:"The pain radiates into the left arm."},
+{de:"Die postoperative Phase verläuft komplikationslos.",en:"The post-operative phase is complication-free."},
+{de:"Bitte schildern Sie mir Ihre Symptome genau.",en:"Please describe your symptoms to me precisely."},
+{de:"Wir passen die Schmerztherapie an.",en:"We will adjust the pain therapy."},
+{de:"Die Entlassung ist für Freitag geplant.",en:"The discharge is planned for Friday."},
+{de:"Ich dokumentiere alle Pflegemaßnahmen sorgfältig.",en:"I document all nursing measures carefully."},
+{de:"Obwohl der Patient Schmerzen hat, bleibt er ruhig.",en:"Although the patient has pain, he remains calm."},
+{de:"Haben Sie Fragen zum weiteren Behandlungsverlauf?",en:"Do you have questions about the further course of treatment?"},
+{de:"Ich rufe den Bereitschaftsarzt.",en:"I will call the on-call doctor."},
+{de:"Das Team bespricht Ihren Fall täglich.",en:"The team discusses your case daily."},
+{de:"Die Wundversorgung wird täglich durchgeführt.",en:"Wound care is carried out daily."},
+{de:"Der Patient benötigt Unterstützung beim Aufstehen.",en:"The patient needs support when getting up."},
+{de:"Ich bin jederzeit für Sie erreichbar.",en:"I am available for you at any time."},
+{de:"Bitte bleiben Sie im Bett und nutzen Sie die Klingel.",en:"Please stay in bed and use the call bell."},
+{de:"Gute Erholung und auf Wiedersehen!",en:"Have a good recovery and goodbye!"},
+{de:"Ich halte Rücksprache mit dem Arzt.",en:"I will consult with the doctor."},
+{de:"Bitte nehmen Sie das Medikament mit viel Wasser.",en:"Please take the medication with plenty of water."},
+{de:"Die Blutwerte liegen im Normbereich.",en:"The blood values are within normal range."},
+{de:"Sie dürfen heute zum ersten Mal aufstehen.",en:"You may get up for the first time today."},
+{de:"Ich erkläre Ihnen die Entlassungsmedikamente genau.",en:"I will explain your discharge medication precisely."},
+{de:"Die Prognose ist unter dieser Therapie günstig.",en:"The prognosis is favorable with this therapy."},
+{de:"Wir führen jetzt eine Lagerungsmaßnahme durch.",en:"We will now carry out a positioning measure."},
+{de:"Ich bereite die Medikamente für die Nacht vor.",en:"I am preparing the medications for the night."},
+{de:"Die Thromboseprophylaxe ist wichtig.",en:"Thrombosis prevention is important."},
+{de:"Ich werde täglich nach Ihrer Wunde schauen.",en:"I will check your wound daily."},
+{de:"Bitte melden Sie sich, wenn der Schmerz zunimmt.",en:"Please report to me if the pain increases."},
+{de:"Der Patient klagt über anhaltende Übelkeit.",en:"The patient complains of persistent nausea."},
+{de:"Die Infusion wird in zwei Stunden beendet.",en:"The infusion will finish in two hours."},
+{de:"Ich erkläre Ihnen das Ergebnis der Untersuchung.",en:"I will explain the examination result to you."},
+{de:"Wir achten auf die engmaschige Kontrolle der Vitalzeichen.",en:"We pay attention to the close monitoring of vital signs."},
+{de:"Der Zustand des Patienten hat sich verbessert.",en:"The patient's condition has improved."},
+{de:"Ich koordiniere die Nachsorge mit Ihrem Hausarzt.",en:"I will coordinate the follow-up care with your GP."},
+{de:"Bitte teilen Sie mir mit, wenn Sie sich unwohl fühlen.",en:"Please let me know if you feel unwell."},
+{de:"Die Rehabilitation beginnt morgen.",en:"Rehabilitation begins tomorrow."},
+{de:"Wir dokumentieren alle Maßnahmen lückenlos.",en:"We document all measures completely."},
+{de:"Ich erkundige mich beim Arzt nach dem Ergebnis.",en:"I will check with the doctor about the result."},
+{de:"Bitte atmen Sie regelmäßig und tief.",en:"Please breathe regularly and deeply."},
+{de:"Die Schmerztherapie ist gut eingestellt.",en:"The pain therapy is well adjusted."},
+{de:"Ich führe jetzt die abendliche Grundpflege durch.",en:"I will now carry out the evening basic care."},
+{de:"Trotz der Schmerzen macht der Patient gute Fortschritte.",en:"Despite the pain, the patient is making good progress."},
+{de:"Bitte sagen Sie mir, wenn etwas ungewöhnlich ist.",en:"Please tell me if anything is unusual."},
+{de:"Ich halte Sie über alle Entwicklungen auf dem Laufenden.",en:"I will keep you updated on all developments."},
+{de:"Die Wundkontrolle zeigt eine gute Heilung.",en:"The wound check shows good healing."},
+{de:"Wir passen den Ernährungsplan an Ihre Bedürfnisse an.",en:"We will adapt the nutrition plan to your needs."},
+{de:"Ich möchte Sie präoperativ aufklären.",en:"I would like to inform you pre-operatively."},
+{de:"Bitte unterschreiben Sie die Einwilligungserklärung.",en:"Please sign the consent form."},
+{de:"Die postoperative Überwachung ist sehr wichtig.",en:"Post-operative monitoring is very important."},
+{de:"Ich überweise Sie an den Spezialisten.",en:"I will refer you to the specialist."},
+{de:"Bitte kommen Sie sofort, wenn Sie Atemnot haben.",en:"Please come immediately if you have breathing difficulties."},
+{de:"Wir beginnen jetzt mit der Mobilisation.",en:"We will now begin with mobilization."},
+{de:"Ich erkläre Ihnen die Risiken der Behandlung.",en:"I will explain the risks of the treatment to you."},
+{de:"Bitte informieren Sie uns über Ihre Medikamente zu Hause.",en:"Please inform us about your medications at home."},
+{de:"Der Arzt hat entschieden, die Dosis anzupassen.",en:"The doctor has decided to adjust the dose."},
+{de:"Wir beobachten Sie engmaschig.",en:"We will monitor you closely."},
+{de:"Bitte halten Sie den Verband trocken.",en:"Please keep the dressing dry."},
+{de:"Ich führe jetzt die Körperpflege durch.",en:"I will now carry out the personal care."},
+{de:"Die Blutentnahme ist nötig, um den Verlauf zu prüfen.",en:"The blood draw is necessary to check progress."},
+{de:"Wir dokumentieren Ihre Ausscheidung genau.",en:"We will document your fluid output accurately."},
+{de:"Ich erkläre Ihnen, wie Sie zu Hause die Wunde pflegen.",en:"I will explain how to care for the wound at home."},
+{de:"Bitte beachten Sie die Hygieneregeln.",en:"Please follow the hygiene rules."},
+{de:"Ich begleite Sie bei der ersten Mobilisation.",en:"I will accompany you during the first mobilization."},
+{de:"Das interdisziplinäre Team plant Ihre Entlassung.",en:"The interdisciplinary team is planning your discharge."},
+{de:"Wir führen jetzt eine Schmerzerfassung durch.",en:"We will now carry out a pain assessment."},
+{de:"Bitte essen Sie proteinreich.",en:"Please eat a protein-rich diet."},
+{de:"Ich prüfe jetzt die Sauerstoffzufuhr.",en:"I will check the oxygen supply now."},
+{de:"Die Entlassung setzt eine stabile Hämodynamik voraus.",en:"Discharge requires stable hemodynamics."},
+{de:"Bitte achten Sie auf regelmäßige Bewegung.",en:"Please pay attention to regular movement."},
+{de:"Ich erkläre Ihnen die Pflegepräparate.",en:"I will explain the care preparations to you."},
+{de:"Wir überwachen Ihre Sauerstoffsättigung kontinuierlich.",en:"We monitor your oxygen saturation continuously."},
+{de:"Bitte trinken Sie mindestens zwei Liter täglich.",en:"Please drink at least two litres daily."},
+{de:"Ich lege Ihnen den Thrombosestrumpf an.",en:"I will put on your compression stocking."},
+{de:"Wir kontrollieren täglich die Wundentwicklung.",en:"We check the wound development daily."},
+{de:"Bitte nehmen Sie die Medikamente pünktlich.",en:"Please take the medications on time."},
+{de:"Ich führe die Abschlussdokumentation durch.",en:"I will complete the final documentation."},
+{de:"Das Outcome ist sehr ermutigend.",en:"The outcome is very encouraging."},
+{de:"Bitte sprechen Sie mit Ihrem Hausarzt.",en:"Please speak with your GP."},
+{de:"Ich bin stolz auf Ihre Mitarbeit.",en:"I am proud of your cooperation."},
+{de:"Wir wünschen Ihnen eine gute Heimkehr.",en:"We wish you a good homecoming."},
+{de:"Bitte vergessen Sie nicht, die Nachsorge wahrzunehmen.",en:"Please don't forget to attend follow-up care."},
+{de:"Ich war gerne für Sie da.",en:"I was happy to be here for you."},
+{de:"Sie haben den Genesungsprozess toll gemeistert.",en:"You have mastered the recovery process wonderfully."},
+{de:"Bitte bleiben Sie optimistisch.",en:"Please stay optimistic."},
+{de:"Ich wünsche Ihnen alles Gute.",en:"I wish you all the best."},
+{de:"Auf Wiedersehen und bleiben Sie gesund!",en:"Goodbye and stay healthy!"},
+{de:"Bitte melden Sie sich bei Problemen.",en:"Please get in touch if there are any problems."},
+{de:"Sie haben uns sehr beeindruckt.",en:"You have impressed us greatly."},
+{de:"Wir freuen uns über Ihren Fortschritt.",en:"We are pleased about your progress."},
+{de:"Bitte kommen Sie zu Ihren Kontrollterminen.",en:"Please come to your check-up appointments."},
+{de:"Herzlichen Dank für Ihr Vertrauen.",en:"Thank you very much for your trust."},
+{de:"Ich hoffe, wir sehen uns nur im Rahmen der Kontrolle.",en:"I hope we see each other only for check-ups."},
+{de:"Bitte geben Sie uns Feedback zu unserer Pflege.",en:"Please give us feedback on our care."},
+{de:"Sie sind eine Freude für unser Team gewesen.",en:"You have been a pleasure for our team."},
+{de:"Wir wünschen Ihnen viel Kraft für die Zukunft.",en:"We wish you much strength for the future."},
+],
+B2:[
+{de:"Angesichts Ihrer Befunde empfehlen wir weitere Diagnostik.",en:"In view of your findings, we recommend further diagnostics."},
+{de:"Dieser Eingriff ist mit gewissen Risiken verbunden.",en:"This procedure carries certain risks."},
+{de:"Die palliative Versorgung zielt auf Lebensqualität ab.",en:"Palliative care aims at quality of life."},
+{de:"Wir besprechen das im interdisziplinären Team.",en:"We will discuss this in the interdisciplinary team."},
+{de:"Ihre Patientenautonomie ist uns sehr wichtig.",en:"Your patient autonomy is very important to us."},
+{de:"Die Prognose ist unter optimaler Therapie günstig.",en:"The prognosis is favorable with optimal therapy."},
+{de:"Die Differentialdiagnose umfasst mehrere Erkrankungen.",en:"The differential diagnosis includes several conditions."},
+{de:"Wir passen die Therapie evidenzbasiert an.",en:"We will adapt the therapy based on evidence."},
+{de:"Die Schweigepflicht ist für uns obligatorisch.",en:"Confidentiality is mandatory for us."},
+{de:"Die Symptomatik ist unspezifisch und bedarf weiterer Abklärung.",en:"The symptoms are non-specific and require further clarification."},
+{de:"Die Compliance des Patienten ist leider eingeschränkt.",en:"Unfortunately the patient's compliance is limited."},
+{de:"Eine zeitnahe Intervention ist unumgänglich.",en:"A timely intervention is unavoidable."},
+{de:"Das Medikament ist in Ihrem Fall kontraindiziert.",en:"The medication is contraindicated in your case."},
+{de:"Die Laborwerte deuten auf eine Anämie hin.",en:"The lab values suggest anaemia."},
+{de:"Die Ätiologie ist noch nicht vollständig geklärt.",en:"The etiology has not yet been fully clarified."},
+{de:"Der Verlauf der Erkrankung ist insgesamt positiv.",en:"The course of the illness is overall positive."},
+{de:"Bitte informieren Sie mich über Veränderungen im Befinden.",en:"Please inform me of any changes in your condition."},
+{de:"Die Entscheidung obliegt letztendlich dem Patienten.",en:"The decision ultimately rests with the patient."},
+{de:"Wir respektieren Ihre Entscheidung und unterstützen Sie.",en:"We respect your decision and support you."},
+{de:"Ich halte Sie über den Verlauf auf dem Laufenden.",en:"I will keep you updated on the progress."},
+{de:"Das multidisziplinäre Team hat einen Therapieplan erstellt.",en:"The multidisciplinary team has created a therapy plan."},
+{de:"Bitte teilen Sie uns mit, wenn sich Ihr Zustand verändert.",en:"Please let us know if your condition changes."},
+{de:"Ihr Wohlbefinden hat für uns höchste Priorität.",en:"Your well-being has the highest priority for us."},
+{de:"Wir streben eine patientenzentrierte Versorgung an.",en:"We strive for patient-centred care."},
+{de:"Auf eine gute Zusammenarbeit und baldige Genesung!",en:"To good cooperation and speedy recovery!"},
+{de:"Wir begleiten Sie auf Ihrem Weg zur Gesundheit.",en:"We accompany you on your path to health."},
+{de:"Die Behandlung erfolgt leitliniengerecht.",en:"The treatment follows the guidelines."},
+{de:"Angesichts des Verlaufs ist eine Entlassung möglich.",en:"Given the progress, discharge is possible."},
+{de:"Wir koordinieren die Nachsorge mit dem Hausarzt.",en:"We coordinate the aftercare with the GP."},
+{de:"Ich möchte Sie über mögliche Nebenwirkungen informieren.",en:"I would like to inform you about possible side effects."},
+{de:"Die Befundlage erfordert eine Anpassung der Therapie.",en:"The findings require an adjustment of therapy."},
+{de:"Wir führen eine umfassende Anamnese durch.",en:"We will carry out a comprehensive medical history."},
+{de:"Das Pflegeteam ist rund um die Uhr für Sie da.",en:"The nursing team is there for you around the clock."},
+{de:"Die Maßnahme hat sich als effektiv erwiesen.",en:"The measure has proven to be effective."},
+{de:"Unter Berücksichtigung der Komorbiditäten empfehle ich Folgendes.",en:"Taking comorbidities into account, I recommend the following."},
+{de:"Es handelt sich um eine postoperative Komplikation.",en:"This is a post-operative complication."},
+{de:"Die Pflegeplanung wird kontinuierlich angepasst.",en:"The care plan is continuously adapted."},
+{de:"Ich möchte Sie über Ihre Rechte als Patient informieren.",en:"I would like to inform you about your rights as a patient."},
+{de:"Die Prognose ist bei optimaler Therapie günstig.",en:"The prognosis is favourable with optimal therapy."},
+{de:"Wir empfehlen eine stationäre Aufnahme zur weiteren Diagnostik.",en:"We recommend inpatient admission for further diagnostics."},
+{de:"Die Aufklärung des Patienten ist laut Gesetz obligatorisch.",en:"Patient education is mandatory according to the law."},
+{de:"Ich werde Ihren Fall in der Fallkonferenz besprechen.",en:"I will discuss your case in the case conference."},
+{de:"Die Therapieoptionen wurden sorgfältig abgewogen.",en:"The therapy options have been carefully considered."},
+{de:"Wir streben ein positives Outcome an.",en:"We aim for a positive outcome."},
+{de:"Die Behandlung erfolgt unter Berücksichtigung aller Befunde.",en:"Treatment is carried out taking all findings into account."},
+{de:"Die palliative Therapie zielt auf Schmerzreduktion ab.",en:"Palliative therapy aims at pain reduction."},
+{de:"Wir beachten die Schweigepflicht gegenüber Dritten.",en:"We maintain confidentiality towards third parties."},
+{de:"Die Indikation für den Eingriff wurde sorgfältig geprüft.",en:"The indication for the procedure was carefully checked."},
+{de:"Ich möchte Ihnen die Ergebnisse der Fallkonferenz mitteilen.",en:"I would like to share the results of the case conference with you."},
+{de:"Die Behandlung orientiert sich an den aktuellen Leitlinien.",en:"The treatment is guided by current guidelines."},
+{de:"Es ist wichtig, dass Sie Ihre Patientenrechte kennen.",en:"It is important that you know your patient rights."},
+{de:"Wir empfehlen eine interdisziplinäre Konsultation.",en:"We recommend an interdisciplinary consultation."},
+{de:"Die Therapieadhärenz ist für den Genesungsprozess entscheidend.",en:"Therapy adherence is crucial for the recovery process."},
+{de:"Unter Berücksichtigung aller Risikofaktoren ist Folgendes zu beachten.",en:"Taking all risk factors into account, the following should be noted."},
+{de:"Ich möchte Ihnen erklären, wie das Medikament wirkt.",en:"I would like to explain how the medication works."},
+{de:"Die Verlaufskontrolle zeigt eine deutliche Verbesserung.",en:"The follow-up check shows a clear improvement."},
+{de:"Wir empfehlen eine Anschlussrehabilitation.",en:"We recommend follow-up rehabilitation."},
+{de:"Die Einwilligungsfähigkeit des Patienten muss überprüft werden.",en:"The patient's capacity to consent must be checked."},
+{de:"Wenngleich die Symptome nachlassen, bleibt Vorsicht geboten.",en:"Although the symptoms are decreasing, caution is still advised."},
+{de:"Ich werde Ihre Werte täglich kontrollieren und dokumentieren.",en:"I will check and document your values daily."},
+{de:"Die Intervention erfolgte unter optimalen Bedingungen.",en:"The intervention was carried out under optimal conditions."},
+{de:"Das Risiko-Nutzen-Verhältnis wurde sorgfältig bewertet.",en:"The risk-benefit ratio was carefully evaluated."},
+{de:"Ich informiere Sie, sobald die Ergebnisse vorliegen.",en:"I will inform you as soon as the results are available."},
+{de:"Wir achten auf eine ganzheitliche Patientenversorgung.",en:"We ensure holistic patient care."},
+{de:"Die Therapie wird laufend evaluiert und angepasst.",en:"The therapy is continuously evaluated and adjusted."},
+{de:"Ich erkläre Ihnen das Procedere der Anschlussbehandlung.",en:"I will explain the procedure for the follow-up treatment."},
+{de:"Die Prognose ist insgesamt verhalten optimistisch.",en:"The prognosis is overall cautiously optimistic."},
+{de:"Angesichts der Komplexität bedarf es eines multidisziplinären Ansatzes.",en:"Given the complexity, a multidisciplinary approach is needed."},
+{de:"Ich empfehle Ihnen, die Patientenverfügung zu aktualisieren.",en:"I recommend that you update your advance directive."},
+{de:"Die Behandlung orientiert sich an Ihrer individuellen Situation.",en:"Treatment is tailored to your individual situation."},
+{de:"Wir setzen uns für Ihre optimale Versorgung ein.",en:"We are committed to your optimal care."},
+{de:"Die klinische Symptomatik ist wegweisend für die Diagnose.",en:"The clinical symptoms are indicative of the diagnosis."},
+{de:"Ich werde Ihren Fall dem Oberarzt vorstellen.",en:"I will present your case to the senior doctor."},
+{de:"Die Gesamtprognose ist bei guter Compliance günstig.",en:"The overall prognosis is favorable with good compliance."},
+{de:"Unter engmaschiger Kontrolle ist eine ambulante Behandlung möglich.",en:"With close monitoring, outpatient treatment is possible."},
+{de:"Ich erkläre Ihnen die Bedeutung der regelmäßigen Kontrollen.",en:"I will explain the importance of regular check-ups to you."},
+{de:"Die Therapieanpassung erfolgt basierend auf den aktuellen Befunden.",en:"The therapy adjustment is based on the current findings."},
+{de:"Wir empfehlen eine Konsultation beim Facharzt.",en:"We recommend a consultation with the specialist."},
+{de:"Die palliative Begleitung wird von einem spezialisierten Team übernommen.",en:"Palliative support is taken over by a specialized team."},
+{de:"Ich wünsche Ihnen Kraft und Zuversicht für den weiteren Verlauf.",en:"I wish you strength and confidence for the further course."},
+{de:"Bitte scheuen Sie sich nicht, Fragen zu stellen.",en:"Please do not hesitate to ask questions."},
+{de:"Wir sind stets für Sie erreichbar.",en:"We are always reachable for you."},
+{de:"Die interdisziplinäre Zusammenarbeit sichert Ihre optimale Versorgung.",en:"Interdisciplinary collaboration ensures your optimal care."},
+{de:"Ich werde alle weiteren Schritte mit dem Team koordinieren.",en:"I will coordinate all further steps with the team."},
+{de:"Ihr Vertrauen in uns ist uns sehr wichtig.",en:"Your trust in us is very important to us."},
+{de:"Wir sind stolz, Sie auf diesem Weg begleiten zu dürfen.",en:"We are proud to accompany you on this journey."},
+{de:"Vielen Dank für Ihre außerordentliche Geduld und Kooperation.",en:"Thank you very much for your extraordinary patience and cooperation."},
+{de:"Auf Wiedersehen und alles Gute für Ihre Zukunft!",en:"Goodbye and all the best for your future!"},
+{de:"Ich wünsche Ihnen eine vollständige Genesung.",en:"I wish you a complete recovery."},
+{de:"Bitte kommen Sie mit allen Fragen jederzeit zu uns.",en:"Please come to us with any questions at any time."},
+{de:"Sie haben unsere größte Hochachtung.",en:"You have our greatest respect."},
+{de:"Auf eine weiterhin gute Zusammenarbeit!",en:"To continued good cooperation!"},
+{de:"Bitte vergessen Sie nicht, die Kontrolltermine wahrzunehmen.",en:"Please don't forget to attend the check-up appointments."},
+{de:"Wir wünschen Ihnen einen guten Verlauf.",en:"We wish you a good course."},
+{de:"Ihr Wohlergehen liegt uns am Herzen.",en:"Your well-being is close to our heart."},
+{de:"Bitte melden Sie sich bei jeglichen Bedenken.",en:"Please contact us with any concerns."},
+{de:"Auf Wiedersehen und bleiben Sie gesund!",en:"Goodbye and stay healthy!"},
+{de:"Ich hoffe, Ihre Gesundheit bleibt stabil.",en:"I hope your health remains stable."},
+{de:"Bitte nutzen Sie alle angebotenen Unterstützungsangebote.",en:"Please make use of all support services offered."},
+{de:"Wir freuen uns, dass Sie auf dem Weg der Besserung sind.",en:"We are glad that you are on the road to recovery."},
+{de:"Alles Gute für Ihren weiteren Genesungsweg!",en:"All the best for your further recovery journey!"},
+],
+}
+
+export default function ListeningPage({ user }) {
+  const [cur, setCur] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const synthRef = useRef(null)
+  const phrases = PH[user?.level] || PH.A1
+  const ph = phrases[Math.min(cur, phrases.length - 1)]
+
+  // Mobile-safe TTS
+  function speak(rate = 0.85) {
+    // Must cancel on same user gesture
+    window.speechSynthesis.cancel()
+
+    const doSpeak = () => {
+      const u = new SpeechSynthesisUtterance(ph.de)
+      u.lang = 'de-DE'
+      u.rate = rate
+      u.pitch = 1.0
+      u.volume = 1.0
+
+      // Try to find German voice
+      const voices = window.speechSynthesis.getVoices()
+      const deVoice = voices.find(v => v.lang && v.lang.startsWith('de'))
+      if (deVoice) u.voice = deVoice
+
+      u.onstart = () => setPlaying(true)
+      u.onend = () => setPlaying(false)
+      u.onerror = (e) => {
+        setPlaying(false)
+        // Retry once for interrupted errors
+        if (e.error === 'interrupted' || e.error === 'canceled') {
+          setTimeout(() => {
+            const u2 = new SpeechSynthesisUtterance(ph.de)
+            u2.lang = 'de-DE'; u2.rate = rate; u2.pitch = 1; u2.volume = 1
+            if (deVoice) u2.voice = deVoice
+            u2.onend = () => setPlaying(false)
+            window.speechSynthesis.speak(u2)
+          }, 400)
+        }
+      }
+
+      // iOS Safari requires voices to be loaded first
+      if (voices.length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          const v2 = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('de'))
+          if (v2) u.voice = v2
+          window.speechSynthesis.speak(u)
+        }
+      } else {
+        window.speechSynthesis.speak(u)
+      }
+    }
+
+    // Short delay to let cancel() complete (critical on mobile)
+    setTimeout(doSpeak, 150)
+
+    trackEvent(user?.rollNumber, 'listening_play', 'listening', `Phrase ${cur + 1}`, user?.level)
+  }
+
+  function stopSpeaking() {
+    window.speechSynthesis.cancel()
+    setPlaying(false)
+  }
+
+  function goTo(i) {
+    stopSpeaking()
+    setCur(i)
+  }
+
+  return (
+    <div style={{ flex: 1, overflow: 'auto', padding: '16px 18px' }}>
+      <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>🎙️ Listening Practice</h2>
+      <p style={{ fontSize: 11, color: C.textS, marginBottom: 8 }}>
+        Level {user?.level} · {phrases.length} nursing phrases · Listen & repeat aloud
+      </p>
+      <PBar pct={Math.round(((cur + 1) / phrases.length) * 100)} h={5} style={{ marginBottom: 4 }} />
+      <div style={{ fontSize: 10, color: C.textS, textAlign: 'right', marginBottom: 12 }}>{cur + 1} / {phrases.length}</div>
+
+      {/* Main phrase card */}
+      <div style={{ background: `linear-gradient(135deg,${C.navy},${C.navyM})`, borderRadius: 16, padding: '24px 18px', marginBottom: 13, textAlign: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 10, right: 12, background: 'rgba(255,255,255,.1)', borderRadius: 20, padding: '3px 10px', fontSize: 10, color: 'rgba(255,255,255,.5)' }}>#{cur + 1}</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.65, marginBottom: 10 }}>{ph.de}</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', fontStyle: 'italic', lineHeight: 1.5 }}>{ph.en}</div>
+      </div>
+
+      {/* Audio controls — big tap targets for mobile */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <button
+          onClick={playing ? stopSpeaking : () => speak(0.85)}
+          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: 'none', background: playing ? C.red : C.blue, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {playing ? '⏹ Stop' : '🔊 Normal Speed'}
+        </button>
+        <button
+          onClick={() => speak(0.6)}
+          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${C.border}`, background: '#fff', color: C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          🐢 Slow
+        </button>
+      </div>
+
+      {/* Navigation — big buttons for mobile */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        <button onClick={() => goTo(Math.max(0, cur - 1))} disabled={cur === 0}
+          style={{ flex: 1, padding: '12px', borderRadius: 10, border: `2px solid ${cur === 0 ? C.border : C.navy}`, background: cur === 0 ? C.surfAlt : '#fff', color: cur === 0 ? C.textS : C.navy, cursor: cur === 0 ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit' }}>
+          ← Prev
+        </button>
+        <button onClick={() => goTo(Math.min(phrases.length - 1, cur + 1))} disabled={cur === phrases.length - 1}
+          style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', background: cur === phrases.length - 1 ? C.border : C.navy, color: '#fff', cursor: cur === phrases.length - 1 ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit' }}>
+          Next →
+        </button>
+      </div>
+
+      {/* Tips for mobile */}
+      <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Mobile Tips</div>
+        <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+          • Tap <strong>🔊 Normal Speed</strong> to play — make sure your volume is on<br />
+          • If no audio: check Silent mode is OFF · Try Chrome browser<br />
+          • Tap once on the phrase card before pressing play (iOS fix)
+        </div>
+      </div>
+
+      {/* Jump grid */}
+      <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 14px' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Jump to Phrase</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxHeight: 130, overflow: 'auto' }}>
+          {phrases.map((_, i) => (
+            <button key={i} onClick={() => goTo(i)}
+              style={{ width: 32, height: 32, borderRadius: 7, border: `1.5px solid ${i === cur ? C.blue : C.border}`, background: i === cur ? C.blue : i < cur ? C.blueL : 'transparent', color: i === cur ? '#fff' : i < cur ? C.blue : C.textS, cursor: 'pointer', fontSize: 9, fontWeight: 600 }}>
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
