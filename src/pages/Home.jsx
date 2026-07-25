@@ -52,14 +52,6 @@ function StreakCard({ streak, lastActive }) {
               : streak >= 1  ? { label:'Getting started', emoji:'🔥', from:'#E67E22', to:'#E67E22' }
               : { label:'No streak yet', emoji:'💤', from:C.textS, to:C.textS }
 
-  // Last 7 days activity dots
-  const days7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now - (6 - i) * 86400000)
-    const isToday = d.toDateString() === new Date(now).toDateString()
-    const isActive = last && Math.abs(new Date(last).setHours(0,0,0,0) - d.setHours(0,0,0,0)) < 86400000
-    return { isToday, isActive: isActive || (isToday && activityToday) }
-  })
-
   const pct = Math.min(100, Math.round(((30 - hoursLeft) / 30) * 100))
 
   return (
@@ -154,43 +146,22 @@ function StreakCard({ streak, lastActive }) {
         </div>
       </div>
 
-      {/* Last 7 days dots */}
-      <div>
-        <div style={{ fontSize:9, color:C.textS, marginBottom:5 }}>LAST 7 DAYS</div>
-        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
-          {days7.map((d, i) => {
-            const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-            const dayIdx = (new Date(now - (6 - i) * 86400000).getDay() + 6) % 7
-            return (
-              <div key={i} style={{ flex:1, textAlign:'center' }}>
-                <div style={{ width:'100%', aspectRatio:'1', borderRadius:'50%', marginBottom:3,
-                  background: d.isActive ? '#E67E22' : C.surfAlt,
-                  border: `2px solid ${d.isActive ? '#E67E22' : d.isToday ? C.border + '88' : C.border}`,
-                  display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>
-                  {d.isActive ? '🔥' : d.isToday ? '○' : ''}
-                </div>
-                <div style={{ fontSize:8, color: d.isActive ? '#E67E22' : C.textS, fontWeight: d.isToday ? 700 : 400 }}>
-                  {d.isToday ? 'Today' : dayNames[dayIdx]}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Milestone badges */}
+      {/* Milestone badges — turn solid orange once the student reaches each milestone */}
       {streak > 0 && (
-        <div style={{ marginTop:12, paddingTop:10, borderTop:`1px solid ${C.border}` }}>
+        <div style={{ marginTop:4, paddingTop:10, borderTop:`1px solid ${C.border}` }}>
           <div style={{ fontSize:9, color:C.textS, marginBottom:6 }}>STREAK MILESTONES</div>
-          <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
-            {[3,7,14,30,60,100].map(m => (
-              <div key={m} style={{ padding:'3px 9px', borderRadius:10, fontSize:9, fontWeight:700,
-                background: streak >= m ? '#FFF3E0' : C.surfAlt,
-                color: streak >= m ? '#E67E22' : C.textS,
-                border: `1px solid ${streak >= m ? '#E67E22' + '55' : C.border}` }}>
-                {streak >= m ? '🔥' : '○'} {m} days
-              </div>
-            ))}
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+            {[3,7,14,30,60,100].map(m => {
+              const hit = streak >= m
+              return (
+                <div key={m} style={{ padding:'4px 11px', borderRadius:11, fontSize:10, fontWeight:700,
+                  background: hit ? '#E67E22' : C.surfAlt,
+                  color: hit ? '#fff' : C.textS,
+                  border: `1px solid ${hit ? '#E67E22' : C.border}` }}>
+                  {hit ? '🔥' : '○'} {m} days
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
