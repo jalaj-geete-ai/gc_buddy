@@ -223,8 +223,8 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
 
       {/* Quick Actions */}
       <div style={{fontSize:10,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>⚡ Quick Actions</div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
-        {[['💪','Exercises','learn'],['🔤','Vocabulary','learn'],['🎙️','Listening','listening']].map(([ic,lb,nv])=>(
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:16}}>
+        {[['💪','Exercises','learn'],['🎙️','Listening','listening']].map(([ic,lb,nv])=>(
           <div key={lb} onClick={()=>onNav(nv)}
             style={{background:'#fff',borderRadius:11,border:`1px solid ${C.border}`,padding:'13px 8px',textAlign:'center',cursor:'pointer',transition:'box-shadow .15s'}}
             onMouseEnter={e=>e.currentTarget.style.boxShadow=C.shM} onMouseLeave={e=>e.currentTarget.style.boxShadow='none'}>
