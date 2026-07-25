@@ -5,8 +5,8 @@ import { trackEvent } from '../lib/supabase'
 import {
   loadVocabBank, loadVocabProgress, rateWord, saveVocabState,
   wordsForDay, allWords, dueWordIds, masteredCount, remainingToday,
-  nextDayNumber, speakDe, voiceStatus, onVoicesReady, today,
-  MAX_BOX, TOTAL_DAYS, MILESTONES, DAYS_PER_SESSION,
+  nextDayNumber, speakDe, voiceStatus, onVoicesReady, today, wordsToday,
+  MAX_BOX, TOTAL_DAYS, MILESTONES, WORDS_PER_SET, MAX_WORDS_PER_DAY,
 } from '../lib/vocab'
 
 const shuffle = a => [...a].sort(() => Math.random() - 0.5)
@@ -33,6 +33,19 @@ function Speaker({ text, size = 'md' }) {
       style={{ ...s, border: 'none', background: C.blueL, color: C.blue, borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>
       🔊
     </button>
+  )
+}
+
+function CapNotice() {
+  return (
+    <div style={{ background: C.blueL, border: `1px solid ${C.blue}33`, borderRadius: 9, padding: '12px 14px', textAlign: 'center' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: C.blue, lineHeight: 1.6 }}>
+        More questions will be unlocked tomorrow.
+      </div>
+      <div style={{ fontSize: 11, color: C.textM, marginTop: 3, lineHeight: 1.6 }}>
+        Till then practice the words you learned today.
+      </div>
+    </div>
   )
 }
 
@@ -98,6 +111,7 @@ export default function VocabPage({ user }) {
   const nextDay = nextDayNumber(vstate)
   const left = remainingToday(vstate)
   const dayData = bank ? wordsForDay(bank, nextDay) : null
+  const doneToday = wordsToday(vstate)
   const finished = (vstate?.current_day || 0) >= TOTAL_DAYS
   const seen = Object.keys(prog).length
 
@@ -240,15 +254,45 @@ export default function VocabPage({ user }) {
     const q = quiz.qs[quiz.cur]
     if (quiz.done) {
       const pct = Math.round((quiz.score / quiz.qs.length) * 100)
+      const done = wordsToday(vstate)
+      const canMore = left > 0 && !finished
       return (
         <div style={wrap}>
-          <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '28px 20px', textAlign: 'center', boxShadow: C.sh }}>
+          <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '26px 20px', textAlign: 'center', boxShadow: C.sh }}>
             <div style={{ fontSize: 34 }}>{pct >= 80 ? '🎉' : pct >= 60 ? '👍' : '📖'}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: C.navy, marginTop: 6 }}>{quiz.score}/{quiz.qs.length}</div>
-            <div style={{ fontSize: 12, color: C.textM, marginTop: 4 }}>Day {session?.day} complete — words are scheduled for review</div>
-            <div style={{ marginTop: 18 }}>
-              <Btn label="Back to today" variant="accent" onClick={() => { setQuiz(null); setSession(null); setView('today') }} />
+            <div style={{ fontSize: 12, color: C.textM, marginTop: 4 }}>
+              Day {session?.day} complete — these words are scheduled for review
             </div>
+
+            <div style={{ background: C.blueL, borderRadius: 9, padding: '9px 12px', marginTop: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.blue }}>{done} of {MAX_WORDS_PER_DAY} words unlocked today</div>
+              <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 6 }}>
+                {[0, 1, 2].map(i => (
+                  <span key={i} style={{ width: 34, height: 5, borderRadius: 3, background: i < done / WORDS_PER_SET ? C.blue : '#fff' }} />
+                ))}
+              </div>
+            </div>
+
+            {canMore ? (
+              <>
+                <div style={{ marginTop: 16 }}>
+                  <Btn label="🔓 Unlock 10 more words" variant="accent" style={{ width: '100%' }}
+                    onClick={() => { setQuiz(null); begin('new') }} />
+                </div>
+                <button onClick={() => { setQuiz(null); setSession(null); setView('today') }}
+                  style={{ border: 'none', background: 'transparent', color: C.textS, cursor: 'pointer', fontSize: 11, marginTop: 11, fontFamily: 'inherit' }}>
+                  That's enough for today
+                </button>
+              </>
+            ) : (
+              <div style={{ marginTop: 16 }}>
+                <CapNotice />
+                <div style={{ marginTop: 12 }}>
+                  <Btn label="Back to today" variant="accent" onClick={() => { setQuiz(null); setSession(null); setView('today') }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )
@@ -322,7 +366,7 @@ export default function VocabPage({ user }) {
   return (
     <div style={wrap}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>🔤 Daily Vocabulary</h2>
-      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>10 new words a day · {TOTAL_DAYS} days · A1 &amp; A2</p>
+      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>10 words a set · up to {MAX_WORDS_PER_DAY} a day · A1 &amp; A2</p>
 
       {voice !== 'ok' && (
         <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 12 }}>
@@ -360,14 +404,20 @@ export default function VocabPage({ user }) {
             </div>
             <div style={{ marginTop: 14 }}>
               {left > 0
-                ? <Btn label={`Learn 10 new words →`} variant="accent" onClick={() => begin('new')} style={{ width: '100%' }} />
-                : <div style={{ background: C.blueL, borderRadius: 9, padding: '11px 13px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: C.blue }}>Today's words are done ✓</div>
-                    <div style={{ fontSize: 10, color: C.textM, marginTop: 2 }}>Day {nextDay} unlocks tomorrow. Reviews stay open.</div>
-                  </div>}
-              {left > 0 && left < DAYS_PER_SESSION && (
-                <div style={{ fontSize: 10, color: C.textS, textAlign: 'center', marginTop: 6 }}>
-                  {left} more day{left > 1 ? 's' : ''} available today if you're catching up
+                ? <Btn label={doneToday ? '🔓 Unlock 10 more words' : 'Learn 10 new words →'} variant="accent"
+                    onClick={() => begin('new')} style={{ width: '100%' }} />
+                : <CapNotice />}
+              {doneToday > 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, color: C.textS }}>Unlocked today</span>
+                    <span style={{ fontSize: 10, color: C.textM, fontWeight: 600 }}>{doneToday} / {MAX_WORDS_PER_DAY} words</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[0, 1, 2].map(i => (
+                      <span key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i < doneToday / WORDS_PER_SET ? C.green : C.border }} />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -5,7 +5,9 @@ import { sb } from './supabase'
 // Mirrors the Day 1 / 2 / 4 / 7 schedule the vocabulary book itself recommends.
 export const INTERVALS = [1, 3, 7, 21, 60]
 export const MAX_BOX = 5
+export const WORDS_PER_SET = 10
 export const DAYS_PER_SESSION = 3   // catch-up allowance per calendar day
+export const MAX_WORDS_PER_DAY = WORDS_PER_SET * DAYS_PER_SESSION
 export const TOTAL_DAYS = 120
 
 export const today = () => new Date().toISOString().slice(0, 10)
@@ -177,6 +179,12 @@ export function remainingToday(state) {
   if (!state) return DAYS_PER_SESSION
   const usedToday = state.last_day_on === today() ? (state.days_today || 0) : 0
   return Math.max(0, DAYS_PER_SESSION - usedToday)
+}
+
+// Words unlocked so far on the current calendar day (0, 10, 20 or 30).
+export function wordsToday(state) {
+  if (!state || state.last_day_on !== today()) return 0
+  return (state.days_today || 0) * WORDS_PER_SET
 }
 
 export function nextDayNumber(state) {
