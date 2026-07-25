@@ -5,6 +5,7 @@ import { trackEvent } from '../lib/supabase'
 import Home from './Home'
 import CurriculumPage from './CurriculumPage'
 import LearnHub from './LearnHub'
+import VocabPage from './VocabPage'
 import ListeningPage from './ListeningPage'
 import InterviewPage from './InterviewPage'
 import GCBuddyChat from './GCBuddyChat'
@@ -44,6 +45,7 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
     if (tab === 'home') return <Home user={user} progress={progress} completedTopics={completedTopics} exerciseScores={exerciseScores} onNav={goTab} onOpenLesson={openLesson}/>
     if (tab === 'curriculum') return <CurriculumPage user={user} completedTopics={completedTopics} onOpenLesson={openLesson}/>
     if (tab === 'learn') return <LearnHub user={user} onAddScore={onAddScore}/>
+    if (tab === 'vocab') return <VocabPage user={user}/>
     if (tab === 'listening') return <ListeningPage user={user}/>
     if (tab === 'interview') return <InterviewPage user={user} completedTopics={completedTopics} onAddScore={onAddScore}/>
     if (tab === 'gcbuddy') return <GCBuddyChat user={user} progress={progress} completedTopics={completedTopics} exerciseScores={exerciseScores}/>

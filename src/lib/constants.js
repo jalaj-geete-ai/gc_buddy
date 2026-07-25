@@ -216,6 +216,7 @@ export const NAV = [
   {id:'home',icon:'🏠',lbl:'Home'},
   {id:'curriculum',icon:'📘',lbl:'Curriculum'},
   {id:'learn',icon:'💪',lbl:'Learn Hub'},
+  {id:'vocab',icon:'🔤',lbl:'Vocabulary'},
   {id:'listening',icon:'🎙️',lbl:'Listening'},
   {id:'interview',icon:'🎭',lbl:'Interview'},
   {id:'dailytest',icon:'📝',lbl:'Daily Test'},
