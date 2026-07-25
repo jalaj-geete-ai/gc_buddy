@@ -119,19 +119,38 @@ function StreakCard({ streak, lastActive }) {
         </div>
       )}
 
-      {/* 30h drain bar */}
+      {/* Streak slider — fills L→R, fire-emoji handle with day count below */}
       <div style={{ marginBottom:12 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:C.textS, marginBottom:4 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:C.textS, marginBottom:6 }}>
           <span>Streak window</span>
           <span style={{ color: hoursLeft <= 6 ? C.red : C.textS }}>Expires in {hoursLeft}h</span>
         </div>
-        <div style={{ background:C.surfAlt, borderRadius:4, height:6, overflow:'hidden' }}>
-          <div style={{ height:'100%', borderRadius:4, width:`${pct}%`,
-            background: hoursLeft <= 6 ? C.red : hoursLeft <= 12 ? C.amber : '#E67E22',
-            transition:'width .3s ease' }}/>
-        </div>
-        <div style={{ display:'flex', justifyContent:'space-between', fontSize:8, color:C.textS, marginTop:2 }}>
-          <span>Last activity</span><span>30h window</span>
+
+        {/* slider track + handle. Extra bottom padding leaves room for the day count under the emoji */}
+        <div style={{ position:'relative', height:8, margin:'0 11px', paddingBottom:26 }}>
+          {/* empty track */}
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:8, borderRadius:5, background:C.surfAlt, border:`1px solid ${C.border}` }}/>
+          {/* orange fill L→R up to the handle */}
+          <div style={{ position:'absolute', top:0, left:0, height:8, borderRadius:5, width:`${pct}%`,
+            background: hoursLeft <= 6
+              ? `linear-gradient(90deg, ${C.red}, #E67E22)`
+              : 'linear-gradient(90deg, #F39C12, #E67E22)',
+            transition:'width .35s ease' }}/>
+          {/* fire-emoji handle */}
+          <div style={{ position:'absolute', top:4, left:`${pct}%`, transform:'translate(-50%, -50%)',
+            width:26, height:26, borderRadius:'50%', background:'#fff',
+            border:`2px solid ${hoursLeft <= 6 ? C.red : '#E67E22'}`,
+            boxShadow:'0 1px 4px rgba(230,126,34,.35)',
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:14,
+            transition:'left .35s ease', zIndex:2 }}>
+            🔥
+          </div>
+          {/* day count directly below the emoji handle */}
+          <div style={{ position:'absolute', top:22, left:`${pct}%`, transform:'translateX(-50%)',
+            textAlign:'center', lineHeight:1, transition:'left .35s ease', whiteSpace:'nowrap' }}>
+            <span style={{ fontSize:13, fontWeight:800, color: streak > 0 ? '#E67E22' : C.textS }}>{streak}</span>
+            <span style={{ fontSize:9, color:C.textS, marginLeft:2 }}>{streak === 1 ? 'day' : 'days'}</span>
+          </div>
         </div>
       </div>
 
