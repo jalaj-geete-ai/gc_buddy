@@ -621,7 +621,7 @@ export default function ListeningPage({ user }) {
           {playing ? '⏹ Stop' : '🔊 Normal Speed'}
         </button>
         <button
-          onClick={() => speak(0.6)}
+          onClick={() => speak(0.7)}
           style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${C.border}`, background: '#fff', color: C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           🐢 Slow
         </button>
