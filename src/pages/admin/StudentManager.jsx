@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { readAuth, writeAuth } from '../../lib/adminAuth'
 import { C } from '../../lib/constants'
 import { Btn, Inp, Spin } from '../../components/UI'
 import { sb } from '../../lib/supabase'
 
 export default function StudentManager() {
-  const [auth,setAuth]=useState(false)
+  const [auth,setAuth]=useState(()=>readAuth('students'))
   const [pw,setPw]=useState('')
   const [students,setStudents]=useState([])
   const [loading,setLoading]=useState(false)
@@ -17,6 +18,15 @@ export default function StudentManager() {
   const [csv,setCsv]=useState('')
   const [preview,setPreview]=useState([])
   const [uploading,setUploading]=useState(false)
+
+  useEffect(()=>{ if(auth) loadStudents() },[])
+
+  function signIn(entered){
+    if(entered!=='gcbuddy2025'){ alert('Wrong password'); return }
+    writeAuth('students',true); setAuth(true); loadStudents()
+  }
+
+  function signOut(){ writeAuth('students',false); setAuth(false); setPw('') }
 
   async function loadStudents(){
     setLoading(true)
@@ -75,8 +85,9 @@ export default function StudentManager() {
         <div style={{fontSize:36,marginBottom:10}}>👥</div>
         <h2 style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:4}}>Student Manager</h2>
         <p style={{fontSize:11,color:C.textS,marginBottom:14}}>Add & manage enrolled students</p>
-        <Inp val={pw} set={setPw} ph="Admin password" type="password" style={{marginBottom:9}}/>
-        <Btn label="Login" onClick={()=>{if(pw==='gcbuddy2025'){setAuth(true);loadStudents()}else alert('Wrong password')}} variant="primary" style={{width:'100%'}}/>
+        <Inp val={pw} set={setPw} ph="Admin password" type="password" style={{marginBottom:9}} autoFocus
+          onKeyDown={e=>{if(e.key==='Enter')signIn(pw)}}/>
+        <Btn label="Login" onClick={()=>signIn(pw)} variant="primary" style={{width:'100%'}}/>
         <div style={{marginTop:10}}><a href="/" style={{color:C.blue,fontSize:11}}>← App</a></div>
       </div>
     </div>
@@ -88,6 +99,7 @@ export default function StudentManager() {
     <div style={{minHeight:'100vh',background:C.bg,display:'flex',flexDirection:'column'}}>
       <div style={{background:C.navy,padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div><div style={{fontWeight:700,color:'#fff',fontSize:14}}>👥 Student Manager</div><div style={{fontSize:9,color:'rgba(255,255,255,.4)'}}>{students.length} enrolled</div></div>
+        <button onClick={signOut} style={{marginLeft:'auto',border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
         <div style={{display:'flex',gap:10,alignItems:'center'}}>
           <Btn label="⬇️ Export" onClick={exportCSV} variant="outline" size="sm" style={{color:'#fff',borderColor:'rgba(255,255,255,.3)'}}/>
           <a href="/" style={{color:C.blueM,fontSize:11,textDecoration:'none'}}>← App</a>

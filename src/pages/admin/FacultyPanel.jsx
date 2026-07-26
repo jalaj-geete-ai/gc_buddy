@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { readAuth, writeAuth } from '../../lib/adminAuth'
 import { C } from '../../lib/constants'
 import { Btn, Inp, Spin } from '../../components/UI'
 import { sb } from '../../lib/supabase'
 
 export default function FacultyPanel() {
-  const [auth,setAuth]=useState(false)
+  const [auth,setAuth]=useState(()=>readAuth('faculty'))
   const [pw,setPw]=useState('')
   const [tab,setTab]=useState('attendance')
   const [students,setStudents]=useState([])
@@ -15,6 +16,15 @@ export default function FacultyPanel() {
   const [sched,setSched]=useState({batch:'',week:'',topics:'',dates:''})
   const [saving,setSaving]=useState(false)
   const [msg,setMsg]=useState({text:'',type:''})
+
+  useEffect(()=>{ if(auth) loadStudents() },[])
+
+  function signIn(entered){
+    if(entered!=='gcfaculty2025'){ alert('Wrong password'); return }
+    writeAuth('faculty',true); setAuth(true); loadStudents()
+  }
+
+  function signOut(){ writeAuth('faculty',false); setAuth(false); setPw('') }
 
   async function loadStudents(){
     const {data}=await sb.from('approved_students').select('roll_number,name').order('name')
@@ -64,8 +74,9 @@ export default function FacultyPanel() {
         <div style={{fontSize:36,marginBottom:10}}>👩‍🏫</div>
         <h2 style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:4}}>Faculty Portal</h2>
         <p style={{fontSize:11,color:C.textS,marginBottom:14}}>Attendance · Video · Schedule</p>
-        <Inp val={pw} set={setPw} ph="Faculty password" type="password" style={{marginBottom:9}}/>
-        <Btn label="Login" onClick={()=>{if(pw==='gcfaculty2025'){setAuth(true);loadStudents()}else alert('Wrong password')}} variant="primary" style={{width:'100%'}}/>
+        <Inp val={pw} set={setPw} ph="Faculty password" type="password" style={{marginBottom:9}} autoFocus
+          onKeyDown={e=>{if(e.key==='Enter')signIn(pw)}}/>
+        <Btn label="Login" onClick={()=>signIn(pw)} variant="primary" style={{width:'100%'}}/>
         <div style={{marginTop:10}}><a href="/" style={{color:C.blue,fontSize:11}}>← App</a></div>
       </div>
     </div>
@@ -75,6 +86,7 @@ export default function FacultyPanel() {
     <div style={{minHeight:'100vh',background:C.bg,display:'flex',flexDirection:'column'}}>
       <div style={{background:C.navy,padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{fontWeight:700,color:'#fff',fontSize:14}}>👩‍🏫 Faculty Portal</div>
+        <button onClick={signOut} style={{marginLeft:'auto',border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
         <a href="/" style={{color:C.blueM,fontSize:11,textDecoration:'none'}}>← App</a>
       </div>
       {msg.text&&<div style={{background:msg.type==='error'?C.redL:C.greenL,color:msg.type==='error'?C.red:C.green,padding:'9px 20px',fontSize:12,fontWeight:600}}>{msg.text}</div>}

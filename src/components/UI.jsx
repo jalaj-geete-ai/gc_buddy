@@ -19,11 +19,12 @@ export const Btn = ({label,onClick,variant='primary',disabled=false,size='md',st
   </button>
 }
 
-export const Inp = ({val,set,ph,type='text',style={}}) =>
+export const Inp = ({val,set,ph,type='text',style={},...rest}) =>
   <input value={val} onChange={e=>set(e.target.value)} placeholder={ph} type={type}
     style={{width:'100%',padding:'10px 14px',borderRadius:9,border:`1.5px solid ${C.border}`,background:C.surfAlt,color:C.text,fontSize:13,fontFamily:'inherit',outline:'none',boxSizing:'border-box',transition:'border-color .15s',...style}}
     onFocus={e=>e.target.style.borderColor=C.blue}
-    onBlur={e=>e.target.style.borderColor=C.border}/>
+    onBlur={e=>e.target.style.borderColor=C.border}
+    {...rest}/>
 
 export const Spin = ({sz=20}) =>
   <div style={{width:sz,height:sz,border:`2.5px solid ${C.border}`,borderTopColor:C.blue,borderRadius:'50%',animation:'spin .8s linear infinite',flexShrink:0}}/>

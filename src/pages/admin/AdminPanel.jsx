@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { readAuth, writeAuth } from '../../lib/adminAuth'
 import { C, CURRICULUM, LEVELS } from '../../lib/constants'
 import { Btn, Inp, Spin, PBar, Badge } from '../../components/UI'
 import { sb } from '../../lib/supabase'
@@ -62,7 +63,7 @@ const TABS = [
 ]
 
 export default function AdminPanel() {
-  const [auth, setAuth] = useState(false)
+  const [auth, setAuth] = useState(() => readAuth('admin'))
   const [pw, setPw] = useState('')
   const [tab, setTab] = useState('overview')
   const [students, setStudents] = useState([])
@@ -74,6 +75,22 @@ export default function AdminPanel() {
   const [sortDir, setSortDir] = useState('desc')
   const [expanded, setExpanded] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
+
+  // Restore data after a refresh when the session is still valid
+  useEffect(() => { if (auth) load() }, [])
+
+  function signIn(entered) {
+    if (entered !== 'gcbuddy2025') { alert('Wrong password'); return }
+    writeAuth('admin', true)
+    setAuth(true)
+    load()
+  }
+
+  function signOut() {
+    writeAuth('admin', false)
+    setAuth(false)
+    setPw('')
+  }
 
   async function load() {
     setLoading(true)
@@ -129,9 +146,9 @@ export default function AdminPanel() {
         <div style={{ fontSize: 36, marginBottom: 10 }}>🛡️</div>
         <h2 style={{ fontSize: 17, fontWeight: 700, color: C.navy, marginBottom: 4 }}>Coordinator Dashboard</h2>
         <p style={{ fontSize: 11, color: C.textS, marginBottom: 14 }}>GC Buddy Analytics</p>
-        <Inp val={pw} set={setPw} ph="Admin password" type="password" style={{ marginBottom: 9 }}
-          onKeyDown={e => { if (e.key === 'Enter' && pw === 'gcbuddy2025') { setAuth(true); load() } }}/>
-        <Btn label="Login" onClick={() => { if (pw === 'gcbuddy2025') { setAuth(true); load() } else alert('Wrong password') }} variant="primary" style={{ width: '100%' }}/>
+        <Inp val={pw} set={setPw} ph="Admin password" type="password" style={{ marginBottom: 9 }} autoFocus
+          onKeyDown={e => { if (e.key === 'Enter') signIn(pw) }}/>
+        <Btn label="Login" onClick={() => signIn(pw)} variant="primary" style={{ width: '100%' }}/>
         <div style={{ marginTop: 10 }}><a href="/" style={{ color: C.blue, fontSize: 11 }}>← Back to App</a></div>
       </div>
     </div>
@@ -218,6 +235,7 @@ export default function AdminPanel() {
       <div style={{ background: C.navy, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           <div style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>🛡️ GC Buddy — Coordinator Dashboard</div>
+          <button onClick={signOut} style={{ marginLeft: 'auto', border: '1px solid rgba(255,255,255,.3)', background: 'transparent', color: 'rgba(255,255,255,.85)', borderRadius: 7, padding: '5px 11px', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Log out</button>
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)' }}>{students.length} students enrolled · Avg engagement: {avgEng}/100</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
