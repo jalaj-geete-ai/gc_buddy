@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { readAuth, writeAuth } from '../../lib/adminAuth'
+import { readAuth, writeAuth, watchAuthExpiry, expiryLabel } from '../../lib/adminAuth'
 import { C, CURRICULUM, LEVELS } from '../../lib/constants'
 import { Btn, Inp, Spin, PBar, Badge } from '../../components/UI'
 import { sb } from '../../lib/supabase'
@@ -65,6 +65,7 @@ const TABS = [
 export default function AdminPanel() {
   const [auth, setAuth] = useState(() => readAuth('admin'))
   const [pw, setPw] = useState('')
+  const [, setTick] = useState(0)
   const [tab, setTab] = useState('overview')
   const [students, setStudents] = useState([])
   const [testSubs, setTestSubs] = useState([])
@@ -78,6 +79,14 @@ export default function AdminPanel() {
 
   // Restore data after a refresh when the session is still valid
   useEffect(() => { if (auth) load() }, [])
+
+  // Auto sign-out when the 24h staff session elapses, even on an idle tab
+  useEffect(() => {
+    if (!auth) return
+    const stop = watchAuthExpiry('admin', () => { setAuth(false); setPw('') })
+    const t = setInterval(() => setTick(n => n + 1), 60000)
+    return () => { stop(); clearInterval(t) }
+  }, [auth])
 
   function signIn(entered) {
     if (entered !== 'gcbuddy2025') { alert('Wrong password'); return }
@@ -235,7 +244,8 @@ export default function AdminPanel() {
       <div style={{ background: C.navy, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           <div style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>🛡️ GC Buddy — Coordinator Dashboard</div>
-          <button onClick={signOut} style={{ marginLeft: 'auto', border: '1px solid rgba(255,255,255,.3)', background: 'transparent', color: 'rgba(255,255,255,.85)', borderRadius: 7, padding: '5px 11px', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Log out</button>
+          <span style={{fontSize:9,color:'rgba(255,255,255,.5)',marginLeft:'auto',marginRight:8}} title="Staff sessions end 24 hours after sign-in">{expiryLabel('admin')}</span>
+          <button onClick={signOut} style={{ border: '1px solid rgba(255,255,255,.3)', background: 'transparent', color: 'rgba(255,255,255,.85)', borderRadius: 7, padding: '5px 11px', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>Log out</button>
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)' }}>{students.length} students enrolled · Avg engagement: {avgEng}/100</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

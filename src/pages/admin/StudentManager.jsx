@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { readAuth, writeAuth } from '../../lib/adminAuth'
+import { readAuth, writeAuth, watchAuthExpiry, expiryLabel } from '../../lib/adminAuth'
 import { C } from '../../lib/constants'
 import { Btn, Inp, Spin } from '../../components/UI'
 import { sb } from '../../lib/supabase'
@@ -7,6 +7,7 @@ import { sb } from '../../lib/supabase'
 export default function StudentManager() {
   const [auth,setAuth]=useState(()=>readAuth('students'))
   const [pw,setPw]=useState('')
+  const [,setTick]=useState(0)
   const [students,setStudents]=useState([])
   const [loading,setLoading]=useState(false)
   const [tab,setTab]=useState('list')
@@ -20,6 +21,14 @@ export default function StudentManager() {
   const [uploading,setUploading]=useState(false)
 
   useEffect(()=>{ if(auth) loadStudents() },[])
+
+  // Auto sign-out when the 24h staff session elapses, even on an idle tab
+  useEffect(()=>{
+    if(!auth) return
+    const stop = watchAuthExpiry('students',()=>{setAuth(false);setPw('')})
+    const t = setInterval(() => setTick(n => n + 1), 60000)
+    return () => { stop(); clearInterval(t) }
+  },[auth])
 
   function signIn(entered){
     if(entered!=='gcbuddy2025'){ alert('Wrong password'); return }
@@ -99,7 +108,8 @@ export default function StudentManager() {
     <div style={{minHeight:'100vh',background:C.bg,display:'flex',flexDirection:'column'}}>
       <div style={{background:C.navy,padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div><div style={{fontWeight:700,color:'#fff',fontSize:14}}>👥 Student Manager</div><div style={{fontSize:9,color:'rgba(255,255,255,.4)'}}>{students.length} enrolled</div></div>
-        <button onClick={signOut} style={{marginLeft:'auto',border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
+        <span style={{fontSize:9,color:'rgba(255,255,255,.5)',marginLeft:'auto',marginRight:8}} title="Staff sessions end 24 hours after sign-in">{expiryLabel('students')}</span>
+        <button onClick={signOut} style={{border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
         <div style={{display:'flex',gap:10,alignItems:'center'}}>
           <Btn label="⬇️ Export" onClick={exportCSV} variant="outline" size="sm" style={{color:'#fff',borderColor:'rgba(255,255,255,.3)'}}/>
           <a href="/" style={{color:C.blueM,fontSize:11,textDecoration:'none'}}>← App</a>

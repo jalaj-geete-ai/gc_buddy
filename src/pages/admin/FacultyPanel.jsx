@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { readAuth, writeAuth } from '../../lib/adminAuth'
+import { readAuth, writeAuth, watchAuthExpiry, expiryLabel } from '../../lib/adminAuth'
 import { C } from '../../lib/constants'
 import { Btn, Inp, Spin } from '../../components/UI'
 import { sb } from '../../lib/supabase'
@@ -7,6 +7,7 @@ import { sb } from '../../lib/supabase'
 export default function FacultyPanel() {
   const [auth,setAuth]=useState(()=>readAuth('faculty'))
   const [pw,setPw]=useState('')
+  const [,setTick]=useState(0)
   const [tab,setTab]=useState('attendance')
   const [students,setStudents]=useState([])
   const [att,setAtt]=useState({})
@@ -18,6 +19,14 @@ export default function FacultyPanel() {
   const [msg,setMsg]=useState({text:'',type:''})
 
   useEffect(()=>{ if(auth) loadStudents() },[])
+
+  // Auto sign-out when the 24h staff session elapses, even on an idle tab
+  useEffect(()=>{
+    if(!auth) return
+    const stop = watchAuthExpiry('faculty',()=>{setAuth(false);setPw('')})
+    const t = setInterval(() => setTick(n => n + 1), 60000)
+    return () => { stop(); clearInterval(t) }
+  },[auth])
 
   function signIn(entered){
     if(entered!=='gcfaculty2025'){ alert('Wrong password'); return }
@@ -86,7 +95,8 @@ export default function FacultyPanel() {
     <div style={{minHeight:'100vh',background:C.bg,display:'flex',flexDirection:'column'}}>
       <div style={{background:C.navy,padding:'11px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
         <div style={{fontWeight:700,color:'#fff',fontSize:14}}>👩‍🏫 Faculty Portal</div>
-        <button onClick={signOut} style={{marginLeft:'auto',border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
+        <span style={{fontSize:9,color:'rgba(255,255,255,.5)',marginLeft:'auto',marginRight:8}} title="Staff sessions end 24 hours after sign-in">{expiryLabel('faculty')}</span>
+        <button onClick={signOut} style={{border:'1px solid rgba(255,255,255,.3)',background:'transparent',color:'rgba(255,255,255,.85)',borderRadius:7,padding:'5px 11px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>Log out</button>
         <a href="/" style={{color:C.blueM,fontSize:11,textDecoration:'none'}}>← App</a>
       </div>
       {msg.text&&<div style={{background:msg.type==='error'?C.redL:C.greenL,color:msg.type==='error'?C.red:C.green,padding:'9px 20px',fontSize:12,fontWeight:600}}>{msg.text}</div>}
