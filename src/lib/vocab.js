@@ -34,69 +34,13 @@ export function dueDateFor(box) {
   return addDays(INTERVALS[Math.min(box, INTERVALS.length - 1)])
 }
 
-// ── Audio: German pronunciation, female voice preferred ──────────────────────
-// Voice names vary by platform. Anna ships on iOS, Katja/Hedda on Windows,
-// Google Deutsch on Android/Chrome. We match by name first, then fall back to
-// any de-DE voice, then any German-language voice at all.
-const FEMALE_HINTS = [
-  /anna/i, /katja/i, /hedda/i, /petra/i, /marlene/i, /vicki/i,
-  /google\s*deutsch/i, /\bfemale\b/i,
-]
-
-export function germanVoices() {
-  const synth = typeof window !== 'undefined' && window.speechSynthesis
-  if (!synth || !synth.getVoices) return []
-  return synth.getVoices().filter(v => (v.lang || '').toLowerCase().startsWith('de'))
-}
-
-export function pickGermanVoice() {
-  const de = germanVoices()
-  if (!de.length) return null
-  for (const re of FEMALE_HINTS) {
-    const hit = de.find(v => re.test(v.name || ''))
-    if (hit) return hit
-  }
-  return de.find(v => /^de[-_]DE$/i.test(v.lang || '')) || de[0]
-}
-
-// 'ok' — a real German voice is installed.
-// 'missing' — none found; the browser would read German with an English voice,
-//   which teaches wrong pronunciation, so the UI warns instead.
-// 'unsupported' — no speechSynthesis at all.
-export function voiceStatus() {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return 'unsupported'
-  return germanVoices().length ? 'ok' : 'missing'
-}
-
-// Voices load asynchronously on most browsers. Call this once on mount and
-// re-check when the list arrives, instead of guessing with a timeout.
-export function onVoicesReady(cb) {
-  const synth = typeof window !== 'undefined' && window.speechSynthesis
-  if (!synth) return () => {}
-  synth.getVoices()
-  const handler = () => cb()
-  synth.addEventListener?.('voiceschanged', handler)
-  return () => synth.removeEventListener?.('voiceschanged', handler)
-}
-
-export function speakDe(text, rate = 0.85) {
-  const synth = typeof window !== 'undefined' && window.speechSynthesis
-  if (!synth || !text) return false
-  try {
-    synth.cancel()
-    const u = new SpeechSynthesisUtterance(String(text))
-    u.lang = 'de-DE'
-    u.rate = rate
-    u.pitch = 1.05
-    const v = pickGermanVoice()
-    if (v) u.voice = v
-    u.onerror = () => {}
-    synth.speak(u)
-    return !!v
-  } catch {
-    return false
-  }
-}
+// ── Audio ────────────────────────────────────────────────────────────────────
+// Lives in ./tts so ListeningPage and VocabPage share one hardened
+// implementation. Re-exported here so existing imports keep working.
+export {
+  speakDe, voiceStatus, onVoicesReady, pickGermanVoice,
+  germanVoices, cancelSpeech, ttsAvailable,
+} from './tts'
 
 // ── Word bank ────────────────────────────────────────────────────────────────
 // Ships as a static asset rather than in the bundle (235 kB would nearly

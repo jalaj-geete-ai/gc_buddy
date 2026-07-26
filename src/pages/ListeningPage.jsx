@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { C } from '../lib/constants'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
+import { speakDe, cancelSpeech, ttsAvailable, voiceStatus, onVoicesReady } from '../lib/tts'
 
 // 200 phrases per level
 const PH = {
@@ -562,69 +563,57 @@ B2:[
 export default function ListeningPage({ user }) {
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const synthRef = useRef(null)
+  const [ttsMsg, setTtsMsg] = useState(null)
   const phrases = PH[user?.level] || PH.A1
+
+  useEffect(() => {
+    const check = () => setTtsMsg(voiceStatus() === 'ok' ? null : voiceStatus())
+    check()
+    return onVoicesReady(check)
+  }, [])
   const ph = phrases[Math.min(cur, phrases.length - 1)]
 
-  // Mobile-safe TTS
+  // Mobile-safe TTS.
+  // Android WebView has no speechSynthesis at all, so every call below goes
+  // through the guarded helpers in lib/tts — an unguarded window.speechSynthesis
+  // access here previously threw and killed every button on the page.
   function speak(rate = 0.85) {
-    // Must cancel on same user gesture
-    window.speechSynthesis.cancel()
+    if (!ttsAvailable()) {
+      setTtsMsg('unsupported')
+      return
+    }
+    cancelSpeech()
 
     const doSpeak = () => {
-      const u = new SpeechSynthesisUtterance(ph.de)
-      u.lang = 'de-DE'
-      u.rate = rate
-      u.pitch = 1.0
-      u.volume = 1.0
-
-      // Try to find German voice
-      const voices = window.speechSynthesis.getVoices()
-      const deVoice = voices.find(v => v.lang && v.lang.startsWith('de'))
-      if (deVoice) u.voice = deVoice
-
-      u.onstart = () => setPlaying(true)
-      u.onend = () => setPlaying(false)
-      u.onerror = (e) => {
-        setPlaying(false)
-        // Retry once for interrupted errors
-        if (e.error === 'interrupted' || e.error === 'canceled') {
-          setTimeout(() => {
-            const u2 = new SpeechSynthesisUtterance(ph.de)
-            u2.lang = 'de-DE'; u2.rate = rate; u2.pitch = 1; u2.volume = 1
-            if (deVoice) u2.voice = deVoice
-            u2.onend = () => setPlaying(false)
-            window.speechSynthesis.speak(u2)
-          }, 400)
-        }
-      }
-
-      // iOS Safari requires voices to be loaded first
-      if (voices.length === 0) {
-        window.speechSynthesis.onvoiceschanged = () => {
-          const v2 = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('de'))
-          if (v2) u.voice = v2
-          window.speechSynthesis.speak(u)
-        }
-      } else {
-        window.speechSynthesis.speak(u)
-      }
+      const started = speakDe(ph.de, rate, {
+        onStart: () => setPlaying(true),
+        onEnd: () => setPlaying(false),
+        onError: (err) => {
+          // Retry once — mobile engines often report the first utterance as
+          // interrupted when it follows a cancel().
+          if (err === 'interrupted' || err === 'canceled') {
+            setTimeout(() => speakDe(ph.de, rate, { onEnd: () => setPlaying(false) }), 400)
+          }
+        },
+      })
+      if (!started) setTtsMsg('missing')
     }
 
-    // Short delay to let cancel() complete (critical on mobile)
+    // Short delay to let cancel() settle (matters on mobile engines)
     setTimeout(doSpeak, 150)
 
     trackEvent(user?.rollNumber, 'listening_play', 'listening', `Phrase ${cur + 1}`, user?.level)
   }
 
   function stopSpeaking() {
-    window.speechSynthesis.cancel()
+    cancelSpeech()
     setPlaying(false)
   }
 
   function goTo(i) {
-    stopSpeaking()
+    // Move first: navigation must never depend on the speech engine.
     setCur(i)
+    stopSpeaking()
   }
 
   return (
@@ -669,15 +658,33 @@ export default function ListeningPage({ user }) {
         </button>
       </div>
 
-      {/* Tips for mobile */}
-      <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Mobile Tips</div>
-        <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-          • Tap <strong>🔊 Normal Speed</strong> to play — make sure your volume is on<br />
-          • If no audio: check Silent mode is OFF · Try Chrome browser<br />
-          • Tap once on the phrase card before pressing play (iOS fix)
+      {/* Audio status — explains silence instead of leaving students guessing */}
+      {ttsMsg === 'unsupported' ? (
+        <div style={{ background: C.redL, border: `1px solid ${C.red}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, marginBottom: 4 }}>🔇 Audio not available here</div>
+          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+            This app view cannot play speech. Open <strong>gcbuddyai.pages.dev</strong> in Chrome
+            to hear the phrases. You can still read and practise them here — the buttons below work normally.
+          </div>
         </div>
-      </div>
+      ) : ttsMsg === 'missing' ? (
+        <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>⚠️ German voice not installed</div>
+          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+            Android: Settings → System → Languages → Text-to-speech → install German.<br />
+            iPhone: Settings → Accessibility → Spoken Content → Voices → German.
+          </div>
+        </div>
+      ) : (
+        <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Mobile Tips</div>
+          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+            • Tap <strong>🔊 Normal Speed</strong> to play — make sure your volume is on<br />
+            • If no audio: check Silent mode is OFF · Try Chrome browser<br />
+            • Tap once on the phrase card before pressing play (iOS fix)
+          </div>
+        </div>
+      )}
 
       {/* Jump grid */}
       <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 14px' }}>

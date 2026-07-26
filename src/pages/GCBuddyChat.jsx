@@ -4,6 +4,7 @@ import { Spin } from '../components/UI'
 import { gcBuddyChat } from '../lib/gemini'
 import { buildPrompt, INTENT_LABELS } from '../lib/gcBuddyPrompt'
 import { trackEvent } from '../lib/supabase'
+import { speakDe as speakDE_, cancelSpeech } from '../lib/tts'
 
 function renderMsg(text) {
   return text
@@ -16,15 +17,8 @@ function renderMsg(text) {
 
 function speakDE(text) {
   const clean = text.replace(/<[^>]+>/g,'').replace(/\*+/g,'')
-  window.speechSynthesis.cancel()
-  setTimeout(()=>{
-    const u = new SpeechSynthesisUtterance(clean)
-    u.lang='de-DE';u.rate=0.85
-    const v = window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('de'))
-    if(v) u.voice=v
-    u.onerror=()=>{}
-    window.speechSynthesis.speak(u)
-  },100)
+  cancelSpeech()
+  setTimeout(() => speakDE_(clean, 0.85), 100)
 }
 
 const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
@@ -63,7 +57,7 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
   }
 
   function handleSpeak(i,content) {
-    if(speaking===i){window.speechSynthesis.cancel();setSpeaking(null);return}
+    if(speaking===i){cancelSpeech();setSpeaking(null);return}
     setSpeaking(i);speakDE(content)
     setTimeout(()=>setSpeaking(null),Math.min(content.length*80,15000))
   }

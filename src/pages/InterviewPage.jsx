@@ -3,6 +3,7 @@ import { C, CURRICULUM } from '../lib/constants'
 import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { ai } from '../lib/gemini'
 import { trackEvent } from '../lib/supabase'
+import { speakDe, cancelSpeech } from '../lib/tts'
 
 // ── 50+ QUESTIONS PER CATEGORY ────────────────────────────────────────────────
 const QB = {
@@ -254,14 +255,8 @@ export default function InterviewPage({ user, completedTopics, onAddScore }) {
   }
 
   function speakDE(text) {
-    window.speechSynthesis.cancel()
-    setTimeout(() => {
-      const u = new SpeechSynthesisUtterance(text)
-      u.lang = 'de-DE'; u.rate = 0.8
-      const v = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('de'))
-      if (v) u.voice = v
-      window.speechSynthesis.speak(u)
-    }, 150)
+    cancelSpeech()
+    setTimeout(() => speakDe(text, 0.8), 150)
   }
 
   function startRec() {
@@ -386,7 +381,7 @@ export default function InterviewPage({ user, completedTopics, onAddScore }) {
     return (
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, alignItems: 'center' }}>
-          <Btn label="← Back" onClick={() => { window.speechSynthesis.cancel(); setPhase('select') }} variant="ghost" size="sm" />
+          <Btn label="← Back" onClick={() => { setPhase('select'); cancelSpeech() }} variant="ghost" size="sm" />
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 10, color: C.textS }}>Q{cur + 1} / {qs.length}</div>
             <div style={{ fontSize: 9, color: C.textS }}>{typeInfo?.title.slice(3)}</div>
