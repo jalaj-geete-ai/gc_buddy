@@ -88,6 +88,14 @@ export function playClip(src, opts = {}) {
   try {
     const a = new Audio(src)
     a.preload = 'auto'
+    // Preserve pitch when slowing down. Without this some engines drop the
+    // pitch along with the rate, which turns the female voice male-sounding
+    // exactly when a learner is listening most carefully.
+    try {
+      a.preservesPitch = true
+      a.mozPreservesPitch = true
+      a.webkitPreservesPitch = true
+    } catch { /* not supported everywhere; harmless */ }
     try { a.playbackRate = rate } catch { /* some engines refuse; not fatal */ }
     currentAudio = a
     a.onplaying = () => onStart?.()
