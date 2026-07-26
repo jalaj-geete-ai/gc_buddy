@@ -62,7 +62,65 @@ export function cancelSpeech() {
   try { s.cancel(); return true } catch { return false }
 }
 
-// Returns true only if speech actually started with a German voice.
+// ── Pre-generated audio clips ────────────────────────────────────────────────
+// The reliable path. Plain <audio> works in every browser AND in Android
+// WebView, where the Web Speech API does not exist at all. Clips are generated
+// with a German female voice and shipped under public/audio.
+
+let currentAudio = null
+
+export function stopAudio() {
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0 } catch { /* noop */ }
+    currentAudio = null
+  }
+}
+
+export function stopAll() {
+  stopAudio()
+  cancelSpeech()
+}
+
+export function playClip(src, opts = {}) {
+  const { onStart, onEnd, onFail, rate = 1 } = opts
+  stopAll()
+  if (typeof Audio === 'undefined') { onFail?.('unsupported'); return false }
+  try {
+    const a = new Audio(src)
+    a.preload = 'auto'
+    try { a.playbackRate = rate } catch { /* some engines refuse; not fatal */ }
+    currentAudio = a
+    a.onplaying = () => onStart?.()
+    a.onended = () => { currentAudio = null; onEnd?.() }
+    a.onerror = () => { currentAudio = null; onFail?.('missing') }
+    const p = a.play()
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => { currentAudio = null; onFail?.('blocked') })
+    }
+    return true
+  } catch {
+    onFail?.('unsupported')
+    return false
+  }
+}
+
+// Play a clip if we have one, otherwise fall back to the speech engine.
+// Returns nothing; use handlers to react.
+export function playGerman(src, text, opts = {}) {
+  const { onStart, onEnd, onFail, rate = 1 } = opts
+  const viaSpeech = () => {
+    const started = speakDe(text, rate * 0.85, {
+      onStart, onEnd,
+      onFail: () => onFail?.('unavailable'),
+    })
+    if (!started && !ttsAvailable()) onFail?.('unavailable')
+  }
+  if (!src) return viaSpeech()
+  playClip(src, { onStart, onEnd, rate, onFail: viaSpeech })
+}
+
+export const clipUrlWord = (id) => `/audio/w/${id}.mp3`
+export const clipUrlPhrase = (level, i) => `/audio/ph/${level}-${i}.mp3`
 export function speakDe(text, rate = 0.85, handlers = {}) {
   const s = synth()
   if (!s || !text) { handlers.onFail?.('unsupported'); return false }

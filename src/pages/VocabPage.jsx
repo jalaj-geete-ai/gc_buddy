@@ -5,9 +5,10 @@ import { trackEvent } from '../lib/supabase'
 import {
   loadVocabBank, loadVocabProgress, rateWord, saveVocabState,
   wordsForDay, allWords, dueWordIds, masteredCount, remainingToday,
-  nextDayNumber, speakDe, voiceStatus, onVoicesReady, today, wordsToday,
+  nextDayNumber, today, wordsToday,
   MAX_BOX, TOTAL_DAYS, MILESTONES, WORDS_PER_SET, MAX_WORDS_PER_DAY,
 } from '../lib/vocab'
+import { playGerman, stopAll, clipUrlWord } from '../lib/tts'
 
 const shuffle = a => [...a].sort(() => Math.random() - 0.5)
 
@@ -24,12 +25,13 @@ function Ring({ pct, size = 62 }) {
   )
 }
 
-function Speaker({ text, size = 'md' }) {
+function Speaker({ text, id, size = 'md' }) {
   const s = size === 'sm'
     ? { padding: '3px 7px', fontSize: 10 }
     : { padding: '6px 12px', fontSize: 13 }
   return (
-    <button onClick={e => { e.stopPropagation(); speakDe(text) }} title="Hear it in German"
+    <button title="Hear it in German"
+      onClick={e => { e.stopPropagation(); playGerman(id ? clipUrlWord(id) : null, text) }}
       style={{ ...s, border: 'none', background: C.blueL, color: C.blue, borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}>
       🔊
     </button>
@@ -61,7 +63,7 @@ function WordRow({ w, rec }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: tone }} />
-        <Speaker text={w.de} size="sm" />
+        <Speaker text={w.de} id={w.i} size="sm" />
       </div>
     </div>
   )
@@ -75,7 +77,6 @@ export default function VocabPage({ user }) {
   const [vstate, setVstate] = useState(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
-  const [voice, setVoice] = useState('ok')
 
   const [view, setView] = useState('today')
   const [session, setSession] = useState(null)   // { mode:'new'|'review', day, words }
@@ -101,10 +102,9 @@ export default function VocabPage({ user }) {
     return () => { alive = false }
   }, [roll])
 
-  useEffect(() => {
-    setVoice(voiceStatus())
-    return onVoicesReady(() => setVoice(voiceStatus()))
-  }, [])
+  useEffect(() => stopAll, [])
+
+
 
   const dueIds = useMemo(() => dueWordIds(prog), [prog])
   const mastered = useMemo(() => masteredCount(prog), [prog])
@@ -196,7 +196,7 @@ export default function VocabPage({ user }) {
               <div style={{ fontSize: 24, fontWeight: 700, color: C.navy, textAlign: 'center' }}>{w.de}</div>
               {w.pl && <div style={{ fontSize: 11, color: C.textS, marginTop: 3 }}>plural: {w.pl}</div>}
               {w.p && <div style={{ fontSize: 9, color: C.blue, background: C.blueL, padding: '2px 8px', borderRadius: 9, marginTop: 8 }}>{w.p}</div>}
-              <div style={{ marginTop: 14 }}><Speaker text={w.de} /></div>
+              <div style={{ marginTop: 14 }}><Speaker text={w.de} id={w.i} /></div>
             </>
           ) : (
             <>
@@ -228,7 +228,7 @@ export default function VocabPage({ user }) {
           onQuit={() => { setSession(null); setView('today') }} />
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 15, padding: '30px 20px', minHeight: 190, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: C.sh, marginBottom: 12 }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: C.navy, textAlign: 'center' }}>{w.de}</div>
-          <div style={{ marginTop: 12 }}><Speaker text={w.de} /></div>
+          <div style={{ marginTop: 12 }}><Speaker text={w.de} id={w.i} /></div>
           {revealed && (
             <div style={{ marginTop: 16, textAlign: 'center', borderTop: `1px solid ${C.border}`, paddingTop: 14, width: '100%' }}>
               <div style={{ fontSize: 16, fontWeight: 600, color: C.green }}>{w.en}</div>
@@ -305,7 +305,7 @@ export default function VocabPage({ user }) {
           <div style={{ fontSize: 10, color: C.textS, marginBottom: 8 }}>{q.label}</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: C.navy, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ flex: 1 }}>{q.prompt}</span>
-            {q.speak && <Speaker text={q.speak} />}
+            {q.speak && <Speaker text={q.speak} id={q.speakId} />}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 12 }}>
             {q.opts.map((o, i) => {
@@ -367,17 +367,6 @@ export default function VocabPage({ user }) {
     <div style={wrap}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>🔤 Daily Vocabulary</h2>
       <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>10 words a set · up to {MAX_WORDS_PER_DAY} a day · A1 &amp; A2</p>
-
-      {voice !== 'ok' && (
-        <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.amber, marginBottom: 3 }}>⚠️ German voice not found on this device</div>
-          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-            {voice === 'unsupported'
-              ? 'This browser does not support speech. Try Chrome on Android or Safari on iPhone.'
-              : 'Audio will sound wrong until German is installed. On Android: Settings → System → Languages → Text-to-speech → install German. On iPhone: Settings → Accessibility → Spoken Content → Voices → German.'}
-          </div>
-        </div>
-      )}
 
       {/* Today card */}
       <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '16px 16px', marginBottom: 12, boxShadow: C.sh }}>
@@ -519,7 +508,7 @@ function buildQuiz(words, bank) {
     const kind = n % 3
     if (kind === 0) {
       const opts = shuffle([w, ...pick(w, 'en')])
-      return { label: 'What does this mean?', prompt: w.de, speak: w.de,
+      return { label: 'What does this mean?', prompt: w.de, speak: w.de, speakId: w.i,
         opts: opts.map(o => o.en), ans: opts.findIndex(o => o.i === w.i) }
     }
     if (kind === 1) {
@@ -528,7 +517,7 @@ function buildQuiz(words, bank) {
         opts: opts.map(o => o.de), ans: opts.findIndex(o => o.i === w.i) }
     }
     const opts = shuffle([w, ...pick(w, 'de')])
-    return { label: 'Listen and choose', prompt: '🔊 Tap the speaker, then pick what you heard', speak: w.de,
+    return { label: 'Listen and choose', prompt: '🔊 Tap the speaker, then pick what you heard', speak: w.de, speakId: w.i,
       opts: opts.map(o => o.de), ans: opts.findIndex(o => o.i === w.i) }
   })
 

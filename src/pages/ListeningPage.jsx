@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { C } from '../lib/constants'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
-import { speakDe, cancelSpeech, ttsAvailable, voiceStatus, onVoicesReady } from '../lib/tts'
+import { playGerman, stopAll, clipUrlPhrase } from '../lib/tts'
 
 // 200 phrases per level
 const PH = {
@@ -564,49 +564,30 @@ export default function ListeningPage({ user }) {
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [ttsMsg, setTtsMsg] = useState(null)
-  const phrases = PH[user?.level] || PH.A1
-
-  useEffect(() => {
-    const check = () => setTtsMsg(voiceStatus() === 'ok' ? null : voiceStatus())
-    check()
-    return onVoicesReady(check)
-  }, [])
+  const lvl = PH[user?.level] ? user.level : 'A1'
+  const phrases = PH[lvl]
   const ph = phrases[Math.min(cur, phrases.length - 1)]
 
-  // Mobile-safe TTS.
-  // Android WebView has no speechSynthesis at all, so every call below goes
-  // through the guarded helpers in lib/tts — an unguarded window.speechSynthesis
-  // access here previously threw and killed every button on the page.
-  function speak(rate = 0.85) {
-    if (!ttsAvailable()) {
-      setTtsMsg('unsupported')
-      return
-    }
-    cancelSpeech()
+  // Stop any clip when leaving the page
+  useEffect(() => stopAll, [])
 
-    const doSpeak = () => {
-      const started = speakDe(ph.de, rate, {
-        onStart: () => setPlaying(true),
-        onEnd: () => setPlaying(false),
-        onError: (err) => {
-          // Retry once — mobile engines often report the first utterance as
-          // interrupted when it follows a cancel().
-          if (err === 'interrupted' || err === 'canceled') {
-            setTimeout(() => speakDe(ph.de, rate, { onEnd: () => setPlaying(false) }), 400)
-          }
-        },
-      })
-      if (!started) setTtsMsg('missing')
-    }
-
-    // Short delay to let cancel() settle (matters on mobile engines)
-    setTimeout(doSpeak, 150)
-
+  // Audio playback.
+  // Plays the pre-generated German clip shipped in public/audio — this works
+  // in Android WebView, which has no Web Speech API at all. The speech engine
+  // is only a fallback for anything without a clip.
+  function speak(rate = 1) {
+    setTtsMsg(null)
+    playGerman(clipUrlPhrase(lvl, cur), ph.de, {
+      rate,
+      onStart: () => setPlaying(true),
+      onEnd: () => setPlaying(false),
+      onFail: () => { setPlaying(false); setTtsMsg('unavailable') },
+    })
     trackEvent(user?.rollNumber, 'listening_play', 'listening', `Phrase ${cur + 1}`, user?.level)
   }
 
   function stopSpeaking() {
-    cancelSpeech()
+    stopAll()
     setPlaying(false)
   }
 
@@ -635,12 +616,12 @@ export default function ListeningPage({ user }) {
       {/* Audio controls — big tap targets for mobile */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={playing ? stopSpeaking : () => speak(0.85)}
+          onClick={playing ? stopSpeaking : () => speak(1)}
           style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: 'none', background: playing ? C.red : C.blue, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           {playing ? '⏹ Stop' : '🔊 Normal Speed'}
         </button>
         <button
-          onClick={() => speak(0.6)}
+          onClick={() => speak(0.75)}
           style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${C.border}`, background: '#fff', color: C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           🐢 Slow
         </button>
@@ -658,30 +639,21 @@ export default function ListeningPage({ user }) {
         </button>
       </div>
 
-      {/* Audio status — explains silence instead of leaving students guessing */}
-      {ttsMsg === 'unsupported' ? (
+      {ttsMsg === 'unavailable' ? (
         <div style={{ background: C.redL, border: `1px solid ${C.red}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, marginBottom: 4 }}>🔇 Audio not available here</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, marginBottom: 4 }}>🔇 Could not play audio</div>
           <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-            This app view cannot play speech. Open <strong>gcbuddyai.pages.dev</strong> in Chrome
-            to hear the phrases. You can still read and practise them here — the buttons below work normally.
-          </div>
-        </div>
-      ) : ttsMsg === 'missing' ? (
-        <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>⚠️ German voice not installed</div>
-          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-            Android: Settings → System → Languages → Text-to-speech → install German.<br />
-            iPhone: Settings → Accessibility → Spoken Content → Voices → German.
+            Check that your volume is up and Silent mode is off, then tap play again.
+            If it still fails, close and reopen the app.
           </div>
         </div>
       ) : (
         <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Mobile Tips</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Listening Tips</div>
           <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
             • Tap <strong>🔊 Normal Speed</strong> to play — make sure your volume is on<br />
-            • If no audio: check Silent mode is OFF · Try Chrome browser<br />
-            • Tap once on the phrase card before pressing play (iOS fix)
+            • Use <strong>🐢 Slow</strong> to hear each sound clearly, then repeat aloud<br />
+            • Recorded in a German female voice — no setup needed
           </div>
         </div>
       )}
