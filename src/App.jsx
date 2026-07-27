@@ -62,13 +62,15 @@ export default function App() {
         name:user.name, email:user.email, level:user.level,
         completed_topics:completedTopics, exercise_scores:exerciseScores,
       })
-      // Sync updated streak back into progress state so UI reflects it immediately
-      if (newStreak !== undefined) setProgress(p => ({ ...p, streak: newStreak }))
+      // Sync updated streak AND last_active back into progress state so the
+      // streak card computes its countdown from now, not the stale DB value
+      // (otherwise a just-refreshed streak wrongly shows "0h left / expires in 0h").
+      if (newStreak !== undefined) setProgress(p => ({ ...p, streak: newStreak, last_active: new Date().toISOString() }))
     }, 1500)
     return () => clearTimeout(t)
   }, [completedTopics, exerciseScores, user, screen])
 
-  // ── LEVEL UP CHECK ────────────────────────────────────────────
+  // ── LEVEL UP CHECK ───────────────────────────────────────────
   // Called after every test submission. A test counts as "cleared" at ≥60%;
   // clearing ≥90% of the level's tests promotes the student to the next level.
   async function checkLevelUp(currentUser) {

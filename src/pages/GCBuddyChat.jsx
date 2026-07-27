@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { C } from '../lib/constants'
 import { Spin } from '../components/UI'
-import { gcBuddyChat } from '../lib/gemini'
+import { gcBuddyStream } from '../lib/gemini'
 import { buildPrompt, INTENT_LABELS } from '../lib/gcBuddyPrompt'
 import { trackEvent } from '../lib/supabase'
 import { speakDe as speakDE_, cancelSpeech } from '../lib/tts'
@@ -39,8 +39,12 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
 
   async function greet() {
     setLoading(true)
-    const r = await gcBuddyChat([{role:'user',content:'Daily Practice'}],sysPrompt)
-    setMsgs([{role:'assistant',content:r,time:now()}])
+    const stamp=now()
+    const r = await gcBuddyStream([{role:'user',content:'Daily Practice'}],sysPrompt,t=>{
+      setLoading(false)
+      setMsgs([{role:'assistant',content:t,time:stamp}])
+    })
+    setMsgs([{role:'assistant',content:r,time:stamp}])
     setLoading(false)
   }
 
@@ -51,8 +55,12 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
     const nm=[...msgs,um]
     setMsgs(nm);setInput('');setLoading(true)
     trackEvent(user?.rollNumber,'lena_message','gcbuddy',content.slice(0,50),user?.level)
-    const r=await gcBuddyChat(nm.map(m=>({role:m.role,content:m.content})),sysPrompt)
-    setMsgs([...nm,{role:'assistant',content:r,time:now()}])
+    const stamp=now()
+    const r=await gcBuddyStream(nm.map(m=>({role:m.role,content:m.content})),sysPrompt,t=>{
+      setLoading(false)
+      setMsgs([...nm,{role:'assistant',content:t,time:stamp}])
+    })
+    setMsgs([...nm,{role:'assistant',content:r,time:stamp}])
     setLoading(false)
   }
 

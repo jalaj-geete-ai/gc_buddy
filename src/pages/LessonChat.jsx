@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { C } from '../lib/constants'
 import { Btn, Spin, Badge } from '../components/UI'
-import { ai } from '../lib/gemini'
+import { aiStream } from '../lib/gemini'
 
 const render = t => t
   .replace(/\*\*([^*]+)\*\*/g,'<strong style="color:#0a2463;background:rgba(30,144,255,.08);padding:1px 5px;border-radius:4px">$1</strong>')
@@ -54,7 +54,10 @@ Formatting rules:
 - Keep language clear and practical
 - Always connect grammar rules to real nursing situations${flowContent}`
 
-    const r=await ai([{role:'user',content:`Please teach me: "${topic.title}" — ${topic.desc}`}],sys,2000)
+    const r=await aiStream([{role:'user',content:`Please teach me: "${topic.title}" — ${topic.desc}`}],sys,t=>{
+      setTyping(false)
+      setMsgs([{role:'assistant',content:t}])
+    },2000)
     setMsgs([{role:'assistant',content:r}]);setTyping(false)
   }
 
@@ -63,7 +66,10 @@ Formatting rules:
     const um={role:'user',content:input.trim()}
     const nm=[...msgs,um];setMsgs(nm);setInput('');setTyping(true)
     const sys=`You are teaching "${topic.title}" to ${user?.name} at ${level} level. Continue the lesson with nursing context. Answer questions clearly, give more examples if asked, and keep responses focused and practical. Use **German terms** and *English translations*.`
-    const r=await ai(nm.map(m=>({role:m.role,content:m.content})),sys,700)
+    const r=await aiStream(nm.map(m=>({role:m.role,content:m.content})),sys,t=>{
+      setTyping(false)
+      setMsgs([...nm,{role:'assistant',content:t}])
+    },700)
     setMsgs([...nm,{role:'assistant',content:r}]);setTyping(false)
   }
 
