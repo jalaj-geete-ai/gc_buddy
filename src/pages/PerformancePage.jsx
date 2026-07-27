@@ -28,11 +28,11 @@ function engagementScore({ testData, completedTopics, exerciseScores, lastActive
   return Math.min(100, activityPts + testPts + topicPts + exPts + streakPts)
 }
 
-function ScoreRing({ score, size = 80 }) {
+function ScoreRing({ score, size = 80, color: colorOverride }) {
   const r = (size / 2) - 8
   const circ = 2 * Math.PI * r
   const fill = (score / 100) * circ
-  const color = score >= 70 ? C.green : score >= 40 ? C.amber : C.red
+  const color = colorOverride || (score >= 70 ? C.green : score >= 40 ? C.amber : C.red)
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }}>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={C.border} strokeWidth={7}/>
@@ -121,8 +121,14 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
     testData, completedTopics: completedCount,
     exerciseScores: exScores, lastActive: progress?.last_active, streak
   })
-  const engColor = engScore >= 70 ? C.green : engScore >= 40 ? C.amber : C.red
-  const engLabel = engScore >= 70 ? 'Excellent' : engScore >= 40 ? 'Good' : 'Needs Attention'
+  // Brand-new / barely-started learners shouldn't be greeted with a red "needs
+  // attention" score — welcome them and frame the score as something that climbs.
+  const barelyStarted = testData.length === 0 && exScores.length === 0 && completedCount <= 1
+  const engColor = barelyStarted ? C.blue : engScore >= 70 ? C.green : engScore >= 40 ? C.amber : C.red
+  const engLabel = barelyStarted ? 'Getting Started' : engScore >= 70 ? 'Excellent' : engScore >= 40 ? 'Good' : 'Building Momentum'
+  const engBlurb = barelyStarted
+    ? 'Welcome! Complete your first lesson and Daily Test — your score climbs as you learn.'
+    : 'Based on your activity, test scores, topics completed, and consistency.'
 
   // Curriculum progress per level
   const levelProgress = LEVELS.map(lv => ({
@@ -171,11 +177,11 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
         <div>
           {/* Engagement score hero */}
           <div style={{ background:'#fff', borderRadius:14, border:`1px solid ${C.border}`, padding:'16px', marginBottom:12, display:'flex', alignItems:'center', gap:16 }}>
-            <ScoreRing score={engScore} size={90}/>
+            <ScoreRing score={engScore} size={90} color={engColor}/>
             <div style={{ flex:1 }}>
-              <div style={{ fontSize:13, fontWeight:700, color:engColor, marginBottom:3 }}>{engLabel} Engagement</div>
+              <div style={{ fontSize:13, fontWeight:700, color:engColor, marginBottom:3 }}>{engLabel}{barelyStarted ? '' : ' Engagement'}</div>
               <div style={{ fontSize:11, color:C.textM, marginBottom:8, lineHeight:1.5 }}>
-                Based on your activity, test scores, topics completed, and consistency.
+                {engBlurb}
               </div>
               <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                 {[
@@ -335,7 +341,7 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
           {/* Engagement score detail */}
           <div style={{ background:'#fff', borderRadius:13, border:`1px solid ${C.border}`, padding:'16px', marginBottom:12 }}>
             <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:14 }}>
-              <ScoreRing score={engScore} size={80}/>
+              <ScoreRing score={engScore} size={80} color={engColor}/>
               <div>
                 <div style={{ fontSize:14, fontWeight:700, color:engColor }}>{engLabel}</div>
                 <div style={{ fontSize:11, color:C.textS, marginTop:2 }}>Engagement score</div>
