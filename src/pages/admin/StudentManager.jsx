@@ -31,7 +31,7 @@ export default function StudentManager() {
   },[auth])
 
   function signIn(entered){
-    if(entered!=='gcbuddy2025'){ alert('Wrong password'); return }
+    if(entered!==import.meta.env.VITE_ADMIN_PASSWORD){ alert('Wrong password'); return }
     writeAuth('students',true); setAuth(true); loadStudents()
   }
 
