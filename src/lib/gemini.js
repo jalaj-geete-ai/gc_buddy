@@ -1,4 +1,4 @@
-const KEY = 'AIzaSyD9QQsv3cbAv22yCqQkV2TAzdjqJMurWsA'
+const KEY = import.meta.env.VITE_GEMINI_API_KEY
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 const MODELS = [
