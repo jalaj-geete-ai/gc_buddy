@@ -19,7 +19,7 @@ textarea:focus,input:focus{outline:none}
     z-index:200!important;overflow:hidden!important;overflow-x:auto!important}
   .nav-btn{flex-direction:column!important;gap:1px!important;padding:4px 2px!important;
     flex:1!important;border-left:none!important;border-bottom:3px solid transparent!important;
-    font-size:9px!important;min-width:52px!important}
+    font-size:10px!important;min-width:56px!important}
   .nav-btn.active{border-left:none!important;border-bottom:3px solid #1e90ff!important}
   .nav-icon{font-size:17px!important}
   .content-area{padding-bottom:64px!important}

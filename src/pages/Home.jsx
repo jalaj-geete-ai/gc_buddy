@@ -12,7 +12,7 @@ function ScheduleCard() {
   },[])
   return (
     <div style={{marginBottom:14}}>
-      <div style={{fontSize:10,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>📅 Your Schedule</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>📅 Your Schedule</div>
       <div style={{background:'#fff',borderRadius:12,border:`1px solid ${C.border}`,overflow:'hidden'}}>
         {loading?<div style={{padding:18,textAlign:'center'}}><Spin sz={18}/></div>
          :data.length===0?<div style={{padding:'18px 16px',textAlign:'center'}}><div style={{fontSize:20,marginBottom:5}}>📭</div><div style={{fontSize:12,color:C.textS}}>No schedule yet — faculty will add it soon.</div></div>
@@ -196,7 +196,7 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
         {[[`${streak}🔥`,'Streak'],[`${done}/${totalTopics}`,'Topics'],[avg?`${avg}%`:'--','Avg Score']].map(([v,l])=>(
           <div key={l} style={{background:'#fff',borderRadius:11,border:`1px solid ${C.border}`,padding:'11px 8px',textAlign:'center'}}>
             <div style={{fontSize:17,fontWeight:700,color:C.navy}}>{v}</div>
-            <div style={{fontSize:10,color:C.textS,marginTop:1}}>{l}</div>
+            <div style={{fontSize:11,color:C.textS,marginTop:1}}>{l}</div>
           </div>
         ))}
       </div>
@@ -206,7 +206,7 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
 
       {/* Up Next */}
       {nextTopics.length>0&&<div style={{marginBottom:13}}>
-        <div style={{fontSize:10,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>📚 Up Next</div>
+        <div style={{fontSize:11,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>📚 Up Next</div>
         {nextTopics.map(t=>(
           <div key={t.id} onClick={()=>onOpenLesson(t,user?.level)}
             style={{display:'flex',alignItems:'center',gap:10,padding:'10px 13px',background:'#fff',borderRadius:10,border:`1px solid ${C.border}`,marginBottom:6,cursor:'pointer',transition:'box-shadow .15s'}}
@@ -214,7 +214,7 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
             <span style={{fontSize:18,flexShrink:0}}>{t.icon}</span>
             <div style={{flex:1}}>
               <div style={{fontWeight:600,color:C.navy,fontSize:12}}>{t.title}</div>
-              <div style={{fontSize:10,color:C.textS}}>{t.desc}</div>
+              <div style={{fontSize:11,color:C.textS}}>{t.desc}</div>
             </div>
             <span style={{color:C.blue,fontSize:13}}>→</span>
           </div>
@@ -222,7 +222,7 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
       </div>}
 
       {/* Quick Actions */}
-      <div style={{fontSize:10,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>⚡ Quick Actions</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>⚡ Quick Actions</div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
         {[['💪','Exercises','learn'],['🔤','Vocabulary','vocab'],['🎙️','Listening','listening']].map(([ic,lb,nv])=>(
           <div key={lb} onClick={()=>onNav(nv)}
