@@ -1,42 +1,51 @@
-const KEY = import.meta.env.VITE_GEMINI_API_KEY
-const sleep = ms => new Promise(r => setTimeout(r, ms))
+// LiteLLM proxy — OpenAI-compatible /chat/completions.
+// The proxy holds the real provider key server-side; VITE_LLM_API_KEY is a
+// budget-capped virtual key, so if it leaks from the bundle it's revocable.
+const KEY = import.meta.env.VITE_LLM_API_KEY
+const ENDPOINT = import.meta.env.VITE_LLM_ENDPOINT || 'https://litellm.classplusapp.com/v1/chat/completions'
 
+// Tried in order; first model that returns text wins.
+// NOTE: gemini-3.1-flash-lite is first because at setup the proxy's upstream
+// key for gemini-2.5-flash was failing. Once that's fixed on the proxy you can
+// promote gemini-2.5-flash to the top.
 const MODELS = [
-  'gemini-2.0-flash',
-  'gemini-2.5-flash-lite',
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash',
-  'gemini-1.5-flash',
 ]
 
 async function gemini(messages, system = '', maxTokens = 1200) {
-  const body = {
-    contents: messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    })),
-    generationConfig: { maxOutputTokens: Math.min(maxTokens, 2048), temperature: 0.7 }
+  const msgs = []
+  if (system) msgs.push({ role: 'system', content: system })
+  for (const m of messages) {
+    msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })
   }
-  if (system) body.systemInstruction = { parts: [{ text: system }] }
-  if (!body.contents.length) body.contents = [{ role: 'user', parts: [{ text: 'Hello' }] }]
+  if (!msgs.some(m => m.role === 'user')) msgs.push({ role: 'user', content: 'Hello' })
 
   for (const model of MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`
     try {
       const ctrl = new AbortController()
       const t = setTimeout(() => ctrl.abort(), 28000)
-      const r = await fetch(url, {
+      const r = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: ctrl.signal
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: msgs,
+          max_tokens: Math.min(maxTokens, 2048),
+          temperature: 0.7,
+        }),
+        signal: ctrl.signal,
       })
       clearTimeout(t)
       const d = await r.json()
       if (!r.ok) {
-        console.error(`Gemini ${model}:`, d?.error?.message)
+        console.error(`LLM ${model}:`, d?.error?.message)
         continue
       }
-      const text = d?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+      const text = d?.choices?.[0]?.message?.content || ''
       if (text) return text
     } catch (e) {
       if (e.name === 'AbortError') { console.error(`${model} timed out`); continue }

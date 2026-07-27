@@ -14,7 +14,8 @@ import PublicTest from './pages/PublicTest'
 const params = new URLSearchParams(window.location.search)
 
 // Tests required to pass per level before moving up
-// Each value is an array of test_ids that must ALL be passed at ≥50%
+// Each value is an array of test_ids; a test counts as "cleared" at ≥60%,
+// and ≥90% of the level's tests must be cleared to move up (see checkLevelUp).
 const LEVEL_TESTS = {
   A1: ['A1_T1','A1_T2','A1_T3','A1_T4','A1_T5','A1_T6','A1_T7','A1_T8','A1_T9','A1_T10','A1_T11','A1_T12','A1_T13','A1_T14','A1_T15','A1_T16','A1_T17','A1_T18','A1_T19','A1_T20','A1_T21'],
   A2: ['A2_T1', 'A2_T2', 'A2_T3'],
@@ -67,9 +68,9 @@ export default function App() {
     return () => clearTimeout(t)
   }, [completedTopics, exerciseScores, user, screen])
 
-  // ── LEVEL UP CHECK ─────────────────────────────────────────────────────────
-  // Called after every test submission. Checks if all required tests for
-  // the current level are passed at ≥50%. If yes, promotes the student.
+  // ── LEVEL UP CHECK ────────────────────────────────────────────
+  // Called after every test submission. A test counts as "cleared" at ≥60%;
+  // clearing ≥90% of the level's tests promotes the student to the next level.
   async function checkLevelUp(currentUser) {
     const currentLevel = currentUser.level
     const requiredTests = LEVEL_TESTS[currentLevel]

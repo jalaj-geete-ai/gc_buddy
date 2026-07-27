@@ -29,7 +29,7 @@ export default function FacultyPanel() {
   },[auth])
 
   function signIn(entered){
-    if(entered!=='gcfaculty2025'){ alert('Wrong password'); return }
+    if(entered!==import.meta.env.VITE_FACULTY_PASSWORD){ alert('Wrong password'); return }
     writeAuth('faculty',true); setAuth(true); loadStudents()
   }
 
