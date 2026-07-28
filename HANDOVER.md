@@ -2,7 +2,7 @@
 
 > Hand this file to a new Claude chat at the start of a session. It contains
 > everything needed to continue development, push, and deploy.
-> **Read all of it before changing anything.** Last updated: commit `d923a84`.
+> **Read all of it before changing anything.** Last updated: commit `16c92cd`.
 >
 > ⚠️ **Before your first build, read §3.1 — a build without `.env` silently
 > produces a dead app.**
@@ -114,15 +114,30 @@ Secrets moved out of source into Vite env vars. `.env` is gitignored;
 cp .env.example .env    # then fill in real values
 ```
 
-**`npm run build` succeeds with no `.env` and gives no warning.** The result is
-`createClient(undefined, undefined)` — an app that loads and then fails at
-login with no data. If you build without `.env`, never let that bundle reach
-production, and never judge "the app is broken" from such a build.
+**`npm run build` succeeds with no `.env` and gives no warning.** If you build
+without `.env`, never let that bundle reach production, and never judge "the app
+is broken" from such a build.
+
+> **⚠️ Real production incident (2026-07-28, fixed in `16c92cd`).** The live
+> site white-screened — a fully blank page, not a login failure. Cause: the
+> Cloudflare Pages project had **no `VITE_*` env vars set**, so the deployed
+> bundle had an empty `VITE_SUPABASE_URL`, and the current `@supabase/supabase-js`
+> throws `supabaseUrl is required.` *synchronously inside `createClient()` at
+> module load* — which runs before React mounts, blanking the whole SPA.
+> `src/lib/supabase.js` is now guarded (falls back to placeholders + logs a
+> clear console error instead of crashing), so a missing var degrades to
+> "renders but data disabled" rather than a blank page. **But the guard is not a
+> fix** — login and all data stay broken until the vars are actually set in
+> Cloudflare. The old assumption that a missing var only "fails at login" is
+> obsolete: newer SDKs hard-throw at construction.
 
 Keys: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_LLM_API_KEY`,
 `VITE_LLM_ENDPOINT`, `VITE_ADMIN_PASSWORD`, `VITE_FACULTY_PASSWORD`. Ask the
-user for values — they are not in the repo. They must also be set in
-Cloudflare Pages' environment settings, since Vite inlines them at build time.
+user for values — they are not in the repo. **They MUST also be set in
+Cloudflare Pages → Settings → Environment variables (Production)**, since Vite
+inlines them at build time — a var missing there ships a broken bundle
+regardless of your local `.env`. After changing them, trigger a fresh deploy
+(env changes do not auto-rebuild old deployments).
 
 Note these are **build-time inlined**, so `VITE_*` values still ship in the
 bundle. This is interim hardening — it keeps secrets out of git and makes the
@@ -252,7 +267,7 @@ Therefore **all German audio is pre-generated** and played with a plain
 
 | Trap | Detail |
 |---|---|
-| **Build without `.env` is silently dead** | `npm run build` succeeds with no env vars and emits `createClient(undefined, undefined)`. The app loads, then fails at login with no data and no error in the build log. Always `cp .env.example .env` and fill it first (§3.1). |
+| **Build without `.env` is silently dead** | `npm run build` succeeds with no env vars. With the current supabase-js this now **white-screens the whole app** (createClient throws at module load) — worse than the old "fails at login". `supabase.js` is guarded so it renders, but data stays dead until env is set. This bit production on 2026-07-28 because **Cloudflare Pages had no `VITE_*` vars** — the guard prevents the blank page but the vars must be set in Cloudflare, not just locally (§3.1). |
 | **WebView has no speechSynthesis** | Never call `window.speechSynthesis` directly. Always go through `lib/tts.js`. Guard *before* the call, and update state *before* touching audio, so navigation never depends on the audio engine. |
 | **`PBar` takes 0–100, not 0–1** | Passing a fraction renders an empty bar with no error. |
 | **`Inp` used to swallow props** | It now spreads `...rest` onto the input. Before that, `onKeyDown` was silently dropped and Enter did nothing on every password field. If you add a wrapper component, forward unknown props. |
@@ -325,6 +340,7 @@ Portal access is by query string: `?admin=1`, `?students=1`, `?faculty=1`.
 
 | Commit | What |
 |---|---|
+| `16c92cd` | **Fix prod blank page** — guard `createClient` against missing Supabase env so a config gap can't white-screen the whole SPA (§3.1) |
 | `d923a84` | This handover + reproducible audio scripts |
 | `b84abec` | Fix mangled characters from the prior constants.js push |
 | `43963bb` | a11y: darken `textS` to meet WCAG AA contrast |
