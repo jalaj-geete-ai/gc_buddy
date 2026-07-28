@@ -383,16 +383,16 @@ export default function LearnHub({ user, onAddScore }) {
             {/* Intro */}
             <div style={{ background: `linear-gradient(135deg,${C.navy},${C.navyM})`, borderRadius: 14, padding: '18px 20px', marginBottom: 14, textAlign: 'center' }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>💪</div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 4 }}>10 Exercise Sets</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: '#fff', marginBottom: 4 }}>20 Exercise Sets</div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', lineHeight: 1.6 }}>
                 Each set has 20 questions · Level <strong style={{ color: C.blueM }}>{user?.level}</strong><br />
-                Complete all 10 sets for full mastery!
+                Complete all 20 sets for full mastery!
               </div>
             </div>
 
             {/* 10 set buttons */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 8 }}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => {
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => {
                 const sessionScores = JSON.parse(localStorage.getItem(`gc_ex_set_${user?.level}_${n}`) || 'null')
                 return (
                   <div key={n} onClick={() => startSet(n)}
