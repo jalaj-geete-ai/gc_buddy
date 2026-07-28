@@ -1,7 +1,28 @@
 import { createClient } from '@supabase/supabase-js'
 const URL = import.meta.env.VITE_SUPABASE_URL
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-export const sb = createClient(URL, KEY)
+
+// A missing/empty Supabase env var used to take the WHOLE app down: the current
+// supabase-js throws "supabaseUrl is required." synchronously inside
+// createClient(), and this runs at module load — so React never mounted and the
+// production build white-screened with no error on the page. A config gap must
+// never blank the entire SPA. Warn loudly, but hand createClient well-formed
+// placeholders so the app still renders; data calls then fail at network time,
+// which every caller here already tolerates (they check `data`, catch, or log).
+// The real fix is setting these in Cloudflare Pages → Settings → Environment
+// variables (Production) and redeploying — Vite inlines VITE_* at build time.
+if (!URL || !KEY) {
+  console.error(
+    '[GC Buddy] Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY at build time. ' +
+    'Login, progress and admin data are disabled until these are set in the ' +
+    'Cloudflare Pages environment and the site is redeployed.'
+  )
+}
+
+export const sb = createClient(
+  URL || 'https://unconfigured.supabase.co',
+  KEY || 'unconfigured'
+)
 
 export const checkRoll = async roll => {
   const { data } = await sb.from('approved_students').select('roll_number,name').eq('roll_number', roll.trim().toUpperCase()).single()
