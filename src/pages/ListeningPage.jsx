@@ -562,7 +562,7 @@ B2:[
 
 export default function ListeningPage({ user }) {
   const [cur, setCur] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const [playing, setPlaying] = useState(null) // null | 'normal' | 'slow'
   const [ttsMsg, setTtsMsg] = useState(null)
   const lvl = PH[user?.level] ? user.level : 'A1'
   const phrases = PH[lvl]
@@ -576,19 +576,20 @@ export default function ListeningPage({ user }) {
   // in Android WebView, which has no Web Speech API at all. The speech engine
   // is only a fallback for anything without a clip.
   function speak(rate = 1) {
+    const mode = rate < 1 ? 'slow' : 'normal'
     setTtsMsg(null)
     playGerman(clipUrlPhrase(lvl, cur), ph.de, {
       rate,
-      onStart: () => setPlaying(true),
-      onEnd: () => setPlaying(false),
-      onFail: () => { setPlaying(false); setTtsMsg('unavailable') },
+      onStart: () => setPlaying(mode),
+      onEnd: () => setPlaying(null),
+      onFail: () => { setPlaying(null); setTtsMsg('unavailable') },
     })
     trackEvent(user?.rollNumber, 'listening_play', 'listening', `Phrase ${cur + 1}`, user?.level)
   }
 
   function stopSpeaking() {
     stopAll()
-    setPlaying(false)
+    setPlaying(null)
   }
 
   function goTo(i) {
@@ -616,14 +617,14 @@ export default function ListeningPage({ user }) {
       {/* Audio controls — big tap targets for mobile */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button
-          onClick={playing ? stopSpeaking : () => speak(1)}
-          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: 'none', background: playing ? C.red : C.blue, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          {playing ? '⏹ Stop' : '🔊 Normal Speed'}
+          onClick={playing === 'normal' ? stopSpeaking : () => speak(1)}
+          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: 'none', background: playing === 'normal' ? C.red : C.blue, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {playing === 'normal' ? '⏹ Stop' : '🔊 Normal Speed'}
         </button>
         <button
-          onClick={() => speak(0.7)}
-          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${C.border}`, background: '#fff', color: C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          🐢 Slow
+          onClick={playing === 'slow' ? stopSpeaking : () => speak(0.7)}
+          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${playing === 'slow' ? C.red : C.border}`, background: playing === 'slow' ? C.red : '#fff', color: playing === 'slow' ? '#fff' : C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {playing === 'slow' ? '⏹ Stop' : '🐢 Slow'}
         </button>
       </div>
 
