@@ -1547,6 +1547,986 @@ const TESTS = [
         ]
       }
     ]
+  },
+  {
+    id: 'A2_T1',
+    name: "Test 1: A2 Transition & A1 Recap",
+    classes: "Lecture 1",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T1Q1', text: "Ich sehe ___ Arzt. (Accusative)", opts: ["der", "den", "dem", "die"], ans: 1, marks: 1 },
+          { id: 'A2T1Q2', text: "Er gibt ___ Patientin die Medizin. (Dative)", opts: ["die", "den", "der", "dem"], ans: 2, marks: 1 },
+          { id: 'A2T1Q3', text: "Das Buch gehört ___ Kind. (Dative neuter)", opts: ["das", "den", "dem", "des"], ans: 2, marks: 1 },
+          { id: 'A2T1Q4', text: "V2 Rule: which is correct?", opts: ["Jeden Tag ich lerne Deutsch.", "Jeden Tag lerne ich Deutsch.", "Jeden Tag Deutsch lerne ich.", "Ich Deutsch lerne jeden Tag."], ans: 1, marks: 1 },
+          { id: 'A2T1Q5', text: "Perfekt: Ich ___ nach Berlin gefahren.", opts: ["habe", "war", "bin", "hatte"], ans: 2, marks: 1 },
+          { id: 'A2T1Q6', text: "Perfekt: Wir ___ das Buch gelesen.", opts: ["sind", "haben", "waren", "hatten"], ans: 1, marks: 1 },
+          { id: 'A2T1Q7', text: "Which verb uses SEIN in Perfekt?", opts: ["lernen", "kaufen", "gehen", "essen"], ans: 2, marks: 1 },
+          { id: 'A2T1Q8', text: "Partizip II of \"kaufen\":", opts: ["gekauft", "kaufte", "kaufend", "gekauff"], ans: 0, marks: 1 },
+          { id: 'A2T1Q9', text: "Partizip II of \"fahren\":", opts: ["gefahrt", "gefahren", "fuhr", "fahrend"], ans: 1, marks: 1 },
+          { id: 'A2T1Q10', text: "Which is a Dative verb?", opts: ["sehen", "kaufen", "helfen", "machen"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T2',
+    name: "Test 2: Narrative Past: Präteritum",
+    classes: "Lecture 2",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T2Q1', text: "Präteritum of \"sein\" — ich:", opts: ["war", "war", "gewesen", "bin gewesen"], ans: 0, marks: 1 },
+          { id: 'A2T2Q2', text: "\"Wir ___ sehr müde.\" (Präteritum of sein)", opts: ["sind", "waren", "seien", "wären"], ans: 1, marks: 1 },
+          { id: 'A2T2Q3', text: "\"Er ___ keine Zeit.\" (Präteritum of haben)", opts: ["hat", "gehabt", "hatte", "hätte"], ans: 2, marks: 1 },
+          { id: 'A2T2Q4', text: "Modal in Präteritum: \"She was able to help\" =", opts: ["Sie hat gekonnt helfen.", "Sie konnte helfen.", "Sie kann geholfen.", "Sie hatte helfen."], ans: 1, marks: 1 },
+          { id: 'A2T2Q5', text: "\"I had to work yesterday.\" =", opts: ["Ich muss gestern arbeiten.", "Ich habe gemusst arbeiten.", "Ich musste gestern arbeiten.", "Ich hatte gearbeitet."], ans: 2, marks: 1 },
+          { id: 'A2T2Q6', text: "Which modal NEVER uses Perfekt in speech?", opts: ["können", "haben", "sein", "All modals avoid Perfekt in speech"], ans: 3, marks: 1 },
+          { id: 'A2T2Q7', text: "\"3 years ago\" in German =", opts: ["vor drei Jahren", "seit drei Jahren", "nach drei Jahren", "für drei Jahre"], ans: 0, marks: 1 },
+          { id: 'A2T2Q8', text: "Word order: \"She wanted to learn German.\" =", opts: ["Sie wollte Deutsch lernen.", "Sie wollte lernen Deutsch.", "Lernen wollte sie Deutsch.", "Sie lernen wollte Deutsch."], ans: 0, marks: 1 },
+          { id: 'A2T2Q9', text: "\"Er ___ nicht zu Hause.\" (Präteritum, negation)", opts: ["war kein", "war nicht", "hatte nicht", "wäre nicht"], ans: 1, marks: 1 },
+          { id: 'A2T2Q10', text: "\"As a child\" =", opts: ["als ein Kind", "wie ein Kind", "als Kind", "bei einem Kind"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T3',
+    name: "Test 3: Causal Clauses: Weil & Da",
+    classes: "Lecture 3",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T3Q1', text: "Verb-Kicker: \"Ich lerne Deutsch, weil...\"", opts: ["...ich Deutschland mag.", "...mag ich Deutschland.", "...ich Deutschland möge.", "...Deutschland ich mag."], ans: 0, marks: 1 },
+          { id: 'A2T3Q2', text: "Which conjunction triggers the Verb-Kicker?", opts: ["denn", "und", "weil", "aber"], ans: 2, marks: 1 },
+          { id: 'A2T3Q3', text: "\"Denn\" occupies which position?", opts: ["Position 1", "Position 0", "Position 2", "End of clause"], ans: 1, marks: 1 },
+          { id: 'A2T3Q4', text: "Where does the verb go in a weil clause?", opts: ["Position 1", "Position 2", "Position 0", "Absolute end"], ans: 3, marks: 1 },
+          { id: 'A2T3Q5', text: "Correct weil sentence:", opts: ["weil er ist krank", "weil er krank ist", "weil ist er krank", "weil krank er ist"], ans: 1, marks: 1 },
+          { id: 'A2T3Q6', text: "Weil vs Da — \"Da\" is used when:", opts: ["The reason is new information", "The reason is already known to both speakers", "You want to be informal", "The clause comes after the main clause"], ans: 1, marks: 1 },
+          { id: 'A2T3Q7', text: "Modal + weil: \"He can't come because he is working.\"", opts: ["weil er arbeitet kann", "weil er kann arbeiten", "weil er arbeiten kann", "weil er arbeitend kann"], ans: 2, marks: 1 },
+          { id: 'A2T3Q8', text: "Perfekt + weil: \"because I slept\" =", opts: ["weil ich geschlafen habe", "weil ich habe geschlafen", "weil habe ich geschlafen", "weil ich schlief"], ans: 0, marks: 1 },
+          { id: 'A2T3Q9', text: "Where does the comma go?", opts: ["After weil", "Before weil", "After the subject", "No comma needed"], ans: 1, marks: 1 },
+          { id: 'A2T3Q10', text: "\"Warum?\" is answered with:", opts: ["denn", "da", "weil", "deshalb"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T4',
+    name: "Test 4: Conditional Clauses: Wenn & Falls",
+    classes: "Lecture 4",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T4Q1', text: "\"Wenn\" can mean:", opts: ["although", "because", "if and when", "therefore"], ans: 2, marks: 1 },
+          { id: 'A2T4Q2', text: "\"Falls\" is used for:", opts: ["Certain conditions", "Habitual conditions", "Less certain / formal conditions", "Past conditions"], ans: 2, marks: 1 },
+          { id: 'A2T4Q3', text: "Verb-Kicker: \"wenn ich Zeit...\"", opts: ["wenn ich Zeit habe", "wenn ich habe Zeit", "wenn habe ich Zeit", "wenn Zeit ich habe"], ans: 0, marks: 1 },
+          { id: 'A2T4Q4', text: "Wenn clause comes first — what comes after the comma?", opts: ["Subject + Verb", "Verb + Subject", "Object + Verb", "Subject + Object"], ans: 1, marks: 1 },
+          { id: 'A2T4Q5', text: "\"When I am tired, I sleep.\" — wenn clause first:", opts: ["Wenn ich müde bin, schlafe ich.", "Wenn ich müde bin, ich schlafe.", "Ich schlafe, wenn müde ich bin.", "Wenn ich schlafe, bin ich müde."], ans: 0, marks: 1 },
+          { id: 'A2T4Q6', text: "Modal in wenn clause: \"if I can help\":", opts: ["wenn ich kann helfen", "wenn ich helfen kann", "wenn helfen ich kann", "wenn ich geholfen kann"], ans: 1, marks: 1 },
+          { id: 'A2T4Q7', text: "\"Falls\" follows which grammar rule?", opts: ["Same as denn — no Verb-Kicker", "Same as wenn — Verb-Kicker", "Verb stays in Position 2", "Verb goes to Position 1"], ans: 1, marks: 1 },
+          { id: 'A2T4Q8', text: "\"If the patient has fever, we call the doctor.\" =", opts: ["Wenn der Patient hat Fieber, rufen wir den Arzt.", "Wenn der Patient Fieber hat, rufen wir den Arzt.", "Wenn der Patient Fieber hat, wir rufen den Arzt.", "Falls hat der Patient Fieber, rufen wir den Arzt."], ans: 1, marks: 1 },
+          { id: 'A2T4Q9', text: "Which does NOT trigger Verb-Kicker?", opts: ["weil", "wenn", "obwohl", "denn"], ans: 3, marks: 1 },
+          { id: 'A2T4Q10', text: "\"Sonst\" means:", opts: ["if", "because", "otherwise", "although"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T5',
+    name: "Test 5: Causal Adverbs: Deshalb & Darum",
+    classes: "Lecture 5",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T5Q1', text: "Deshalb means:", opts: ["although", "because", "therefore", "if"], ans: 2, marks: 1 },
+          { id: 'A2T5Q2', text: "Deshalb sits at Position 1 — what happens next?", opts: ["Subject comes before verb", "Verb comes before subject (inversion)", "Verb goes to end", "No change"], ans: 1, marks: 1 },
+          { id: 'A2T5Q3', text: "Correct use of deshalb:", opts: ["Er ist krank, er deshalb geht.", "Er ist krank, deshalb geht er.", "Er ist krank, deshalb er geht.", "Deshalb er geht krank ist."], ans: 1, marks: 1 },
+          { id: 'A2T5Q4', text: "Which is NOT a synonym for deshalb?", opts: ["darum", "weil", "deswegen", "daher"], ans: 1, marks: 1 },
+          { id: 'A2T5Q5', text: "Weil vs Deshalb — \"weil\" introduces:", opts: ["The consequence", "The reason (Verb-Kicker)", "A condition", "A contrast"], ans: 1, marks: 1 },
+          { id: 'A2T5Q6', text: "Transform: \"Ich bin müde, weil ich wenig geschlafen habe.\" → Deshalb version:", opts: ["Ich habe wenig geschlafen, deshalb ich bin müde.", "Ich habe wenig geschlafen, deshalb bin ich müde.", "Deshalb ich habe wenig geschlafen, bin ich müde.", "Ich habe deshalb wenig geschlafen, bin ich müde."], ans: 1, marks: 1 },
+          { id: 'A2T5Q7', text: "\"Darum\" and \"deshalb\" are:", opts: ["Subordinating conjunctions", "Coordinating conjunctions", "Adverbial connectors", "Prepositions"], ans: 2, marks: 1 },
+          { id: 'A2T5Q8', text: "Correct inversion: \"Wir haben kein Geld. ___ gehen wir nicht ins Restaurant.\"", opts: ["Weil", "Obwohl", "Deshalb", "Wenn"], ans: 2, marks: 1 },
+          { id: 'A2T5Q9', text: "Deshalb can also occupy which position WITHOUT inversion?", opts: ["Position 0", "Position 1", "Position 3 (after verb)", "End of clause"], ans: 2, marks: 1 },
+          { id: 'A2T5Q10', text: "\"She wants to work in Germany. Therefore she is learning German.\" =", opts: ["Sie will in Deutschland arbeiten, weil sie Deutsch lernt.", "Sie will in Deutschland arbeiten, deshalb lernt sie Deutsch.", "Deshalb sie lernt Deutsch, will in Deutschland arbeiten.", "Sie lernt Deutsch, deshalb sie will in Deutschland arbeiten."], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T6',
+    name: "Test 6: Concessive Clauses: Obwohl & Trotzdem",
+    classes: "Lecture 6",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T6Q1', text: "Verb-Kicker: \"Er geht zur Arbeit, obwohl...\"", opts: ["…er ist krank.", "…er krank ist.", "…krank er ist.", "…ist er krank."], ans: 1, marks: 1 },
+          { id: 'A2T6Q2', text: "Trotzdem at Position 1 forces:", opts: ["Verb-Kicker", "V2 inversion", "No change", "Verb to Position 0"], ans: 1, marks: 1 },
+          { id: 'A2T6Q3', text: "Correct trotzdem sentence:", opts: ["Er ist krank, trotzdem er geht.", "Er ist krank, trotzdem geht er.", "Er geht, trotzdem er ist krank.", "Trotzdem er ist krank, geht er."], ans: 1, marks: 1 },
+          { id: 'A2T6Q4', text: "Transform to trotzdem: \"Er geht, obwohl er krank ist.\"", opts: ["Er ist krank, trotzdem er geht.", "Er ist krank. Trotzdem geht er.", "Trotzdem er krank ist, geht er.", "Er geht, trotzdem ist er krank."], ans: 1, marks: 1 },
+          { id: 'A2T6Q5', text: "Difference: weil vs obwohl?", opts: ["Both use inversion", "weil=expected result, obwohl=unexpected result", "obwohl=expected, weil=unexpected", "Both use Verb-Kicker, no meaning difference"], ans: 1, marks: 1 },
+          { id: 'A2T6Q6', text: "Obwohl clause first → main clause starts with:", opts: ["Subject", "Verb", "Object", "Adverb"], ans: 1, marks: 1 },
+          { id: 'A2T6Q7', text: "\"Despite that\" in German:", opts: ["weil", "wenn", "trotzdem", "deshalb"], ans: 2, marks: 1 },
+          { id: 'A2T6Q8', text: "\"Although she is tired, she works.\" — obwohl version:", opts: ["Obwohl sie müde ist, sie arbeitet.", "Obwohl sie müde ist, arbeitet sie.", "Obwohl ist sie müde, arbeitet sie.", "Sie arbeitet, obwohl ist sie müde."], ans: 1, marks: 1 },
+          { id: 'A2T6Q9', text: "Perfekt in obwohl: \"although he has eaten\":", opts: ["obwohl er hat gegessen", "obwohl er gegessen hat", "obwohl gegessen er hat", "obwohl hat er gegessen"], ans: 1, marks: 1 },
+          { id: 'A2T6Q10', text: "Which is NOT possible as a synonym for trotzdem?", opts: ["dennoch", "jedoch", "obwohl (as adverb)", "nichtsdestotrotz"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T7',
+    name: "Test 7: Finality: Um…zu & Damit",
+    classes: "Lecture 7",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T7Q1', text: "Um…zu is used when:", opts: ["Subjects are different", "Subjects are the same", "There is a modal verb", "The clause comes first"], ans: 1, marks: 1 },
+          { id: 'A2T7Q2', text: "Damit triggers:", opts: ["Position 1 inversion", "Verb-Kicker", "No special rule", "Modal infinitive"], ans: 1, marks: 1 },
+          { id: 'A2T7Q3', text: "\"In order to learn German\" = ?", opts: ["um Deutsch zu lernen", "damit ich Deutsch lerne", "um zu Deutsch lernen", "damit Deutsch zu lernen"], ans: 0, marks: 1 },
+          { id: 'A2T7Q4', text: "Separable: \"in order to get up\" = ?", opts: ["um zu aufstehen", "um aufzustehen", "damit aufstehen", "um stehe auf zu"], ans: 1, marks: 1 },
+          { id: 'A2T7Q5', text: "\"I explain it so that he understands.\" — correct:", opts: ["Ich erkläre es, um er versteht.", "Ich erkläre es, damit er versteht.", "Ich erkläre es, damit er zu verstehen.", "Ich erkläre es, um zu verstehen."], ans: 1, marks: 1 },
+          { id: 'A2T7Q6', text: "Which needs damit (not um…zu)?", opts: ["Ich esse, ___ Energie zu haben.", "Ich erkläre, ___ der Patient versteht.", "Sie schläft früh, ___ ausgeruht zu sein.", "Er übt, ___ besser zu werden."], ans: 1, marks: 1 },
+          { id: 'A2T7Q7', text: "Verb-Kicker in damit: \"damit er…\"", opts: ["damit er kommt früh", "damit er früh kommt", "damit kommt er früh", "damit er ist früh"], ans: 1, marks: 1 },
+          { id: 'A2T7Q8', text: "Error: \"Ich lerne, um zu arbeiten hier.\" Fix?", opts: ["Ich lerne, um hier zu arbeiten.", "Ich lerne, damit hier zu arbeiten.", "Ich lerne, um hier arbeiten zu.", "No error"], ans: 0, marks: 1 },
+          { id: 'A2T7Q9', text: "Um…zu with Perfekt is:", opts: ["Normal: um gelernt zu haben", "Never used", "Only with sein", "Replaced by nachdem"], ans: 0, marks: 1 },
+          { id: 'A2T7Q10', text: "\"We prepare so that the patient feels better.\" →", opts: ["Wir bereiten vor, um der Patient sich besser fühlt.", "Wir bereiten vor, damit der Patient sich besser fühlt.", "Wir bereiten vor, um sich besser zu fühlen.", "Wir bereiten vor, damit zu fühlen."], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T8',
+    name: "Test 8: Indirect Speech: Dass & Ob",
+    classes: "Lecture 8",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T8Q1', text: "Dass introduces:", opts: ["A direct question", "A subordinate clause with Verb-Kicker", "A main clause", "An inversion"], ans: 1, marks: 1 },
+          { id: 'A2T8Q2', text: "Verb-Kicker in dass: \"Ich glaube, dass er...\"", opts: ["ist krank.", "krank ist.", "krank.", "ist er krank."], ans: 1, marks: 1 },
+          { id: 'A2T8Q3', text: "Ob is used for:", opts: ["Causal clauses", "Indirect yes/no questions", "Purpose clauses", "Conditional clauses"], ans: 1, marks: 1 },
+          { id: 'A2T8Q4', text: "\"Do you know if he is coming?\" →", opts: ["Weißt du, dass er kommt?", "Weißt du, ob er kommt?", "Weißt du, ob er ist kommen?", "Weißt du, ob kommt er?"], ans: 1, marks: 1 },
+          { id: 'A2T8Q5', text: "Indirect W-question: \"Where does she live?\" →", opts: ["Ich frage, wo wohnt sie.", "Ich frage, wo sie wohnt.", "Ich frage, dass sie wohnt wo.", "Ich frage ob, wo sie wohnt."], ans: 1, marks: 1 },
+          { id: 'A2T8Q6', text: "\"Dass\" vs \"Das\": which is the conjunction?", opts: ["das Buch", "Das ist schön.", "Ich glaube, dass er krank ist.", "Das Medikament hilft."], ans: 2, marks: 1 },
+          { id: 'A2T8Q7', text: "Trick for dass vs das: replace with \"welches\" → if possible:", opts: ["Use dass", "Use das (relative pronoun)", "Use ob", "No difference"], ans: 1, marks: 1 },
+          { id: 'A2T8Q8', text: "Trigger verb for dass: which one fits?", opts: ["gehen", "kommen", "glauben", "kaufen"], ans: 2, marks: 1 },
+          { id: 'A2T8Q9', text: "\"She says she is tired.\" →", opts: ["Sie sagt, sie müde ist.", "Sie sagt, dass sie müde ist.", "Sie sagt, ob sie müde ist.", "Sie sagt, wenn sie müde ist."], ans: 1, marks: 1 },
+          { id: 'A2T8Q10', text: "Perfekt in dass: \"I hear that she has worked.\" →", opts: ["Ich höre, dass sie gearbeitet hat.", "Ich höre, dass sie hat gearbeitet.", "Ich höre, dass gearbeitet sie hat.", "Ich höre ob sie gearbeitet hat."], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T9',
+    name: "Test 9: Module 1 Test & Clause Checkpoint",
+    classes: "Lecture 9",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T9Q1', text: "Which requires Verb-Kicker?", opts: ["deshalb", "trotzdem", "obwohl", "darum"], ans: 2, marks: 1 },
+          { id: 'A2T9Q2', text: "\"Ich konnte nicht schlafen\" is which tense?", opts: ["Präsens", "Perfekt", "Präteritum", "Futur I"], ans: 2, marks: 1 },
+          { id: 'A2T9Q3', text: "Transform: \"Er ist müde. Trotzdem ___.\"", opts: ["er lernt", "lernt er", "er lerne", "lerne"], ans: 1, marks: 1 },
+          { id: 'A2T9Q4', text: "\"weil er ist krank\" — what is wrong?", opts: ["Wrong conjunction", "Verb should go to end: krank ist", "Missing comma", "Nothing wrong"], ans: 1, marks: 1 },
+          { id: 'A2T9Q5', text: "\"Damals\" means:", opts: ["recently", "later", "back then", "sometimes"], ans: 2, marks: 1 },
+          { id: 'A2T9Q6', text: "ob introduces:", opts: ["Reason", "Indirect yes/no question", "Purpose", "Contrast"], ans: 1, marks: 1 },
+          { id: 'A2T9Q7', text: "\"die Ausbildung\" means:", opts: ["school", "university", "training/vocational education", "internship"], ans: 2, marks: 1 },
+          { id: 'A2T9Q8', text: "Position 0 connectors (no change in word order):", opts: ["weil, damit, obwohl", "und, aber, oder, denn", "deshalb, trotzdem", "wenn, falls, dass"], ans: 1, marks: 1 },
+          { id: 'A2T9Q9', text: "um…zu vs damit: which needs the same subject?", opts: ["damit", "Both", "um…zu", "Neither"], ans: 2, marks: 1 },
+          { id: 'A2T9Q10', text: "Passing score for Module 1:", opts: ["40/50", "30/50", "35/50", "45/50"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T10',
+    name: "Test 10: Reflexive Verbs I",
+    classes: "Lecture 10",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T10Q1', text: "Reflexive pronoun for \"wir\":", opts: ["mich", "euch", "uns", "sich"], ans: 2, marks: 1 },
+          { id: 'A2T10Q2', text: "Reflexive pronoun for \"er/sie/es\":", opts: ["mich", "dich", "euch", "sich"], ans: 3, marks: 1 },
+          { id: 'A2T10Q3', text: "\"I wash myself\" →", opts: ["Ich wasche ihn.", "Ich wasche mich.", "Ich wasche dich.", "Ich wasche sich."], ans: 1, marks: 1 },
+          { id: 'A2T10Q4', text: "Word order: reflexive pronoun comes:", opts: ["At the end of clause", "Before the subject", "Directly after the verb", "Before the verb"], ans: 2, marks: 1 },
+          { id: 'A2T10Q5', text: "Inversion: \"Jeden Morgen ___ er ___.\" (sich rasieren)", opts: ["rasiert / sich", "sich / rasiert", "rasiert sich / —", "— / sich rasiert"], ans: 0, marks: 1 },
+          { id: 'A2T10Q6', text: "\"How are you feeling?\" (formal) →", opts: ["Wie fühlen Sie sich?", "Wie fühlst du dich?", "Wie fühlen Sie dich?", "Wie fühlt sie sich?"], ans: 0, marks: 1 },
+          { id: 'A2T10Q7', text: "Separable reflexive: \"Er zieht ___ an.\"", opts: ["sich — at the end", "sich — after zieht", "mich — after zieht", "dich — at end"], ans: 1, marks: 1 },
+          { id: 'A2T10Q8', text: "\"Sit down please.\" (formal) →", opts: ["Bitte setzen Sie sich.", "Bitte sitzen Sie sich.", "Bitte setzen sich Sie.", "Bitte sich setzen Sie."], ans: 0, marks: 1 },
+          { id: 'A2T10Q9', text: "Reflexive vs direct: \"I wash the patient\" →", opts: ["Ich wasche mich.", "Ich wasche sich.", "Ich wasche ihn.", "Ich wasche dich."], ans: 2, marks: 1 },
+          { id: 'A2T10Q10', text: "All these use \"sich\" EXCEPT:", opts: ["er freut …", "sie (she) fühlt …", "du setzt …", "sie (they) ärgern …"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T11',
+    name: "Test 11: Reflexive Verbs II",
+    classes: "Lecture 11",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T11Q1', text: "Ich wasche ___ täglich. (correct reflexive pronoun, Akk)", opts: ["mir", "mich", "sich", "uns"], ans: 1, marks: 1 },
+          { id: 'A2T11Q2', text: "Ich wasche ___ die Hände. (body part — which pronoun?)", opts: ["mich", "mir", "sich", "uns"], ans: 1, marks: 1 },
+          { id: 'A2T11Q3', text: "Du kämmst ___ die Haare.", opts: ["dich", "dir", "sich", "euch"], ans: 1, marks: 1 },
+          { id: 'A2T11Q4', text: "Er rasiert ___. (kein Objekt — Akkusativ)", opts: ["mir", "sich", "ihm", "er"], ans: 1, marks: 1 },
+          { id: 'A2T11Q5', text: "Ich freue mich ___ meinen Urlaub.", opts: ["über", "für", "auf", "an"], ans: 2, marks: 1 },
+          { id: 'A2T11Q6', text: "Er ärgert sich ___ den Lärm. (annoyed about)", opts: ["auf", "über", "um", "für"], ans: 1, marks: 1 },
+          { id: 'A2T11Q7', text: "Die Pflegerin kümmert sich ___ den Patienten.", opts: ["für", "um", "mit", "über"], ans: 1, marks: 1 },
+          { id: 'A2T11Q8', text: "Worüber ärgerst du dich? — For THINGS, we use ___+Verb.", opts: ["Wen", "Wo+Präp", "Was", "Wem"], ans: 1, marks: 1 },
+          { id: 'A2T11Q9', text: "Ich erinnere mich ___ die Diagnose.", opts: ["an", "auf", "über", "um"], ans: 0, marks: 1 },
+          { id: 'A2T11Q10', text: "Wie ___ Sie sich heute? (fühlen — feel)", opts: ["fühlt", "fühlen", "fühlst", "fühle"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T12',
+    name: "Test 12: Adjective Endings I",
+    classes: "Lecture 12",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T12Q1', text: "Der ___ Patient schläft. (alt, Nom M, weak)", opts: ["alten", "alte", "alter", "altes"], ans: 1, marks: 1 },
+          { id: 'A2T12Q2', text: "Ich sehe den ___ Arzt. (gut, Akk M, weak)", opts: ["gute", "gutem", "guten", "guter"], ans: 2, marks: 1 },
+          { id: 'A2T12Q3', text: "Die ___ Pflegerin kommt. (jung, Nom F, weak)", opts: ["jungen", "junger", "junge", "junges"], ans: 2, marks: 1 },
+          { id: 'A2T12Q4', text: "Wir helfen der ___ Frau. (krank, Dat F, weak)", opts: ["kranke", "kranken", "kranker", "krank"], ans: 1, marks: 1 },
+          { id: 'A2T12Q5', text: "Das ___ Kind schläft. (klein, Nom N, weak)", opts: ["kleinen", "kleines", "kleine", "kleiner"], ans: 2, marks: 1 },
+          { id: 'A2T12Q6', text: "Das Zimmer des ___ Arztes. (jung, Gen M, weak)", opts: ["junge", "jungen", "junger", "junges"], ans: 1, marks: 1 },
+          { id: 'A2T12Q7', text: "Weak declension = after which article?", opts: ["ein/kein", "der/die/das", "no article", "viel/wenig"], ans: 1, marks: 1 },
+          { id: 'A2T12Q8', text: "The 'Saucer Pattern': how many cells get -e (not -en)?", opts: ["3", "7", "5", "11"], ans: 2, marks: 1 },
+          { id: 'A2T12Q9', text: "Die ___ Ärztinnen kommen. (erfahren, Nom Pl, weak)", opts: ["erfahrene", "erfahrener", "erfahrenes", "erfahrenen"], ans: 3, marks: 1 },
+          { id: 'A2T12Q10', text: "Mit dem ___ Kollegen. (nett, Dat M, weak)", opts: ["nette", "netter", "netten", "nettes"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T13',
+    name: "Test 13: Adjective Endings II",
+    classes: "Lecture 13",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T13Q1', text: "Ein ___ Mann kommt. (alt, Nom M, mixed)", opts: ["alte", "alten", "altes", "alter"], ans: 3, marks: 1 },
+          { id: 'A2T13Q2', text: "Ein ___ Kind liegt im Bett. (krank, Nom N, mixed)", opts: ["kranke", "kranken", "krankes", "kranker"], ans: 2, marks: 1 },
+          { id: 'A2T13Q3', text: "Eine ___ Frau hilft. (jung, Nom F, mixed)", opts: ["junge", "junger", "jungen", "junges"], ans: 0, marks: 1 },
+          { id: 'A2T13Q4', text: "Ich sehe einen ___ Arzt. (gut, Akk M, mixed)", opts: ["guten", "gute", "gutem", "guter"], ans: 0, marks: 1 },
+          { id: 'A2T13Q5', text: "Ich brauche ein ___ Formular. (neu, Akk N, mixed)", opts: ["neue", "neuen", "neues", "neuer"], ans: 2, marks: 1 },
+          { id: 'A2T13Q6', text: "Mit einem ___ Team arbeiten wir. (erfahren, Dat N, mixed)", opts: ["erfahrenes", "erfahrener", "erfahrenen", "erfahrenem"], ans: 2, marks: 1 },
+          { id: 'A2T13Q7', text: "Mein ___ Patient kommt. (neu, Nom M — possessive = mixed)", opts: ["neue", "neues", "neuen", "neuer"], ans: 3, marks: 1 },
+          { id: 'A2T13Q8', text: "RESE-NESE: how many 'strong' cells are in the mixed table?", opts: ["1", "2", "3", "4"], ans: 2, marks: 1 },
+          { id: 'A2T13Q9', text: "Ihr ___ Kind wartet. (krank, Nom N, ihr = mixed)", opts: ["kranke", "kränken", "krankes", "kranker"], ans: 2, marks: 1 },
+          { id: 'A2T13Q10', text: "Kein ___ Arzt kommt heute. (alt, Nom M, kein = mixed)", opts: ["alte", "alten", "altes", "alter"], ans: 3, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T14',
+    name: "Test 14: Adjective Endings III",
+    classes: "Lecture 14",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T14Q1', text: "Strong declension is used after ___.", opts: ["der/die/das", "ein/kein", "no article", "welcher"], ans: 2, marks: 1 },
+          { id: 'A2T14Q2', text: "___ Kaffee ist gut. (kalt, Nom M, no article)", opts: ["Kalte", "Kalt", "Kaltem", "Kalter"], ans: 3, marks: 1 },
+          { id: 'A2T14Q3', text: "Bitte mit ___ Wasser waschen. (sauber, Dat N, no article)", opts: ["saubere", "sauberem", "sauberen", "sauberer"], ans: 1, marks: 1 },
+          { id: 'A2T14Q4', text: "Der Patient hat ___ Schmerzen. (stark, Akk Pl, no article)", opts: ["starke", "starkem", "starken", "starkes"], ans: 0, marks: 1 },
+          { id: 'A2T14Q5', text: "Strong endings COPY the endings of ___.", opts: ["ein/kein", "kein/mein", "der/die/das/den/dem", "viel/wenig"], ans: 2, marks: 1 },
+          { id: 'A2T14Q6', text: "___ Pflegekräfte gesucht! (erfahren, Nom Pl, no article)", opts: ["Erfahrene", "Erfahrenen", "Erfahrener", "Erfahrenes"], ans: 0, marks: 1 },
+          { id: 'A2T14Q7', text: "Wir brauchen ___ Material. (steril, Akk N, no article)", opts: ["sterilen", "steriles", "sterile", "sterilem"], ans: 1, marks: 1 },
+          { id: 'A2T14Q8', text: "Bei ___ Fieber melden. (hoch, Dat N, no article)", opts: ["hohes", "hoher", "hohem", "hoch"], ans: 2, marks: 1 },
+          { id: 'A2T14Q9', text: "Viel ___ Luft tut gut. (frisch, Nom F — viel is uninflected → strong)", opts: ["frischer", "frischem", "frische", "frischen"], ans: 2, marks: 1 },
+          { id: 'A2T14Q10', text: "DECISION: 'ein altes Krankenhaus' — which declension?", opts: ["Weak", "Mixed", "Strong", "None"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T15',
+    name: "Test 15: Comparative",
+    classes: "Lecture 15",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T15Q1', text: "alt → comparative", opts: ["älter", "altern", "mehr alt", "alts"], ans: 0, marks: 1 },
+          { id: 'A2T15Q2', text: "gut → comparative", opts: ["mehr gut", "besser", "güter", "gut-er"], ans: 1, marks: 1 },
+          { id: 'A2T15Q3', text: "viel → comparative", opts: ["vieler", "mehrere", "mehr", "vielst"], ans: 2, marks: 1 },
+          { id: 'A2T15Q4', text: "Berlin ist ___ als München. (groß)", opts: ["mehr groß", "großer", "größer", "am größten"], ans: 2, marks: 1 },
+          { id: 'A2T15Q5', text: "Er ist genauso alt ___ ich. (equal comparison)", opts: ["als", "wie", "dass", "ob"], ans: 1, marks: 1 },
+          { id: 'A2T15Q6', text: "Diese Methode ist besser ___ die alte. (unequal)", opts: ["wie", "als", "wenn", "ob"], ans: 1, marks: 1 },
+          { id: 'A2T15Q7', text: "'immer + Komparativ': Der Patient wird immer ___. (gut)", opts: ["mehr gut", "besser", "am besten", "gut"], ans: 1, marks: 1 },
+          { id: 'A2T15Q8', text: "Ein ___ Arzt kommt. (jung, comparative, Nom M, mixed ending)", opts: ["jüngere", "jüngeren", "jüngerer", "jüngeres"], ans: 2, marks: 1 },
+          { id: 'A2T15Q9', text: "hoch → comparative", opts: ["hochter", "mehr hoch", "höher", "hoch-er"], ans: 2, marks: 1 },
+          { id: 'A2T15Q10', text: "Haben Sie etwas ___es? (stark — something stronger)", opts: ["Stärker", "Stärkes", "Stärkeres", "Stärkerem"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T16',
+    name: "Test 16: Superlative",
+    classes: "Lecture 16",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T16Q1', text: "alt → superlative (am-form)", opts: ["am altsten", "am ältsten", "am ältesten", "am ältsten"], ans: 2, marks: 1 },
+          { id: 'A2T16Q2', text: "gut → superlative (am-form)", opts: ["am gutem", "am gutsten", "am besten", "am gutesten"], ans: 2, marks: 1 },
+          { id: 'A2T16Q3', text: "viel → superlative (am-form)", opts: ["am vielsten", "am meisten", "am vielen", "am mehrsten"], ans: 1, marks: 1 },
+          { id: 'A2T16Q4', text: "hoch → superlative (am-form)", opts: ["am hochsten", "am höchsten", "am höchsten (same)", "am hochesten"], ans: 1, marks: 1 },
+          { id: 'A2T16Q5', text: "Das ist ___ Zimmer im Haus. (groß, Nom N, def art)", opts: ["das großte", "das größte", "das größesten", "am größten"], ans: 1, marks: 1 },
+          { id: 'A2T16Q6', text: "Er ist ___ Patient hier. (alt, Nom M, definite article)", opts: ["der ältester", "der älteste", "dem ältesten", "des ältesten"], ans: 1, marks: 1 },
+          { id: 'A2T16Q7', text: "Welche Pflegerin arbeitet ___? (schnell, predicative)", opts: ["die schnellste", "am schnellsten", "am schnellsten ✓", "der schnellste"], ans: 1, marks: 1 },
+          { id: 'A2T16Q8', text: "After def. article, superlative gets which endings?", opts: ["Strong (copy der/die/das)", "Mixed (3 strong cells)", "Weak (Saucer: -e/-en)", "No ending"], ans: 2, marks: 1 },
+          { id: 'A2T16Q9', text: "frisch → superlative (adds -esten because?)", opts: ["ends in -ch", "ends in -sch", "ends in -r", "no reason"], ans: 1, marks: 1 },
+          { id: 'A2T16Q10', text: "Die ___ Ärztin bekommt den Preis. (gut, Nom F, def art)", opts: ["die guten", "die gutem", "die beste", "die besten"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T17',
+    name: "Test 17: Genitive Case",
+    classes: "Lecture 17",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T17Q1', text: "Genitive article for Maskulin and Neutral:", opts: ["der", "die", "des", "dem"], ans: 2, marks: 1 },
+          { id: 'A2T17Q2', text: "Genitive article for Feminin and Plural:", opts: ["des", "dem", "die", "der"], ans: 3, marks: 1 },
+          { id: 'A2T17Q3', text: "das Buch ___ Arztes (correct Genitive article, M)", opts: ["den", "dem", "des", "der"], ans: 2, marks: 1 },
+          { id: 'A2T17Q4', text: "Maskulin noun 'der Arzt' in Genitive → adds:", opts: ["-en", "-s", "-es", "-e"], ans: 2, marks: 1 },
+          { id: 'A2T17Q5', text: "Weak masculine (N-Deklination) like 'der Patient' → Genitive ends in:", opts: ["-s", "-es", "-en", "-e"], ans: 2, marks: 1 },
+          { id: 'A2T17Q6', text: "Proper name 'Anna' → Genitive:", opts: ["Anna's Buch (apostrophe)", "Annas Buch (no apostrophe)", "von Anna Buch", "der Anna Buch"], ans: 1, marks: 1 },
+          { id: 'A2T17Q7', text: "Which preposition takes Genitive? (EXAM: choose the correct one)", opts: ["mit", "nach", "wegen", "von"], ans: 2, marks: 1 },
+          { id: 'A2T17Q8', text: "Trotz ___ Diagnose blieb sie ruhig. (F Gen)", opts: ["die", "der", "dem", "des"], ans: 1, marks: 1 },
+          { id: 'A2T17Q9', text: "Wegen ___ starken Schmerzes … (M Gen)", opts: ["dem", "den", "des", "der"], ans: 2, marks: 1 },
+          { id: 'A2T17Q10', text: "von + Dativ is a ___ alternative to Genitive", opts: ["formal/written", "spoken/colloquial", "incorrect", "mandatory"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T18',
+    name: "Test 18: Module 2 Test",
+    classes: "Lecture 18",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T18Q1', text: "Module 2 covers Lectures:", opts: ["L1–9", "L5–14", "L10–17", "L15–20"], ans: 2, marks: 1 },
+          { id: 'A2T18Q2', text: "Ich wasche ___. (kein Objekt → correct reflexive)", opts: ["mir", "mich", "sich", "uns"], ans: 1, marks: 1 },
+          { id: 'A2T18Q3', text: "Ich wasche ___ die Hände. (body part → correct reflexive)", opts: ["mich", "dich", "mir", "sich"], ans: 2, marks: 1 },
+          { id: 'A2T18Q4', text: "Der ___ Patient schläft. (alt, weak Nom M)", opts: ["alten", "alter", "alte", "altes"], ans: 2, marks: 1 },
+          { id: 'A2T18Q5', text: "Ein ___ Patient schläft. (alt, mixed Nom M)", opts: ["alte", "alten", "altes", "alter"], ans: 3, marks: 1 },
+          { id: 'A2T18Q6', text: "Er ist besser ___ ich. (unequal comparison)", opts: ["wie", "als", "so", "dass"], ans: 1, marks: 1 },
+          { id: 'A2T18Q7', text: "Das ist am ___. (gut → irregular superlative)", opts: ["gutsten", "am gutem", "besten", "beststen"], ans: 2, marks: 1 },
+          { id: 'A2T18Q8', text: "Wegen ___ Schmerzes … (Genitive M)", opts: ["dem", "der", "des", "den"], ans: 2, marks: 1 },
+          { id: 'A2T18Q9', text: "Sich freuen ___ etwas (happy about)", opts: ["für", "auf", "über", "um"], ans: 2, marks: 1 },
+          { id: 'A2T18Q10', text: "___ erfahren__ Pflegerin arbeitet allein. (Nom F, no article → strong)", opts: ["Erfahrene", "Erfahrener", "Erfahrenes", "Erfahrenen"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T19',
+    name: "Test 19: Two-Way Prepositions I",
+    classes: "Lecture 19",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T19Q1', text: "How many two-way prepositions are there?", opts: ["7", "8", "9", "10"], ans: 2, marks: 1 },
+          { id: 'A2T19Q2', text: "Wo? (static location) → which case?", opts: ["Akkusativ", "Genitiv", "Nominativ", "Dativ"], ans: 3, marks: 1 },
+          { id: 'A2T19Q3', text: "Das Buch liegt auf ___ Tisch. (M, Wo? → Dat)", opts: ["den", "dem", "der", "die"], ans: 1, marks: 1 },
+          { id: 'A2T19Q4', text: "Die Lampe hängt an ___ Wand. (F, Wo? → Dat)", opts: ["der", "dem", "die", "den"], ans: 0, marks: 1 },
+          { id: 'A2T19Q5', text: "an + dem = ?", opts: ["ans", "am", "im", "zum"], ans: 1, marks: 1 },
+          { id: 'A2T19Q6', text: "in + dem = ?", opts: ["ins", "ans", "im", "beim"], ans: 2, marks: 1 },
+          { id: 'A2T19Q7', text: "Which verb describes STATIC location (Wo?)?", opts: ["legen", "stellen", "liegen", "setzen"], ans: 2, marks: 1 },
+          { id: 'A2T19Q8', text: "Der Patient liegt ___ Bett. (in + dem contraction)", opts: ["ins", "auf dem", "im", "in den"], ans: 2, marks: 1 },
+          { id: 'A2T19Q9', text: "Das Bett steht zwischen ___ Fenstern. (Pl Dat)", opts: ["die", "den", "dem", "der"], ans: 1, marks: 1 },
+          { id: 'A2T19Q10', text: "Er sitzt an ___ Schreibtisch. (M Dat contraction)", opts: ["den", "dem", "an dem", "am"], ans: 3, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T20',
+    name: "Test 20: Two-Way Prepositions II",
+    classes: "Lecture 20",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T20Q1', text: "Wohin? (direction / goal) → which case?", opts: ["Dativ", "Nominativ", "Akkusativ", "Genitiv"], ans: 2, marks: 1 },
+          { id: 'A2T20Q2', text: "Ich lege das Buch auf ___ Tisch. (M, Wohin? → Akk)", opts: ["dem", "der", "den", "die"], ans: 2, marks: 1 },
+          { id: 'A2T20Q3', text: "Er hängt das Bild an ___ Wand. (F, Wohin? → Akk)", opts: ["der", "dem", "die", "den"], ans: 2, marks: 1 },
+          { id: 'A2T20Q4', text: "in + das = ?", opts: ["im", "ins", "ans", "am"], ans: 1, marks: 1 },
+          { id: 'A2T20Q5', text: "Which verb shows DIRECTION (Wohin?)?", opts: ["liegen", "stehen", "sitzen", "legen"], ans: 3, marks: 1 },
+          { id: 'A2T20Q6', text: "Die Pflegerin legt den Patienten ___ Bett. (in+das)", opts: ["im", "in dem", "ins", "in der"], ans: 2, marks: 1 },
+          { id: 'A2T20Q7', text: "Location partner of 'legen' (Wohin?) is:", opts: ["stellen", "stecken", "liegen", "setzen"], ans: 2, marks: 1 },
+          { id: 'A2T20Q8', text: "Stell den Stuhl neben ___ Bett. (N Akk, Wohin?)", opts: ["dem", "der", "das", "den"], ans: 2, marks: 1 },
+          { id: 'A2T20Q9', text: "Häng das Bild an ___ Wand. (F Akk, Wohin?)", opts: ["der", "die", "dem", "den"], ans: 1, marks: 1 },
+          { id: 'A2T20Q10', text: "Wo? → liegen → auf dem Tisch. Wohin? → legen → ?", opts: ["auf den Tisch", "auf dem Tisch", "auf der Tisch", "auf das Tisch"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T21',
+    name: "Test 21: Interactive Spatial Lab",
+    classes: "Lecture 21",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T21Q1', text: "Das Buch liegt auf ___ Tisch. (M — Wo? → ?)", opts: ["den", "dem", "der", "die"], ans: 1, marks: 1 },
+          { id: 'A2T21Q2', text: "Ich lege das Buch auf ___ Tisch. (M — Wohin? → ?)", opts: ["dem", "der", "den", "die"], ans: 2, marks: 1 },
+          { id: 'A2T21Q3', text: "Which verb shows LOCATION (Wo?)?", opts: ["legen", "stellen", "liegen", "setzen"], ans: 2, marks: 1 },
+          { id: 'A2T21Q4', text: "Which verb shows DIRECTION (Wohin?)?", opts: ["liegen", "stehen", "sitzen", "legen"], ans: 3, marks: 1 },
+          { id: 'A2T21Q5', text: "Er geht ___ Krankenhaus. (in+das — direction)", opts: ["im", "in das", "ins", "in den"], ans: 2, marks: 1 },
+          { id: 'A2T21Q6', text: "Er ist ___ Krankenhaus. (in+dem — location)", opts: ["ins", "in das", "im", "in den"], ans: 2, marks: 1 },
+          { id: 'A2T21Q7', text: "Das Bild hängt an ___ Wand. (F — Wo? → Dat)", opts: ["die", "den", "der", "dem"], ans: 2, marks: 1 },
+          { id: 'A2T21Q8', text: "Er hängt das Bild an ___ Wand. (F — Wohin? → Akk)", opts: ["der", "dem", "den", "die"], ans: 3, marks: 1 },
+          { id: 'A2T21Q9', text: "Die Pflegerin ___ den Patienten ins Bett. (legt/liegt)", opts: ["liegt", "liegt", "legt", "liegen"], ans: 2, marks: 1 },
+          { id: 'A2T21Q10', text: "an + dem = ?", opts: ["ans", "am", "im", "zum"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T22',
+    name: "Test 22: Fixed Prepositions I",
+    classes: "Lecture 22",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T22Q1', text: "durch → which case ALWAYS?", opts: ["Dativ", "Genitiv", "Akkusativ", "Nominativ"], ans: 2, marks: 1 },
+          { id: 'A2T22Q2', text: "für → which case ALWAYS?", opts: ["Akkusativ", "Dativ", "Genitiv", "Nominativ"], ans: 0, marks: 1 },
+          { id: 'A2T22Q3', text: "Das ist für ___ Patienten. (M)", opts: ["dem", "den", "der", "die"], ans: 1, marks: 1 },
+          { id: 'A2T22Q4', text: "Gegen ___ Schmerzen helfen Tabletten. (Pl)", opts: ["den", "dem", "die", "das"], ans: 2, marks: 1 },
+          { id: 'A2T22Q5', text: "Durch ___ Korridor bitte. (M)", opts: ["dem", "das", "der", "den"], ans: 3, marks: 1 },
+          { id: 'A2T22Q6', text: "Ohne ___ Rezept. (N)", opts: ["den", "dem", "die", "das"], ans: 3, marks: 1 },
+          { id: 'A2T22Q7', text: "entlang: where does it usually go?", opts: ["before noun + Dative", "after noun + Accusative", "before noun + Accusative", "after noun + Dative"], ans: 1, marks: 1 },
+          { id: 'A2T22Q8', text: "Ohne ___ Maske darf man nicht rein. (F)", opts: ["der", "dem", "die", "den"], ans: 2, marks: 1 },
+          { id: 'A2T22Q9', text: "gegen → case?", opts: ["Dativ", "Akkusativ", "Genitiv", "both Dat and Akk"], ans: 1, marks: 1 },
+          { id: 'A2T22Q10', text: "Um ___ Ecke. (F — 'around the corner')", opts: ["der", "dem", "den", "die"], ans: 3, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T23',
+    name: "Test 23: Fixed Prepositions II",
+    classes: "Lecture 23",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T23Q1', text: "mit → which case ALWAYS?", opts: ["Akkusativ", "Dativ", "Genitiv", "Nominativ"], ans: 1, marks: 1 },
+          { id: 'A2T23Q2', text: "aus → which case ALWAYS?", opts: ["Akkusativ", "Dativ", "Nominativ", "Genitiv"], ans: 1, marks: 1 },
+          { id: 'A2T23Q3', text: "Er kommt aus ___ Krankenhaus. (N)", opts: ["den", "das", "dem", "der"], ans: 2, marks: 1 },
+          { id: 'A2T23Q4', text: "Ich fahre mit ___ Bus. (M)", opts: ["den", "das", "der", "dem"], ans: 3, marks: 1 },
+          { id: 'A2T23Q5', text: "zu + dem = ?", opts: ["zur", "zum", "beim", "vom"], ans: 1, marks: 1 },
+          { id: 'A2T23Q6', text: "zu + der = ?", opts: ["zum", "beim", "zur", "vom"], ans: 2, marks: 1 },
+          { id: 'A2T23Q7', text: "seit + Dative → what tense?", opts: ["Perfekt (haben/sein+PP)", "Futur I", "Präteritum", "Präsens (present)"], ans: 3, marks: 1 },
+          { id: 'A2T23Q8', text: "Er ist seit einem Jahr hier ___. (correct ending?)", opts: ["gewesen", "geworden", "gelernt", "(nothing — present tense)"], ans: 3, marks: 1 },
+          { id: 'A2T23Q9', text: "Nach ___ Operation schläft er. (F)", opts: ["dem", "das", "die", "der"], ans: 3, marks: 1 },
+          { id: 'A2T23Q10', text: "gegenüber + Dat: die Apotheke (F) → ?", opts: ["gegenüber die Apotheke", "gegenüber den Apotheke", "gegenüber der Apotheke", "gegenüber dem Apotheke"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T24',
+    name: "Test 24: Module 3 Test",
+    classes: "Lecture 24",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T24Q1', text: "Module 3 covers which lectures?", opts: ["L10–17", "L15–22", "L19–23", "L21–25"], ans: 2, marks: 1 },
+          { id: 'A2T24Q2', text: "Das Buch liegt auf ___ Tisch. (M, two-way, Wo?)", opts: ["den", "die", "der", "dem"], ans: 3, marks: 1 },
+          { id: 'A2T24Q3', text: "Für ___ Patienten. (M, fixed Akk)", opts: ["dem", "der", "den", "die"], ans: 2, marks: 1 },
+          { id: 'A2T24Q4', text: "Mit ___ Bus. (M, fixed Dat)", opts: ["den", "die", "der", "dem"], ans: 3, marks: 1 },
+          { id: 'A2T24Q5', text: "Ohne ___ Rezept. (N, fixed Akk)", opts: ["dem", "der", "das", "den"], ans: 2, marks: 1 },
+          { id: 'A2T24Q6', text: "Seit ___ Jahren bin ich hier. (Pl, seit→Dat) + tense?", opts: ["war", "bin gewesen", "bin", "werde sein"], ans: 2, marks: 1 },
+          { id: 'A2T24Q7', text: "Er geht INS Krankenhaus. INS = ?", opts: ["in+dem", "in+das", "an+das", "an+dem"], ans: 1, marks: 1 },
+          { id: 'A2T24Q8', text: "durch → category?", opts: ["Two-Way", "Fixed Dative", "Fixed Accusative", "None"], ans: 2, marks: 1 },
+          { id: 'A2T24Q9', text: "von + dem = ?", opts: ["zum", "zum", "vom", "zur"], ans: 2, marks: 1 },
+          { id: 'A2T24Q10', text: "legen = direction → which case after two-way prep?", opts: ["Dativ", "Genitiv", "Nominativ", "Akkusativ"], ans: 3, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T25',
+    name: "Test 25: Futur I",
+    classes: "Lecture 25",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T25Q1', text: "Futur I = ?", opts: ["haben + Partizip II", "werden + Infinitiv", "sein + Partizip II", "sein + Infinitiv"], ans: 1, marks: 1 },
+          { id: 'A2T25Q2', text: "ich → werden conjugation for Futur I", opts: ["wirst", "werde", "wird", "werden"], ans: 1, marks: 1 },
+          { id: 'A2T25Q3', text: "er/sie/es → werden conjugation", opts: ["werde", "werdet", "werden", "wird"], ans: 3, marks: 1 },
+          { id: 'A2T25Q4', text: "Ich ___ morgen kommen.", opts: ["wirst", "wird", "werde", "werden"], ans: 2, marks: 1 },
+          { id: 'A2T25Q5', text: "Word order: infinitive goes to ___.", opts: ["Position 2", "after subject", "at the end", "before werden"], ans: 2, marks: 1 },
+          { id: 'A2T25Q6', text: "Negation in Futur I: Ich werde ___ kommen.", opts: ["nicht kommen", "kommen nicht", "nicht", "kommen nicht mehr"], ans: 0, marks: 1 },
+          { id: 'A2T25Q7', text: "'Er wird wohl schlafen.' — which USE of Futur I?", opts: ["Future plan", "Medical prognosis", "Present assumption (wohl)", "Question"], ans: 2, marks: 1 },
+          { id: 'A2T25Q8', text: "Futur I question: ___ du morgen kommen?", opts: ["Wirst", "Werde", "Wird", "Werden"], ans: 0, marks: 1 },
+          { id: 'A2T25Q9', text: "Subordinate: Ich glaube, dass er kommen ___.", opts: ["werde", "wird", "werden", "wirst"], ans: 1, marks: 1 },
+          { id: 'A2T25Q10', text: "With modal: Er wird das tun ___. (können)", opts: ["können", "kann", "gekonnt", "konnte"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T26',
+    name: "Test 26: Konjunktiv II",
+    classes: "Lecture 26",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T26Q1', text: "Konjunktiv II of 'sein' (ich-form)?", opts: ["würde sein", "wäre", "sei", "war"], ans: 1, marks: 1 },
+          { id: 'A2T26Q2', text: "Konjunktiv II of 'haben' (er-form)?", opts: ["hätte", "hatte", "würde haben", "hat"], ans: 0, marks: 1 },
+          { id: 'A2T26Q3', text: "Konjunktiv II of 'können' (wir-form)?", opts: ["könnten", "konnten", "würden können", "können"], ans: 0, marks: 1 },
+          { id: 'A2T26Q4', text: "Which sentence is WRONG?", opts: ["Ich wäre gern Ärztin.", "Das wäre toll!", "Ich würde sein glücklich.", "Könnten Sie helfen?"], ans: 2, marks: 1 },
+          { id: 'A2T26Q5', text: "Polite version of 'Ich will einen Termin.'", opts: ["Ich will höflich einen Termin.", "Ich wollte gern einen Termin.", "Ich hätte gern einen Termin.", "Ich würde einen Termin wollen."], ans: 2, marks: 1 },
+          { id: 'A2T26Q6', text: "Complete: Wenn ich Zeit ___, würde ich kommen.", opts: ["habe", "hätte", "hatte", "haben"], ans: 1, marks: 1 },
+          { id: 'A2T26Q7', text: "'Würden Sie das bitte unterschreiben?' — what USE of Konjunktiv II?", opts: ["Wish", "Conditional", "Polite request", "Past tense"], ans: 2, marks: 1 },
+          { id: 'A2T26Q8', text: "Which CANNOT be combined with 'würde'?", opts: ["machen", "gehen", "sein", "kommen"], ans: 2, marks: 1 },
+          { id: 'A2T26Q9', text: "Konjunktiv II of 'müssen' (Sie-form)?", opts: ["müssten", "mussten", "würden müssen", "müssen"], ans: 0, marks: 1 },
+          { id: 'A2T26Q10', text: "'Das sollte klappen.' — meaning?", opts: ["That must work.", "That worked.", "That should/ought to work. (Konj.II)", "That will work."], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T27',
+    name: "Test 27: Subjunctive Lab",
+    classes: "Lecture 27",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T27Q1', text: "'Wenn ich Zeit habe, würde ich kommen.' — what is wrong?", opts: ["würde is wrong", "habe should be hätte", "nothing is wrong", "kommen should be käme"], ans: 1, marks: 1 },
+          { id: 'A2T27Q2', text: "Which is CORRECT Konjunktiv II?", opts: ["Ich würde sein froh.", "Ich wäre froh.", "Ich sein würde froh.", "Ich würde froh sein nicht."], ans: 1, marks: 1 },
+          { id: 'A2T27Q3', text: "'Er konnte nicht kommen.' (konnte) = ?", opts: ["Konjunktiv II", "Futur I", "Präteritum", "Präsens"], ans: 2, marks: 1 },
+          { id: 'A2T27Q4', text: "'Er könnte das machen.' (könnte) = ?", opts: ["Präteritum", "Futur I", "Konjunktiv II", "Imperativ"], ans: 2, marks: 1 },
+          { id: 'A2T27Q5', text: "du-form of wäre?", opts: ["wärest", "wärst", "wärt", "bist"], ans: 1, marks: 1 },
+          { id: 'A2T27Q6', text: "'Ich wollte fragen, ob…' — this use of wollte is:", opts: ["Präteritum (past fact)", "Konjunktiv II (polite intro)", "Futur I", "Imperativ"], ans: 1, marks: 1 },
+          { id: 'A2T27Q7', text: "Correct polite version of 'Haben Sie Zeit?'", opts: ["Würden Sie Zeit haben?", "Hätten Sie Zeit?", "Hatten Sie Zeit?", "Haben Sie Zeit würden?"], ans: 1, marks: 1 },
+          { id: 'A2T27Q8', text: "Which is a common Konjunktiv II ERROR?", opts: ["Ich hätte gern einen Termin.", "Das wäre toll!", "Ich würde haben mehr Zeit.", "Wäre das möglich?"], ans: 2, marks: 1 },
+          { id: 'A2T27Q9', text: "Complete: Wenn wir Geld ___, würden wir reisen.", opts: ["haben", "hatten", "hätten", "werden haben"], ans: 2, marks: 1 },
+          { id: 'A2T27Q10', text: "'Das sollte möglich sein.' — which type of meaning?", opts: ["Past obligation", "Konjunktiv II assumption/prediction", "Futur I", "Imperative"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T28',
+    name: "Test 28: Professional German: CV",
+    classes: "Lecture 28",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T28Q1', text: "What is the German term for 'work experience' in a CV?", opts: ["Ausbildung", "Berufserfahrung", "Kenntnisse", "Fähigkeiten"], ans: 1, marks: 1 },
+          { id: 'A2T28Q2', text: "German CV date format for 'September 2022'?", opts: ["Sept. 2022", "September/2022", "09/2022", "2022.09"], ans: 2, marks: 1 },
+          { id: 'A2T28Q3', text: "'Single' (marital status) in German CV?", opts: ["allein", "unverheiratet", "ledig", "solo"], ans: 2, marks: 1 },
+          { id: 'A2T28Q4', text: "Experience order in German CV Berufserfahrung?", opts: ["Oldest first", "Alphabetical", "Newest first (reverse chronological)", "By employer name"], ans: 2, marks: 1 },
+          { id: 'A2T28Q5', text: "How are nursing duties written in a German CV?", opts: ["Full sentences with 'ich'", "Noun phrases only (no full sentences)", "Bullet points with verbs", "English terms"], ans: 1, marks: 1 },
+          { id: 'A2T28Q6', text: "'B1 German level' — full CV formulation?", opts: ["Deutsch: gut", "Deutsch: B1 — Goethe-Zertifikat", "Deutsch: spreche", "Deutsch: mittelmäßig"], ans: 1, marks: 1 },
+          { id: 'A2T28Q7', text: "'officially recognised' for a nursing qualification?", opts: ["staatlich akzeptiert", "offiziell anerkannt", "staatlich anerkannt", "behördlich bestätigt"], ans: 2, marks: 1 },
+          { id: 'A2T28Q8', text: "Which is NOT a standard German CV section?", opts: ["Berufserfahrung", "Persönliche Daten", "Career Objective", "Ausbildung"], ans: 2, marks: 1 },
+          { id: 'A2T28Q9', text: "The German CV must end with:", opts: ["Salary requirements", "References", "Ort, Datum, Unterschrift", "A career objective"], ans: 2, marks: 1 },
+          { id: 'A2T28Q10', text: "Nursing title in German (full official form)?", opts: ["Krankenpfleger", "Pflegehilfe", "Gesundheits- und Krankenpflegerin", "Krankenschwester (outdated)"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T29',
+    name: "Test 29: Cover Letter",
+    classes: "Lecture 29",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T29Q1', text: "Correct formal salutation (no named contact)?", opts: ["Hallo,", "Guten Tag,", "Sehr geehrte Damen und Herren,", "Liebe Damen und Herren,"], ans: 2, marks: 1 },
+          { id: 'A2T29Q2', text: "Correct formal closing for a cover letter?", opts: ["Liebe Grüße", "Viele Grüße", "Mit freundlichen Grüßen", "Tschüss"], ans: 2, marks: 1 },
+          { id: 'A2T29Q3', text: "German for 'I am applying for the position as…'?", opts: ["Ich bewerbe mich um die Stelle als…", "Ich will die Stelle als…", "Ich suche die Stelle als…", "Ich habe die Stelle als…"], ans: 0, marks: 1 },
+          { id: 'A2T29Q4', text: "'I have 3 years of professional experience' — German?", opts: ["Ich habe 3 Jahre Erfahrung.", "Ich verfüge über 3 Jahre Berufserfahrung.", "Ich besitze 3 Jahres Erfahrung.", "Mir gehören 3 Jahre Berufserfahrung."], ans: 1, marks: 1 },
+          { id: 'A2T29Q5', text: "Polite Konjunktiv II closing: 'I would be very happy about an interview.'", opts: ["Ich will ein Interview.", "Über ein Gespräch würde ich mich sehr freuen.", "Ich freue mich auf Gespräch.", "Ein Gespräch würde ich wollen."], ans: 1, marks: 1 },
+          { id: 'A2T29Q6', text: "What is the 'Betreff' in a German letter?", opts: ["The closing formula", "The subject line", "The salutation", "The signature"], ans: 1, marks: 1 },
+          { id: 'A2T29Q7', text: "'I am available for questions' — German?", opts: ["Ich bin erreichbar.", "Ich stehe Ihnen für Rückfragen gerne zur Verfügung.", "Ich beantworte Fragen.", "Ich habe Zeit für Fragen."], ans: 1, marks: 1 },
+          { id: 'A2T29Q8', text: "How do you write the date in a formal German letter?", opts: ["August 19, 2026", "19. August 2026 / 19.08.2026", "19/08/2026", "2026-08-19"], ans: 1, marks: 1 },
+          { id: 'A2T29Q9', text: "B1 German — how to phrase in a cover letter?", opts: ["Ich spreche etwas Deutsch.", "Meine Deutschkenntnisse entsprechen dem Niveau B1.", "Mein Deutsch ist gut.", "Ich habe B1 Deutsch."], ans: 1, marks: 1 },
+          { id: 'A2T29Q10', text: "Which is a mistake in a German cover letter?", opts: ["Sehr geehrte Damen und Herren,", "Über ein Gespräch würde ich mich freuen.", "Ich bin der beste Kandidat.", "Ich verfüge über 3 Jahre Erfahrung."], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T30',
+    name: "Test 30: Job Interview Simulation",
+    classes: "Lecture 30",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T30Q1', text: "How should you address the interviewer in Germany?", opts: ["Du", "Sie (formal)", "Ihr", "No pronoun needed"], ans: 1, marks: 1 },
+          { id: 'A2T30Q2', text: "'Tell me about yourself' in German interview:", opts: ["Wer sind Sie?", "Erzählen Sie etwas über sich.", "Sagen Sie mir alles.", "Beschreiben Sie sich."], ans: 1, marks: 1 },
+          { id: 'A2T30Q3', text: "When asked 'Haben Sie noch Fragen?' you should:", opts: ["Say 'Nein, danke'", "Ask 1–2 prepared questions", "Leave immediately", "Say 'Ich weiß nicht'"], ans: 1, marks: 1 },
+          { id: 'A2T30Q4', text: "Asking for repetition politely:", opts: ["Was?", "Wiederholen Sie!", "Entschuldigung, könnten Sie das bitte wiederholen?", "Ich verstehe nicht."], ans: 2, marks: 1 },
+          { id: 'A2T30Q5', text: "'Strength' answer: which is BEST for a nurse?", opts: ["Ich bin sehr schön.", "Ich bin zuverlässig, teamfähig und belastbar.", "Ich mache keine Fehler.", "Ich bin der beste Pfleger."], ans: 1, marks: 1 },
+          { id: 'A2T30Q6', text: "When to ask about salary in Germany?", opts: ["At the start of the interview", "In the first interview", "Never — it's not allowed", "Only if the interviewer raises it first"], ans: 3, marks: 1 },
+          { id: 'A2T30Q7', text: "Buying time to think professionally:", opts: ["'Hmm...'", "'Keine Ahnung.'", "'Das ist eine gute Frage. Ich überlege kurz…'", "'Ich weiß es nicht.'"], ans: 2, marks: 1 },
+          { id: 'A2T30Q8', text: "Konjunktiv II in closing of interview: 'I would be happy about a positive reply.'", opts: ["Ich will eine Zusage.", "Über eine positive Rückmeldung würde ich mich sehr freuen.", "Ich freue mich über Zusage.", "Ich möchte eine positive Antwort."], ans: 1, marks: 1 },
+          { id: 'A2T30Q9', text: "'reliable' in German interview language?", opts: ["belastbar", "teamfähig", "zuverlässig", "engagiert"], ans: 2, marks: 1 },
+          { id: 'A2T30Q10', text: "Formal goodbye at end of interview:", opts: ["Tschüss!", "Bis bald!", "Auf Wiedersehen!", "Ciao!"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T31',
+    name: "Test 31: Passive Voice",
+    classes: "Lecture 31",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T31Q1', text: "Passive structure in German?", opts: ["haben + PP", "sein + PP", "werden + PP", "werden + Infinitiv"], ans: 2, marks: 1 },
+          { id: 'A2T31Q2', text: "'Der Patient wird untersucht.' — which tense?", opts: ["Präteritum", "Futur I", "Präsens", "Perfekt"], ans: 2, marks: 1 },
+          { id: 'A2T31Q3', text: "Präteritum passive of 'untersuchen' (er)?", opts: ["er wird untersucht", "er wurde untersucht", "er ist untersucht worden", "er untersuche"], ans: 1, marks: 1 },
+          { id: 'A2T31Q4', text: "Perfekt passive — which 'worden' is correct?", opts: ["Das Zimmer ist gereinigt geworden.", "Das Zimmer ist gereinigt worden.", "Das Zimmer hat gereinigt worden.", "Das Zimmer wird gereinigt worden."], ans: 1, marks: 1 },
+          { id: 'A2T31Q5', text: "'Der Arzt untersucht den Patienten.' → Passive:", opts: ["Der Arzt wird untersucht.", "Den Patienten wird untersucht.", "Der Patient wird untersucht.", "Der Patient wird untersuchen."], ans: 2, marks: 1 },
+          { id: 'A2T31Q6', text: "Agent in passive uses which preposition?", opts: ["mit + Dativ", "von + Dativ", "durch + Akk", "für + Akk"], ans: 1, marks: 1 },
+          { id: 'A2T31Q7', text: "'untersuchen' → Partizip II", opts: ["untergesucht", "geuntersucht", "untersucht", "untersuchtet"], ans: 2, marks: 1 },
+          { id: 'A2T31Q8', text: "'Hier wird nicht geraucht.' means:", opts: ["Here smoking is good", "Here smoking is done", "No smoking here", "Here you must smoke"], ans: 2, marks: 1 },
+          { id: 'A2T31Q9', text: "Separable verb 'ausfüllen' → Partizip II", opts: ["geausfüllt", "ausgefüllt", "ausfüllte", "ausfüllend"], ans: 1, marks: 1 },
+          { id: 'A2T31Q10', text: "Passive with agent: '…vom Arzt…' — 'vom' is?", opts: ["durch + Dat", "von + Nom", "von + dem = vom", "bei + Dat"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T32',
+    name: "Test 32: Relative Clauses I",
+    classes: "Lecture 32",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T32Q1', text: "Relative clause always starts with:", opts: ["a verb", "a comma + relative pronoun", "a conjunction like 'weil'", "an article"], ans: 1, marks: 1 },
+          { id: 'A2T32Q2', text: "Verb position in a relative clause:", opts: ["Position 2", "at the beginning", "at the end", "before the relative pronoun"], ans: 2, marks: 1 },
+          { id: 'A2T32Q3', text: "'Der Arzt, ___ mir hilft, …' (M, Nom) — correct pronoun?", opts: ["den", "dem", "die", "der"], ans: 3, marks: 1 },
+          { id: 'A2T32Q4', text: "'Der Arzt, ___ ich kenne, …' (M, Akk) — correct pronoun?", opts: ["der", "dem", "den", "die"], ans: 2, marks: 1 },
+          { id: 'A2T32Q5', text: "Relative pronoun for F (Nominativ AND Akkusativ)?", opts: ["der", "den", "die", "dem"], ans: 2, marks: 1 },
+          { id: 'A2T32Q6', text: "Relative pronoun for N (Nominativ AND Akkusativ)?", opts: ["das", "des", "dem", "den"], ans: 0, marks: 1 },
+          { id: 'A2T32Q7', text: "Pl Nominativ AND Akkusativ relative pronoun?", opts: ["den", "dem", "denen", "die"], ans: 3, marks: 1 },
+          { id: 'A2T32Q8', text: "Which relative pronoun changes between Nom and Akk?", opts: ["Feminin (die)", "Neutral (das)", "Plural (die)", "Maskulin (der→den)"], ans: 3, marks: 1 },
+          { id: 'A2T32Q9', text: "'Das Medikament, ___ ich nehme, …' (N, Akk)?", opts: ["der", "den", "das", "dem"], ans: 2, marks: 1 },
+          { id: 'A2T32Q10', text: "Missing comma: 'Der Arzt der mich behandelt ist neu.' — fix:", opts: ["No comma needed", "Der Arzt der mich behandelt ist neu.", "Der Arzt, der mich behandelt, ist neu.", "Der Arzt der mich behandelt, ist neu."], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T33',
+    name: "Test 33: Relative Clauses II",
+    classes: "Lecture 33",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T33Q1', text: "Dative relative pronoun for Maskulin?", opts: ["der", "den", "dem", "denen"], ans: 2, marks: 1 },
+          { id: 'A2T33Q2', text: "Dative relative pronoun for Feminin?", opts: ["die", "der", "dem", "denen"], ans: 1, marks: 1 },
+          { id: 'A2T33Q3', text: "Dative relative pronoun for Plural (most tested)?", opts: ["den", "die", "dem", "denen"], ans: 3, marks: 1 },
+          { id: 'A2T33Q4', text: "'Der Arzt, ___ ich vertraue, …' (M, Dat — vertrauen+Dat)?", opts: ["der", "den", "dem", "denen"], ans: 2, marks: 1 },
+          { id: 'A2T33Q5', text: "'Die Ärztin, ___ ich danke, …' (F, Dat — danken+Dat)?", opts: ["die", "der", "dem", "denen"], ans: 1, marks: 1 },
+          { id: 'A2T33Q6', text: "'Die Kollegen, mit ___ ich arbeite, …' (Pl, Dat — mit+Dat)?", opts: ["den", "die", "dem", "denen"], ans: 3, marks: 1 },
+          { id: 'A2T33Q7', text: "'Das Krankenhaus, in ___ ich arbeite, …' (N, Dat — in+Dat)?", opts: ["das", "das", "dem", "denen"], ans: 2, marks: 1 },
+          { id: 'A2T33Q8', text: "'Die Ärztin, mit ___ ich arbeite, …' (F, Dat — mit+Dat)?", opts: ["die", "der", "dem", "denen"], ans: 1, marks: 1 },
+          { id: 'A2T33Q9', text: "Which is WRONG?", opts: ["Der Arzt, dem ich helfe, ist nett.", "Die Kollegen, mit denen ich arbeite, …", "Die Ärztin, der ich danke, …", "Die Patienten, mit den ich spreche, …"], ans: 3, marks: 1 },
+          { id: 'A2T33Q10', text: "Plural Dative rel. pronoun: DENEN vs. den — which is correct?", opts: ["den (like Akk Pl)", "denen (special Dat Pl form)", "die (like Nom/Akk Pl)", "der (like F Dat)"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T34',
+    name: "Test 34: Exam Prep: Reading & Listening",
+    classes: "Lecture 34",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T34Q1', text: "R/F/N — Text says praxis opens at 8. Statement: 'opens at 9'. Answer?", opts: ["Richtig", "Falsch", "Nicht im Text", "Cannot say"], ans: 1, marks: 1 },
+          { id: 'A2T34Q2', text: "R/F/N — Text only mentions phone. Statement: 'email appointments possible'.", opts: ["Richtig", "Falsch", "Nicht im Text", "Cannot say"], ans: 2, marks: 1 },
+          { id: 'A2T34Q3', text: "Reading strategy STEP 1 means:", opts: ["Read every word carefully", "Skim title and first sentence only", "Answer all questions first", "Write notes in the margin"], ans: 1, marks: 1 },
+          { id: 'A2T34Q4', text: "In Hören, questions are in ___:", opts: ["random order", "reverse order", "alphabetical order", "chronological order (order of recording)"], ans: 3, marks: 1 },
+          { id: 'A2T34Q5', text: "What does 'Achtung' on a sign mean?", opts: ["Exit", "Enter", "Attention/Warning", "Open"], ans: 1, marks: 1 },
+          { id: 'A2T34Q6', text: "You should read the Hören questions:", opts: ["only after the recording ends", "during the recording only", "BEFORE the recording starts", "after the second play"], ans: 2, marks: 1 },
+          { id: 'A2T34Q7', text: "How many times is each Hören audio segment played?", opts: ["Once", "Twice", "Three times", "Four times"], ans: 1, marks: 1 },
+          { id: 'A2T34Q8', text: "'Bitte hinterlassen Sie eine Nachricht.' means:", opts: ["Please enter your name", "Please come to reception", "Please leave a message", "Please take a number"], ans: 2, marks: 1 },
+          { id: 'A2T34Q9', text: "'Geöffnet' means:", opts: ["closed", "emergency", "open", "restricted"], ans: 2, marks: 1 },
+          { id: 'A2T34Q10', text: "'Nicht im Text' applies when:", opts: ["the text contradicts the statement", "the topic is completely absent from the text", "the statement is partially true", "you didn't understand the text"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A2_T35',
+    name: "Test 35: Exam Prep: Writing & Speaking",
+    classes: "Lecture 35",
+    level: 'A2',
+    totalMarks: 10,
+    timeMinutes: 15,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: 'A2T35Q1', text: "A2 Schreiben task length (target words)?", opts: ["20–30", "40–50", "60–80", "100–120"], ans: 2, marks: 1 },
+          { id: 'A2T35Q2', text: "The MOST MARKS in Schreiben go to:", opts: ["correct spelling", "covering all bullet points (content)", "long sentences", "formal vocabulary"], ans: 1, marks: 1 },
+          { id: 'A2T35Q3', text: "Correct formal salutation (no named contact)?", opts: ["Hallo!", "Guten Tag,", "Sehr geehrte Damen und Herren,", "Liebe Prüfungskommission!"], ans: 2, marks: 1 },
+          { id: 'A2T35Q4', text: "Correct formal closing for an exam email?", opts: ["Tschüss!", "Viele Grüße", "Mit freundlichen Grüßen", "Liebe Grüße"], ans: 2, marks: 1 },
+          { id: 'A2T35Q5', text: "A2 Sprechen Part 3 (plan something) — useful phrase:", opts: ["Was kostet das?", "Wie wäre es mit…?", "Richtig oder falsch?", "Entschuldigung, wie spät ist es?"], ans: 1, marks: 1 },
+          { id: 'A2T35Q6', text: "Verb position in writing: 'Ich leider kommen kann nicht.' — corrected?", opts: ["Ich nicht kommen leider kann.", "Leider ich kann nicht kommen.", "Ich kann leider nicht kommen.", "Leider ich nicht kann kommen."], ans: 2, marks: 1 },
+          { id: 'A2T35Q7', text: "Connector for 'that's why / therefore':", opts: ["obwohl", "außerdem", "deshalb", "trotzdem"], ans: 2, marks: 1 },
+          { id: 'A2T35Q8', text: "You forget a word in the speaking exam — what to do?", opts: ["Stop and say nothing", "Say 'Ich weiß nicht' and stop", "Keep talking: 'Wie sagt man…?' / use a simpler word", "Leave the room"], ans: 2, marks: 1 },
+          { id: 'A2T35Q9', text: "A2 Sprechen Part 1: Sich vorstellen — what should you include?", opts: ["CV in full", "Name, age, origin, job, German level, hobbies", "Only name and age", "Interview questions about weaknesses"], ans: 1, marks: 1 },
+          { id: 'A2T35Q10', text: "'Außerdem' is a connector meaning:", opts: ["Unfortunately", "Therefore", "Furthermore / Also", "Despite"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
   }
 ]
 
@@ -1736,7 +2716,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
         )}
 
         {/* Test cards */}
-        {TESTS.map(test => {
+        {TESTS.filter(t => t.level === (user?.level || 'A1')).map(test => {
           const attempts = attempted(test.id)
           const best = bestScore(test.id)
           const bestPct = best !== null ? Math.round((best / test.totalMarks) * 100) : null
