@@ -2716,7 +2716,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
         )}
 
         {/* Test cards */}
-        {TESTS.filter(t => t.level === (user?.level || 'A1')).map(test => {
+        {TESTS.map(test => {
           const attempts = attempted(test.id)
           const best = bestScore(test.id)
           const bestPct = best !== null ? Math.round((best / test.totalMarks) * 100) : null
