@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { C } from '../lib/constants'
-import { PBar, Btn, Spin } from '../components/UI'
+import { C, LEVELS } from '../lib/constants'
+import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { sb, trackEvent } from '../lib/supabase'
 
 // ── TEST DATA (from PDF) ────────────────────────────────────────────────────
@@ -2553,6 +2553,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
   const [submitting, setSubmitting] = useState(false)
   const [myHistory, setMyHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
+  const [expLevel, setExpLevel] = useState(user?.level || 'A1')
   const startTimeRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -2715,8 +2716,33 @@ export default function DailyTestPage({ user, onTestComplete }) {
           </div>
         )}
 
-        {/* Test cards */}
-        {TESTS.map(test => {
+        {/* Test cards — collapsible per level (same as Curriculum) */}
+        {LEVELS.map(lv => {
+          const levelTests = TESTS.filter(t => t.level === lv)
+          if (levelTests.length === 0) return null
+          const passedCount = levelTests.filter(t => {
+            const b = bestScore(t.id)
+            return b !== null && Math.round((b / t.totalMarks) * 100) >= t.passMark
+          }).length
+          const isCur = lv === user?.level
+          const isExp = expLevel === lv
+          return (
+            <div key={lv} style={{ marginBottom: 10 }}>
+              <div onClick={() => setExpLevel(isExp ? null : lv)}
+                style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: C.sh }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: isCur ? C.blue : C.border, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, color: isCur ? '#fff' : C.textS, flexShrink: 0 }}>{lv}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontWeight: 600, color: C.navy, fontSize: 12 }}>Level {lv} Daily Tests</span>
+                    {isCur && <Badge label="Current" color={C.blue} bg={C.blueL} />}
+                  </div>
+                  <PBar pct={(passedCount / levelTests.length) * 100} color={isCur ? C.blue : C.green} h={4} />
+                  <div style={{ fontSize: 10, color: C.textS, marginTop: 2 }}>{passedCount}/{levelTests.length} tests passed</div>
+                </div>
+                <span style={{ color: C.textS, fontSize: 12 }}>{isExp ? '▲' : '▼'}</span>
+              </div>
+              {isExp && <div style={{ marginTop: 10 }}>
+        {levelTests.map(test => {
           const attempts = attempted(test.id)
           const best = bestScore(test.id)
           const bestPct = best !== null ? Math.round((best / test.totalMarks) * 100) : null
@@ -2762,6 +2788,10 @@ export default function DailyTestPage({ user, onTestComplete }) {
 
               <Btn label={attempts.length > 0 ? '🔄 Retake Test' : '▶ Start Test'}
                 onClick={() => startTest(test)} variant={passed ? 'outline' : 'primary'} style={{ width: '100%' }} />
+            </div>
+          )
+        })}
+              </div>}
             </div>
           )
         })}
