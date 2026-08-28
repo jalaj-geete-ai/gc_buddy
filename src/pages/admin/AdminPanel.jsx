@@ -105,17 +105,23 @@ export default function AdminPanel() {
     setLoading(true)
     try {
       const [{ data: approved }, { data: progress }, { data: tests }, { data: ev }] = await Promise.all([
-        sb.from('approved_students').select('roll_number,name').order('name'),
+        sb.from('approved_students').select('roll_number,name,is_demo').order('name'),
         sb.from('student_progress').select('*').order('last_active', { ascending: false }),
         sb.from('daily_test_submissions').select('roll_number,test_id,percentage,score,total_marks,submitted_at'),
         sb.from('usage_events').select('roll_number,section,event_type,created_at').order('created_at', { ascending: false }).limit(2000),
       ])
-      const pm = {}; (progress || []).forEach(p => { pm[p.roll_number] = p })
-      const testMap = {}; (tests || []).forEach(t => {
+      // Demo/BD accounts are excluded from all analysis and overall scores (they exist only for product demos).
+      const demoRolls = new Set((approved || []).filter(a => a.is_demo).map(a => a.roll_number))
+      const approvedReal = (approved || []).filter(a => !a.is_demo)
+      const progressReal = (progress || []).filter(p => !demoRolls.has(p.roll_number))
+      const testsReal = (tests || []).filter(t => !demoRolls.has(t.roll_number))
+      const evReal = (ev || []).filter(e => !demoRolls.has(e.roll_number))
+      const pm = {}; progressReal.forEach(p => { pm[p.roll_number] = p })
+      const testMap = {}; testsReal.forEach(t => {
         if (!testMap[t.roll_number]) testMap[t.roll_number] = []
         testMap[t.roll_number].push(t)
       })
-      const merged = (approved || []).map(a => {
+      const merged = approvedReal.map(a => {
         const p = pm[a.roll_number] || {}
         const myTests = testMap[a.roll_number] || []
         const bestPct = myTests.length ? Math.max(...myTests.map(t => Number(t.percentage))) : 0
@@ -143,8 +149,8 @@ export default function AdminPanel() {
         }
       })
       setStudents(merged)
-      setTestSubs(tests || [])
-      setEvents(ev || [])
+      setTestSubs(testsReal)
+      setEvents(evReal)
     } catch (e) { console.error(e) }
     setLoading(false)
   }
