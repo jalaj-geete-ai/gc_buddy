@@ -5,8 +5,8 @@ const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const today = () => new Date().toISOString().slice(0, 10);
 const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-function fmtDate(d) { const [y, m, day] = d.split("-"); return `${day}/${m}`; }
-function weekday(d) { return WD[new Date(d + "T00:00:00").getDay()]; }
+const fmtDate = (d) => { const [, m, day] = d.split("-"); return `${day}/${m}`; };
+const weekday = (d) => WD[new Date(d + "T00:00:00").getDay()];
 
 let toastTimer;
 function toast(msg, isErr = false) {
@@ -14,10 +14,55 @@ function toast(msg, isErr = false) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.className = "toast"), 2600);
 }
 
-const facultyInput = $("#facultyEmail");
-facultyInput.value = localStorage.getItem("gc_faculty") || "";
-facultyInput.addEventListener("change", () => localStorage.setItem("gc_faculty", facultyInput.value.trim()));
-const facultyEmail = () => facultyInput.value.trim() || null;
+// ---------- faculty session (no password; stored on device) ------------------
+let ME = null;
+try { ME = JSON.parse(localStorage.getItem("gc_faculty") || "null"); } catch { ME = null; }
+
+async function boot() {
+  if (ME && ME.name) return showApp();
+  return showLogin();
+}
+
+async function showLogin() {
+  $("#topbar").hidden = true; $("#tabsbar").hidden = true;
+  $("#tab-mark").hidden = true; $("#tab-report").hidden = true;
+  const box = $("#login");
+  box.hidden = false;
+  box.innerHTML = `<div class="login"><div class="card">
+    <h2>🇩🇪 GC Attendance</h2>
+    <p>Select your name to start marking attendance.</p>
+    <select id="loginSel"><option value="">Loading…</option></select>
+    <button class="btn" id="loginGo" disabled>Continue</button>
+  </div></div>`;
+  const { data, error } = await sb.from("faculty").select("id,name").eq("is_active", true).order("name");
+  const sel = $("#loginSel");
+  if (error || !data?.length) { sel.innerHTML = `<option value="">No faculty found</option>`; return; }
+  sel.innerHTML = `<option value="">— choose your name —</option>` +
+    data.map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join("");
+  sel.addEventListener("change", () => { $("#loginGo").disabled = !sel.value; });
+  $("#loginGo").addEventListener("click", () => {
+    const f = data.find(x => String(x.id) === sel.value);
+    if (!f) return;
+    ME = { id: f.id, name: f.name };
+    localStorage.setItem("gc_faculty", JSON.stringify(ME));
+    showApp();
+  });
+}
+
+function showApp() {
+  $("#login").hidden = true;
+  $("#topbar").hidden = false; $("#tabsbar").hidden = false;
+  $("#whoName").textContent = ME.name;
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === "mark"));
+  $("#tab-mark").hidden = false; $("#tab-report").hidden = true;
+  renderMark();
+}
+
+$("#switchBtn").addEventListener("click", () => {
+  localStorage.removeItem("gc_faculty"); ME = null;
+  $("#tab-mark").hidden = true; $("#tab-report").hidden = true;
+  showLogin();
+});
 
 const tabs = { mark: renderMark, report: renderReport };
 document.querySelectorAll("nav.tabs button").forEach(btn => btn.addEventListener("click", () => {
@@ -27,17 +72,25 @@ document.querySelectorAll("nav.tabs button").forEach(btn => btn.addEventListener
   tabs[btn.dataset.tab]();
 }));
 
-async function getBatches() {
-  const { data, error } = await sb.from("batches").select("batch_name")
-    .order("start_year").order("start_month").order("seq");
-  if (error) { toast(error.message, true); return []; }
-  return (data || []).map(b => b.batch_name);
+// batches this faculty may mark (falls back to all if none mapped or "show all")
+async function myBatches(showAll) {
+  if (!showAll) {
+    const { data } = await sb.from("faculty_batches").select("batch_name").eq("faculty_id", ME.id);
+    const mine = (data || []).map(r => r.batch_name);
+    if (mine.length) {
+      const { data: b } = await sb.from("batches").select("batch_name").in("batch_name", mine)
+        .order("start_year").order("start_month").order("seq");
+      return (b || []).map(x => x.batch_name);
+    }
+  }
+  const { data } = await sb.from("batches").select("batch_name").order("start_year").order("start_month").order("seq");
+  return (data || []).map(x => x.batch_name);
 }
 
 // ============================================================================
 // ATTENDANCE GRID
 // ============================================================================
-const G = { batch: null, roster: [], dates: [], marks: new Map(), changed: new Set() };
+const G = { batch: null, roster: [], dates: [], marks: new Map(), topics: new Map(), changed: new Set(), showAll: false };
 const key = (roll, d) => `${roll}|${d}`;
 
 async function renderMark() {
@@ -45,34 +98,41 @@ async function renderMark() {
   root.innerHTML = `<div class="card">
     <div class="row">
       <div class="field"><label>Batch</label><select id="gBatch"></select></div>
-      <div class="field"><label>Add a class</label>
-        <div style="display:flex;gap:6px"><input type="date" id="gDate" value="${today()}">
-        <button class="btn ghost" id="gAdd">+ Add</button></div></div>
+      <div class="field"><label>New class — date</label><input type="date" id="gDate" value="${today()}"></div>
+      <div class="field"><label>Topic (optional)</label><input type="text" id="gTopic" placeholder="e.g. Dative prepositions"></div>
+      <div class="field"><label>&nbsp;</label><button class="btn ghost" id="gAdd">+ Add class</button></div>
       <div style="flex:1"></div>
+      <div class="field"><label>&nbsp;</label><button class="btn ghost" id="gExport">⭳ Excel</button></div>
       <button class="btn" id="gSave" disabled>Save changes</button>
     </div>
+    <div class="row" style="margin-top:8px"><label class="chk"><input type="checkbox" id="gShowAll"> Show all batches (not just mine)</label></div>
     <div class="legend">
       <span><span class="sw" style="background:var(--ok)"></span>Present</span>
       <span><span class="sw" style="background:var(--no)"></span>Absent</span>
-      <span><span class="sw" style="background:#e3e6ea"></span>Not marked (click to mark)</span>
+      <span><span class="sw" style="background:#e3e6ea"></span>Not marked</span>
       <span><span class="sw" style="background:repeating-linear-gradient(45deg,#e9ebee,#e9ebee 3px,#f6f7f8 3px,#f6f7f8 6px)"></span>Not yet in batch</span>
-      <span>Tip: a new class starts everyone <b>Present</b> — click a cell to flip to Absent.</span>
+      <span>A new class starts everyone <b>Present</b> — flip absentees. Attending morning <i>or</i> evening counts as present.</span>
     </div>
   </div>
   <div id="gGrid"><div class="spinner">Loading…</div></div>`;
 
-  const batches = await getBatches();
   const sel = $("#gBatch");
-  sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
+  const fill = async () => {
+    const batches = await myBatches(G.showAll);
+    sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
+    if (batches.length) loadGrid(sel.value); else $("#gGrid").innerHTML = `<div class="card spinner">No batches assigned to you.</div>`;
+  };
   sel.addEventListener("change", () => loadGrid(sel.value));
+  $("#gShowAll").addEventListener("change", e => { G.showAll = e.target.checked; fill(); });
   $("#gAdd").addEventListener("click", addClass);
   $("#gSave").addEventListener("click", saveGrid);
-  if (batches.length) loadGrid(sel.value);
-  else $("#gGrid").innerHTML = `<div class="card spinner">No batches yet.</div>`;
+  $("#gExport").addEventListener("click", exportCsv);
+  fill();
 }
 
 async function loadGrid(batch) {
-  G.batch = batch; G.marks = new Map(); G.changed = new Set();
+  G.batch = batch; G.marks = new Map(); G.topics = new Map(); G.changed = new Set();
+  $("#gSave").disabled = true;
   $("#gGrid").innerHTML = `<div class="card spinner">Loading roster…</div>`;
 
   const { data: enr, error } = await sb.from("batch_enrollments")
@@ -83,9 +143,9 @@ async function loadGrid(batch) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const { data: att } = await sb.from("attendance_records")
-    .select("date, roll_number, status").eq("batch_name", batch);
+    .select("date, roll_number, status, topic").eq("batch_name", batch);
   const dates = new Set();
-  (att || []).forEach(r => { G.marks.set(key(r.roll_number, r.date), r.status); dates.add(r.date); });
+  (att || []).forEach(r => { G.marks.set(key(r.roll_number, r.date), r.status); dates.add(r.date); if (r.topic) G.topics.set(r.date, r.topic); });
   G.dates = [...dates].sort();
   drawGrid();
 }
@@ -103,7 +163,8 @@ function studentPct(roll, start) {
 function drawGrid() {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
-    ${G.dates.map(d => `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)}</span></th>`).join("")}
+    ${G.dates.map(d => `<th class="datehdr" title="${esc(G.topics.get(d) || "")}">${fmtDate(d)}<span class="dc">${weekday(d)}</span>
+      <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button></div></th>`).join("")}
     <th class="c-pct">%</th></tr></thead>`;
 
   const body = G.roster.map((st, i) => {
@@ -116,42 +177,44 @@ function drawGrid() {
       return `<td class="cell ${cls}${ch}" data-roll="${esc(st.roll)}" data-date="${d}">${label}</td>`;
     }).join("");
     const pct = studentPct(st.roll, st.start);
-    const pctTxt = pct == null ? "–" : pct + "%";
     const pctColor = pct == null ? "" : pct < 75 ? "color:var(--no)" : pct < 85 ? "color:var(--warn)" : "color:var(--ok)";
     return `<tr><td class="c-idx">${i + 1}</td><td class="c-name">${esc(st.name)}</td>${cells}
-      <td class="c-pct" style="${pctColor}">${pctTxt}</td></tr>`;
+      <td class="c-pct" style="${pctColor}">${pct == null ? "–" : pct + "%"}</td></tr>`;
   }).join("");
 
-  const emptyNote = G.dates.length ? "" : `<div class="hint" style="padding:14px">No classes yet. Pick a date and press <b>+ Add</b> to start marking.</div>`;
-  $("#gGrid").innerHTML = `<div class="gridwrap"><table class="grid">${head}<tbody>${body}</tbody></table></div>${emptyNote}`;
+  const note = G.dates.length ? "" : `<div class="hint" style="padding:14px">No classes yet. Pick a date and press <b>+ Add class</b>.</div>`;
+  $("#gGrid").innerHTML = `<div class="gridwrap"><table class="grid">${head}<tbody>${body}</tbody></table></div>${note}`;
 
-  $("#gGrid").querySelectorAll("td.cell").forEach(td => {
-    if (td.classList.contains("na")) return;
-    td.addEventListener("click", () => cycleCell(td));
-  });
+  $("#gGrid").querySelectorAll("td.cell:not(.na)").forEach(td => td.addEventListener("click", () => cycleCell(td)));
+  $("#gGrid").querySelectorAll(".colbtns button").forEach(b => b.addEventListener("click", () => markColumn(b.dataset.d, b.dataset.all)));
 }
 
+function setMark(roll, d, status) { G.marks.set(key(roll, d), status); G.changed.add(key(roll, d)); }
+
 function cycleCell(td) {
-  const roll = td.dataset.roll, d = td.dataset.date, k = key(roll, d);
-  const cur = G.marks.get(k);
-  const next = cur === "Present" ? "Absent" : "Present"; // empty/absent -> present; present -> absent
-  G.marks.set(k, next); G.changed.add(k);
-  $("#gSave").disabled = G.changed.size === 0;
-  drawGrid();
+  const roll = td.dataset.roll, d = td.dataset.date;
+  const cur = G.marks.get(key(roll, d));
+  setMark(roll, d, cur === "Present" ? "Absent" : "Present");
+  $("#gSave").disabled = G.changed.size === 0; drawGrid();
+}
+
+function markColumn(d, status) {
+  for (const st of G.roster) { if (st.start && d < st.start) continue; setMark(st.roll, d, status); }
+  $("#gSave").disabled = G.changed.size === 0; drawGrid();
 }
 
 function addClass() {
   const d = $("#gDate").value;
   if (!d) { toast("Pick a date first.", true); return; }
+  const topic = $("#gTopic").value.trim();
   if (!G.dates.includes(d)) { G.dates.push(d); G.dates.sort(); }
-  // default everyone enrolled by that date to Present (unless already marked)
+  if (topic) G.topics.set(d, topic);
   for (const st of G.roster) {
     if (st.start && d < st.start) continue;
-    const k = key(st.roll, d);
-    if (!G.marks.has(k)) { G.marks.set(k, "Present"); G.changed.add(k); }
+    if (!G.marks.has(key(st.roll, d))) setMark(st.roll, d, "Present");
   }
-  $("#gSave").disabled = G.changed.size === 0;
-  drawGrid();
+  $("#gTopic").value = "";
+  $("#gSave").disabled = G.changed.size === 0; drawGrid();
   toast(`Class ${fmtDate(d)} added — everyone Present, flip absentees then Save.`);
 }
 
@@ -161,29 +224,48 @@ async function saveGrid() {
   const rows = [...G.changed].map(k => {
     const [roll, d] = k.split("|");
     return { batch_name: G.batch, date: d, roll_number: roll, name: byName[roll],
-             status: G.marks.get(k), class_type: "Day", marked_by: facultyEmail() };
+             status: G.marks.get(k), class_type: "Day", topic: G.topics.get(d) || null, marked_by: ME.name };
   });
   $("#gSave").disabled = true;
-  const { error } = await sb.from("attendance_records")
-    .upsert(rows, { onConflict: "batch_name,date,roll_number,class_type" });
+  const { error } = await sb.from("attendance_records").upsert(rows, { onConflict: "batch_name,date,roll_number,class_type" });
   if (error) { toast(error.message, true); $("#gSave").disabled = false; return; }
   G.changed.clear(); drawGrid();
   toast(`Saved ${rows.length} marks ✓`);
 }
 
+function exportCsv() {
+  if (!G.roster.length) { toast("Nothing to export.", true); return; }
+  const head = ["#", "Student", "Roll", ...G.dates.map(d => `${fmtDate(d)} (${weekday(d)})`), "Overall %"];
+  const lines = [head.join(",")];
+  G.roster.forEach((st, i) => {
+    const cells = G.dates.map(d => (st.start && d < st.start) ? "" : ({ Present: "P", Absent: "A" }[G.marks.get(key(st.roll, d))] || ""));
+    const pct = studentPct(st.roll, st.start);
+    lines.push([i + 1, `"${st.name.replace(/"/g, '""')}"`, st.roll, ...cells, pct == null ? "" : pct + "%"].join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `${G.batch}_attendance.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 // ============================================================================
-// SUMMARY (per-batch attendance %)
+// SUMMARY
 // ============================================================================
 async function renderReport() {
   const root = $("#tab-report");
   root.innerHTML = `<div class="card"><div class="row">
       <div class="field"><label>Batch</label><select id="rBatch"></select></div>
+      <label class="chk"><input type="checkbox" id="rShowAll"> Show all batches</label>
     </div></div><div class="card" id="rBody"><div class="spinner">Pick a batch…</div></div>`;
-  const batches = await getBatches();
   const sel = $("#rBatch");
-  sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
+  const fill = async () => {
+    const batches = await myBatches($("#rShowAll").checked);
+    sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
+    if (batches.length) loadReport(sel.value);
+  };
   sel.addEventListener("change", () => loadReport(sel.value));
-  if (batches.length) loadReport(sel.value);
+  $("#rShowAll").addEventListener("change", fill);
+  fill();
 }
 
 async function loadReport(batch) {
@@ -211,4 +293,4 @@ async function loadReport(batch) {
     <tbody>${rows}</tbody></table>`;
 }
 
-renderMark();
+boot();

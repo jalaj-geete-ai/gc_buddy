@@ -7,21 +7,19 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="top">
+  <header class="top" id="topbar" hidden>
     <h1>🇩🇪 GC Attendance</h1>
-    <div class="who">
-      Faculty:
-      <input type="text" id="facultyEmail" placeholder="you@testbook.com" size="22" />
-    </div>
+    <div class="who">Signed in as <span class="name" id="whoName"></span><a id="switchBtn">switch</a></div>
   </header>
 
-  <nav class="tabs">
+  <nav class="tabs" id="tabsbar" hidden>
     <button data-tab="mark" class="active">Attendance</button>
     <button data-tab="report">Summary</button>
   </nav>
 
   <main>
-    <section id="tab-mark"></section>
+    <section id="login"></section>
+    <section id="tab-mark" hidden></section>
     <section id="tab-report" hidden></section>
   </main>
 
