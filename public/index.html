@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GC Attendance Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>🇩🇪 GC Attendance Portal</h1>
+    <div class="who">
+      Faculty:
+      <input type="text" id="facultyEmail" placeholder="you@testbook.com" size="22" />
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="mark" class="active">Mark Attendance</button>
+    <button data-tab="report">Reports</button>
+    <button data-tab="student">Student Lookup</button>
+    <button data-tab="admin">Batches &amp; Students</button>
+  </nav>
+
+  <main>
+    <section id="tab-mark"></section>
+    <section id="tab-report" hidden></section>
+    <section id="tab-student" hidden></section>
+    <section id="tab-admin" hidden></section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
