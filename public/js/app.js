@@ -34,7 +34,7 @@ async function showLogin() {
     <select id="loginSel"><option value="">Loading…</option></select>
     <button class="btn" id="loginGo" disabled>Continue</button>
   </div></div>`;
-  const { data, error } = await sb.from("faculty").select("id,name").eq("is_active", true).order("name");
+  const { data, error } = await sb.from("faculty").select("id,name,is_admin").eq("is_active", true).order("name");
   const sel = $("#loginSel");
   if (error || !data?.length) { sel.innerHTML = `<option value="">No faculty found</option>`; return; }
   sel.innerHTML = `<option value="">— choose your name —</option>` +
@@ -43,15 +43,20 @@ async function showLogin() {
   $("#loginGo").addEventListener("click", () => {
     const f = data.find(x => String(x.id) === sel.value);
     if (!f) return;
-    ME = { id: f.id, name: f.name };
+    ME = { id: f.id, name: f.name, is_admin: !!f.is_admin };
     localStorage.setItem("gc_faculty", JSON.stringify(ME));
     showApp();
   });
 }
 
-function showApp() {
+async function showApp() {
   $("#login").hidden = true;
   $("#topbar").hidden = false; $("#tabsbar").hidden = false;
+  // refresh admin flag (handles sessions saved before is_admin existed) + validate faculty
+  try {
+    const { data } = await sb.from("faculty").select("name,is_admin,is_active").eq("id", ME.id).single();
+    if (data) { ME.is_admin = !!data.is_admin; ME.name = data.name; localStorage.setItem("gc_faculty", JSON.stringify(ME)); }
+  } catch {}
   $("#whoName").textContent = ME.name;
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === "mark"));
   $("#tab-mark").hidden = false; $("#tab-report").hidden = true;
@@ -72,16 +77,15 @@ document.querySelectorAll("nav.tabs button").forEach(btn => btn.addEventListener
   tabs[btn.dataset.tab]();
 }));
 
-// batches this faculty may mark (falls back to all if none mapped or "show all")
-async function myBatches(showAll) {
-  if (!showAll) {
+// batches this faculty may mark. Admins (Jahanavi) see all; everyone else only their own.
+async function myBatches() {
+  if (!ME.is_admin) {
     const { data } = await sb.from("faculty_batches").select("batch_name").eq("faculty_id", ME.id);
     const mine = (data || []).map(r => r.batch_name);
-    if (mine.length) {
-      const { data: b } = await sb.from("batches").select("batch_name").in("batch_name", mine)
-        .order("start_year").order("start_month").order("seq");
-      return (b || []).map(x => x.batch_name);
-    }
+    const { data: b } = await sb.from("batches").select("batch_name")
+      .in("batch_name", mine.length ? mine : ["__none__"])
+      .order("start_year").order("start_month").order("seq");
+    return (b || []).map(x => x.batch_name);
   }
   const { data } = await sb.from("batches").select("batch_name").order("start_year").order("start_month").order("seq");
   return (data || []).map(x => x.batch_name);
@@ -105,7 +109,6 @@ async function renderMark() {
       <div class="field"><label>&nbsp;</label><button class="btn ghost" id="gExport">⭳ Excel</button></div>
       <button class="btn" id="gSave" disabled>Save changes</button>
     </div>
-    <div class="row" style="margin-top:8px"><label class="chk"><input type="checkbox" id="gShowAll"> Show all batches (not just mine)</label></div>
     <div class="legend">
       <span><span class="sw" style="background:var(--ok)"></span>Present</span>
       <span><span class="sw" style="background:var(--no)"></span>Absent</span>
@@ -118,12 +121,11 @@ async function renderMark() {
 
   const sel = $("#gBatch");
   const fill = async () => {
-    const batches = await myBatches(G.showAll);
+    const batches = await myBatches();
     sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
     if (batches.length) loadGrid(sel.value); else $("#gGrid").innerHTML = `<div class="card spinner">No batches assigned to you.</div>`;
   };
   sel.addEventListener("change", () => loadGrid(sel.value));
-  $("#gShowAll").addEventListener("change", e => { G.showAll = e.target.checked; fill(); });
   $("#gAdd").addEventListener("click", addClass);
   $("#gSave").addEventListener("click", saveGrid);
   $("#gExport").addEventListener("click", exportCsv);
@@ -255,16 +257,14 @@ async function renderReport() {
   const root = $("#tab-report");
   root.innerHTML = `<div class="card"><div class="row">
       <div class="field"><label>Batch</label><select id="rBatch"></select></div>
-      <label class="chk"><input type="checkbox" id="rShowAll"> Show all batches</label>
     </div></div><div class="card" id="rBody"><div class="spinner">Pick a batch…</div></div>`;
   const sel = $("#rBatch");
   const fill = async () => {
-    const batches = await myBatches($("#rShowAll").checked);
+    const batches = await myBatches();
     sel.innerHTML = batches.map(b => `<option>${esc(b)}</option>`).join("") || `<option>—</option>`;
     if (batches.length) loadReport(sel.value);
   };
   sel.addEventListener("change", () => loadReport(sel.value));
-  $("#rShowAll").addEventListener("change", fill);
   fill();
 }
 

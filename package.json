@@ -1,0 +1,8 @@
+{
+  "name": "gc-attendance-portal",
+  "private": true,
+  "description": "Static faculty attendance portal (no build step).",
+  "scripts": {
+    "build": "echo \"Static site — nothing to build; files are served from public/\""
+  }
+}
