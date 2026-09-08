@@ -1,21 +1,22 @@
-# Historical backfill — attempted, rolled back
+# Historical backfill — completed
 
-I parsed the original **GC attendance tracker** sheets (Mar–Sep batches),
-combining each class's morning + evening into a single daily **Present-if-either**
-mark, and matched 2,264 records to enrolled students by name (scoped per batch).
+Loaded from the **updated** "GC attendance tracker (1).xlsx" (faculties enter
+D/M/Y; years forced to 2026 since the programme began March 2026).
 
-**Why it was rolled back:** the tracker's **Date column is not reliable**. Examples
-from `A1_JUN_01`: class 1 = serial `46028` (→ Jan 2026) with subsequent rows
-stepping ~60 days apart (not a real class cadence), then text dates like
-`15/06/2025` (wrong year) and mixed `D/M` vs `M/D`. Percentages are date-independent
-and were fine, but the class **dates** would make the grid misleading, so all
-imported rows (`marked_by='import'`) were deleted and the portal left as a clean
-slate for go-forward marking.
+Parsing rules:
+- Excel **serial** date cells → converted to real dates (these are valid).
+- **Text** D/M/Y cells → parsed day/month, **year forced to 2026** (fixes `2025`
+  typos and the `//` double-slash slip).
+- Dropped dates **before the batch's start month** (removes a few corrupted early
+  `A1_JUN_01` cells that landed on the 6th of alternating months).
+- Dropped any date **after today** (no attendance for future classes).
+- Morning + Evening of the same class combined to **Present if either**.
 
-**If history is wanted later**, two workable options:
-1. A **class-number-based** grid (columns = Class 1..N from the sheet's "Class No."),
-   ignoring the broken dates entirely.
-2. A **per-sheet date-cleaning** pass with you confirming the real class calendar.
+Result: ~2,024 daily marks across MAR–JUL batches, matched to each batch's roster
+by name (fuzzy, scoped per batch). Percentages/grid verified in the app.
 
-Parser + loader live in the scratch dir (`C:\gcx\parse_tracker.ps1`,
-`backfill_rest.ps1`) if we revisit this.
+Unmatched tracker columns (not loaded) are mostly **A1_JUL_02 students the CRM
+didn't assign to that batch** (Saba bari, Jyoti Sahil Tak, Prabha, Anitha B, …)
+plus a few cross-batch/two-name cells — enroll them if you want their history.
+
+Scripts (scratch): C:\gcx\parse_tracker3.ps1, C:\gcx\backfill_rest.ps1.
