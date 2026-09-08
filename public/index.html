@@ -8,7 +8,7 @@
 </head>
 <body>
   <header class="top">
-    <h1>🇩🇪 GC Attendance Portal</h1>
+    <h1>🇩🇪 GC Attendance</h1>
     <div class="who">
       Faculty:
       <input type="text" id="facultyEmail" placeholder="you@testbook.com" size="22" />
@@ -16,21 +16,16 @@
   </header>
 
   <nav class="tabs">
-    <button data-tab="mark" class="active">Mark Attendance</button>
-    <button data-tab="report">Reports</button>
-    <button data-tab="student">Student Lookup</button>
-    <button data-tab="admin">Batches &amp; Students</button>
+    <button data-tab="mark" class="active">Attendance</button>
+    <button data-tab="report">Summary</button>
   </nav>
 
   <main>
     <section id="tab-mark"></section>
     <section id="tab-report" hidden></section>
-    <section id="tab-student" hidden></section>
-    <section id="tab-admin" hidden></section>
   </main>
 
   <div class="toast" id="toast"></div>
-
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
