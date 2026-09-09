@@ -9,7 +9,7 @@ import AppShell from './pages/AppShell'
 import AdminPanel from './pages/admin/AdminPanel'
 import FacultyPanel from './pages/admin/FacultyPanel'
 import StudentManager from './pages/admin/StudentManager'
-import FunnelDashboard from './pages/admin/FunnelDashboard'
+import Multiverse from './pages/admin/Multiverse'
 import PublicTest from './pages/PublicTest'
 
 const params = new URLSearchParams(window.location.search)
@@ -37,7 +37,7 @@ export default function App() {
   if (params.get('admin')==='1') return <AdminPanel/>
   if (params.get('faculty')==='1') return <FacultyPanel/>
   if (params.get('students')==='1') return <StudentManager/>
-  if (params.get('funnel')==='1') return <FunnelDashboard/>
+  if (params.get('multiverse')==='1' || params.get('funnel')==='1') return <Multiverse/>
   if (params.get('test')==='public') return <PublicTest/>
 
   // Restore session
