@@ -64,9 +64,10 @@ export default function Multiverse() {
   const [pw, setPw] = useState('')
   const [, setTick] = useState(0)
   const [tab, setTab] = useState('gcbuddy')
-  const [sub, setSub] = useState('stats')      // 'stats' | 'students'
+  const [sub, setSub] = useState('stats')      // 'stats' | 'analysis' | 'students'
   const [rows, setRows] = useState([])
   const [daily, setDaily] = useState([])
+  const [weekly, setWeekly] = useState([])
   const [features, setFeatures] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -92,14 +93,16 @@ export default function Multiverse() {
   async function load() {
     setLoading(true)
     try {
-      const [f, d, u] = await Promise.all([
+      const [f, d, u, w] = await Promise.all([
         sb.rpc('get_student_funnel'),
         sb.rpc('get_gcbuddy_daily_activity', { p_days: 14 }),
         sb.rpc('get_gcbuddy_feature_usage'),
+        sb.rpc('get_gcbuddy_weekly_activity', { p_weeks: 12 }),
       ])
       setRows((f.data || []).filter(r => !r.is_demo))
       setDaily(d.data || [])
       setFeatures(u.data || [])
+      setWeekly(w.data || [])
     } catch (e) { console.error('multiverse load:', e.message) }
     setLoading(false)
   }
@@ -140,6 +143,21 @@ export default function Multiverse() {
     return { ...f, n: matched.reduce((a, r) => a + Number(r.n), 0), users: Math.max(0, ...matched.map(r => Number(r.users)), 0) }
   }).filter(f => f.n > 0).sort((a, b) => b.n - a.n)
   const maxDaily = Math.max(1, ...daily.map(d => d.users))
+  const maxWeekly = Math.max(1, ...weekly.map(w => w.users))
+  const a1pct = total ? Math.round(rows.filter(s => s.level === 'A1').length / total * 100) : 0
+  const dormantPct = total ? Math.round(dormant / total * 100) : 0
+  const activationPct = total ? Math.round(rows.filter(s => s.last_event).length / total * 100) : 0
+  const intvN = reach.find(r => r.key === 'step_interview')?.n || 0
+  const intvPct = total ? Math.round(intvN / total * 100) : 0
+  // The analytics-map findings, recomputed live. s: 1=good, 0=watch, -1=risk.
+  const health = [
+    { t: 'A1 progression wall', v: `${a1pct}%`, note: `${rows.filter(s => s.level === 'A1').length} of ${total} still at A1`, s: a1pct < 80 ? 1 : a1pct < 90 ? 0 : -1 },
+    { t: 'Dormant learners', v: `${dormantPct}%`, note: `${dormant} inactive for 14d+`, s: dormantPct < 20 ? 1 : dormantPct < 30 ? 0 : -1 },
+    { t: 'Activation', v: `${activationPct}%`, note: `${never} approved never started`, s: activationPct > 85 ? 1 : activationPct > 70 ? 0 : -1 },
+    { t: 'Daily-test gate', v: `${passRate}%`, note: 'pass rate vs the 60% gate', s: passRate >= 65 ? 1 : passRate >= 55 ? 0 : -1 },
+    { t: 'AI interview adoption', v: `${intvPct}%`, note: `${intvN} students ever tried it`, s: intvPct > 20 ? 1 : intvPct > 5 ? 0 : -1 },
+    { t: 'Stickiness (DAU/MAU)', v: `${stickiness}%`, note: 'daily ÷ monthly actives', s: stickiness >= 20 ? 1 : stickiness >= 10 ? 0 : -1 },
+  ]
 
   // ── Per-student filter + sort ──
   const filtered = rows.filter(s =>
@@ -221,7 +239,7 @@ export default function Multiverse() {
         <>
           {/* Sub-tab bar */}
           <div style={{ background: C.surfAlt, borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 6, padding: '8px 16px', flexShrink: 0 }}>
-            {[['stats', '📊 Usage Statistics'], ['students', '👥 Per-Student']].map(([id, lbl]) => (
+            {[['stats', '📊 Usage Statistics'], ['analysis', '🔎 Analysis'], ['students', '👥 Per-Student']].map(([id, lbl]) => (
               <button key={id} onClick={() => setSub(id)}
                 style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${sub === id ? C.blue : C.border}`, background: sub === id ? C.blueL : '#fff', color: sub === id ? C.blue : C.textM, cursor: 'pointer', fontSize: 12, fontWeight: sub === id ? 700 : 500, fontFamily: 'inherit' }}>
                 {lbl}
@@ -322,6 +340,65 @@ export default function Multiverse() {
                     )
                   })}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {!loading && sub === 'analysis' && (
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              {/* Weekly active users */}
+              <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px', marginBottom: 18 }}>
+                <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>📈 Weekly active users — last 12 weeks</div>
+                <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Distinct students active each ISO week (IST). The final bar is the current, still-running week.</div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 150 }}>
+                  {weekly.map((w, i) => (
+                    <div key={i} title={`Week of ${w.wk}: ${w.users} users, ${w.events} events`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 4, height: '100%' }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: C.textM }}>{w.users}</span>
+                      <div style={{ width: '100%', height: `${Math.round(w.users / maxWeekly * 100)}%`, minHeight: 2, background: C.blue, borderRadius: '4px 4px 0 0', opacity: i === weekly.length - 1 ? 0.5 : 1 }}/>
+                      <span style={{ fontSize: 8, color: C.textS, whiteSpace: 'nowrap' }}>{new Date(w.wk).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                  ))}
+                  {weekly.length === 0 && <div style={{ margin: 'auto', color: C.textS, fontSize: 11 }}>No activity in range</div>}
+                </div>
+              </div>
+
+              {/* Health check — analytics-map findings, recomputed live */}
+              <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 10 }}>🩺 Product health check <span style={{ fontSize: 10, fontWeight: 400, color: C.textS }}>— the analytics-map findings, recomputed live</span></div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 20 }}>
+                {health.map(h => {
+                  const col = h.s > 0 ? C.green : h.s === 0 ? C.amber : C.red
+                  const bg = h.s > 0 ? C.greenL : h.s === 0 ? C.amberL : C.redL
+                  const lbl = h.s > 0 ? 'Good' : h.s === 0 ? 'Watch' : 'Risk'
+                  return (
+                    <div key={h.t} style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, borderLeft: `3px solid ${col}`, padding: '14px 15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.navy }}>{h.t}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: col, background: bg, padding: '2px 7px', borderRadius: 10 }}>{lbl}</span>
+                      </div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: col, lineHeight: 1 }}>{h.v}</div>
+                      <div style={{ fontSize: 10.5, color: C.textS, marginTop: 5 }}>{h.note}</div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Journey reach & drop-off */}
+              <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🧭 Journey reach & drop-off</div>
+                <div style={{ fontSize: 10, color: C.textS, marginBottom: 12 }}>Students who have ever reached each step, in journey order.</div>
+                {reach.map((st, i) => {
+                  const pct = total ? Math.round(st.n / total * 100) : 0
+                  const drop = i > 0 ? reach[i - 1].n - st.n : 0
+                  return (
+                    <div key={st.key} style={{ marginBottom: 9 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                        <span style={{ fontSize: 11, color: C.textM, fontWeight: 600 }}>{st.icon} {st.short}</span>
+                        <span style={{ fontSize: 10.5, color: C.textS }}><b style={{ color: C.navy }}>{st.n}</b> · {pct}%{i > 0 && drop > 0 && <span style={{ color: C.red, marginLeft: 6 }}>▼{drop}</span>}</span>
+                      </div>
+                      <PBar pct={pct} h={7} color={pct >= 60 ? C.green : pct >= 30 ? C.amber : C.red}/>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

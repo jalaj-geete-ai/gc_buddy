@@ -13,6 +13,11 @@ import Multiverse from './pages/admin/Multiverse'
 import PublicTest from './pages/PublicTest'
 
 const params = new URLSearchParams(window.location.search)
+// Portal routing accepts BOTH ?admin=1 (query) and #admin (hash). Hash routing
+// is the reliable path on the live host: deep links that carry a path or query
+// can 404 at the edge when the SPA fallback isn't active, but a bare "/#admin"
+// only ever requests "/", which always resolves — then we route client-side.
+const hash = (window.location.hash || '').replace(/^#\/?/, '').toLowerCase()
 
 // Tests required to pass per level before moving up
 // Each value is an array of test_ids; a test counts as "cleared" at ≥60%,
@@ -34,11 +39,11 @@ export default function App() {
   const [levelUpMsg, setLevelUpMsg] = useState(null) // e.g. {from:'A1', to:'A2'}
 
   // Portal routing
-  if (params.get('admin')==='1') return <AdminPanel/>
-  if (params.get('faculty')==='1') return <FacultyPanel/>
-  if (params.get('students')==='1') return <StudentManager/>
-  if (params.get('multiverse')==='1' || params.get('funnel')==='1') return <Multiverse/>
-  if (params.get('test')==='public') return <PublicTest/>
+  if (params.get('admin')==='1' || hash==='admin') return <AdminPanel/>
+  if (params.get('faculty')==='1' || hash==='faculty') return <FacultyPanel/>
+  if (params.get('students')==='1' || hash==='students') return <StudentManager/>
+  if (params.get('multiverse')==='1' || params.get('funnel')==='1' || hash==='multiverse' || hash==='funnel') return <Multiverse/>
+  if (params.get('test')==='public' || hash==='test') return <PublicTest/>
 
   // Restore session
   useEffect(() => {
