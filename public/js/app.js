@@ -145,9 +145,19 @@ async function loadGrid(batch) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const { data: att } = await sb.from("attendance_records")
-    .select("date, roll_number, status, topic").eq("batch_name", batch);
+    .select("date, roll_number, status, topic, class_type").eq("batch_name", batch);
   const dates = new Set();
-  (att || []).forEach(r => { G.marks.set(key(r.roll_number, r.date), r.status); dates.add(r.date); if (r.topic) G.topics.set(r.date, r.topic); });
+  // combine Morning/Evening (and Day) per (student,date): present if present in EITHER session
+  const acc = new Map();
+  (att || []).forEach(r => {
+    const k = key(r.roll_number, r.date);
+    const cur = acc.get(k) || { p: false, a: false };
+    if (r.status === "Present") cur.p = true; else if (r.status === "Absent") cur.a = true;
+    acc.set(k, cur);
+    dates.add(r.date);
+    if (r.topic) G.topics.set(r.date, r.topic);
+  });
+  acc.forEach((v, k) => G.marks.set(k, v.p ? "Present" : v.a ? "Absent" : null));
   G.dates = [...dates].sort();
   drawGrid({ scrollToEnd: true });
 }
@@ -165,7 +175,7 @@ function studentPct(roll, start) {
 function drawGrid(opts = {}) {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
-    ${G.dates.map(d => `<th class="datehdr" title="${esc(G.topics.get(d) || "")}">${fmtDate(d)}<span class="dc">${weekday(d)}</span>
+    ${G.dates.map(d => `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)}${G.topics.get(d) ? ` <span class="tpc" title="${esc(G.topics.get(d))}" aria-label="${esc(G.topics.get(d))}">&#9432;</span>` : ""}</span>
       <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button><button class="c" data-all="clear" data-d="${d}" title="Clear column">–</button></div></th>`).join("")}
     <th class="c-pct">%</th></tr></thead>`;
 
@@ -269,6 +279,14 @@ async function saveGrid() {
       .eq("batch_name", G.batch).eq("date", c.d).eq("roll_number", c.roll).eq("class_type", "Day");
     if (error) { toast(error.message, true); $("#gSave").disabled = false; return; }
   }
+  // audit log (timestamped) — best-effort, never blocks the save
+  try {
+    const touchedDates = [...new Set([...rows.map(r => r.date), ...clears.map(c => c.d)])].sort().join(", ");
+    await sb.from("attendance_save_log").insert({
+      faculty: ME.name, batch_name: G.batch, slot: "Day",
+      marked: rows.length, cleared: clears.length, dates: touchedDates,
+    });
+  } catch (e) { /* logging failure shouldn't affect marking */ }
   G.changed.clear(); drawGrid();
   toast(`Saved ✓ ${rows.length} marked${clears.length ? ", " + clears.length + " cleared" : ""}`);
 }
@@ -312,23 +330,34 @@ async function loadReport(batch) {
   const { data, error } = await sb.from("v_batch_attendance").select("*").eq("batch_name", batch);
   if (error) { box.innerHTML = `<div class="spinner">${esc(error.message)}</div>`; return; }
   if (!data.length) { box.innerHTML = `<div class="spinner">No students enrolled.</div>`; return; }
+  // per-session (Morning/Evening) breakdown — present for dual-slot batches
+  const { data: slots } = await sb.from("v_slot_attendance").select("*").eq("batch_name", batch);
+  const slotMap = {}; let dual = false;
+  (slots || []).forEach(s => {
+    (slotMap[s.roll_number] = slotMap[s.roll_number] || {})[s.slot] = s.pct;
+    if (s.slot === "Morning" || s.slot === "Evening") dual = true;
+  });
   data.sort((a, b) => (a.pct ?? 999) - (b.pct ?? 999));
   const withData = data.filter(r => r.pct != null);
   const avg = withData.length ? Math.round(withData.reduce((s, r) => s + r.pct, 0) / withData.length) : 0;
   const atRisk = data.filter(r => (r.pct ?? 100) < 75).length;
+  const fmtP = p => p == null ? "–" : p + "%";
   const rows = data.map((r, i) => {
     const p = r.pct;
     const pill = p == null ? `<span class="pill muted">no classes</span>`
       : p < 75 ? `<span class="pill no">${p}%</span>` : p < 85 ? `<span class="pill warn">${p}%</span>` : `<span class="pill ok">${p}%</span>`;
+    const sm = slotMap[r.roll_number] || {};
+    const slotCols = dual ? `<td class="muted">${fmtP(sm.Morning)}</td><td class="muted">${fmtP(sm.Evening)}</td>` : "";
     return `<tr><td>${i + 1}</td><td>${esc(r.name)}</td><td class="muted">${esc(r.roll_number)}</td>
-      <td>${r.present}/${r.total}</td><td>${pill}${(p != null && p < 75) ? " ⚠️" : ""}</td></tr>`;
+      <td>${r.present}/${r.total}</td><td>${pill}${(p != null && p < 75) ? " ⚠️" : ""}</td>${slotCols}</tr>`;
   }).join("");
   box.innerHTML = `<div class="row" style="margin-bottom:14px">
       <div class="stat"><div class="muted">Students</div><div class="big">${data.length}</div></div>
       <div class="stat"><div class="muted">Avg attendance</div><div class="big">${avg}%</div></div>
       <div class="stat"><div class="muted">Below 75%</div><div class="big">${atRisk}</div></div></div>
-    <table><thead><tr><th>#</th><th>Name</th><th>Roll no.</th><th>Present/Total</th><th>Attendance</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+    <table><thead><tr><th>#</th><th>Name</th><th>Roll no.</th><th>Present/Total</th><th>Attendance</th>${dual ? "<th>Morning %</th><th>Evening %</th>" : ""}</tr></thead>
+    <tbody>${rows}</tbody></table>
+    ${dual ? `<div class="hint">Morning % / Evening % are per-session; "Attendance" combines both sessions.</div>` : ""}`;
 }
 
 boot();
