@@ -9,6 +9,7 @@ import AppShell from './pages/AppShell'
 import AdminPanel from './pages/admin/AdminPanel'
 import FacultyPanel from './pages/admin/FacultyPanel'
 import StudentManager from './pages/admin/StudentManager'
+import FunnelDashboard from './pages/admin/FunnelDashboard'
 import PublicTest from './pages/PublicTest'
 
 const params = new URLSearchParams(window.location.search)
@@ -36,6 +37,7 @@ export default function App() {
   if (params.get('admin')==='1') return <AdminPanel/>
   if (params.get('faculty')==='1') return <FacultyPanel/>
   if (params.get('students')==='1') return <StudentManager/>
+  if (params.get('funnel')==='1') return <FunnelDashboard/>
   if (params.get('test')==='public') return <PublicTest/>
 
   // Restore session
@@ -70,7 +72,7 @@ export default function App() {
     return () => clearTimeout(t)
   }, [completedTopics, exerciseScores, user, screen])
 
-  // ── LEVEL UP CHECK ───────────────────────────────────────────
+  // ── LEVEL UP CHECK ──────────────────────────────
   // Called after every test submission. A test counts as "cleared" at ≥60%;
   // clearing ≥90% of the level's tests promotes the student to the next level.
   async function checkLevelUp(currentUser) {
