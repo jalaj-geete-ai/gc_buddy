@@ -112,9 +112,9 @@ async function renderMark() {
     <div class="legend">
       <span><span class="sw" style="background:var(--ok)"></span>Present</span>
       <span><span class="sw" style="background:var(--no)"></span>Absent</span>
-      <span><span class="sw" style="background:#e3e6ea"></span>Not marked</span>
+      <span><span class="sw" style="background:#e3e6ea"></span>Not marked (blank)</span>
       <span><span class="sw" style="background:repeating-linear-gradient(45deg,#e9ebee,#e9ebee 3px,#f6f7f8 3px,#f6f7f8 6px)"></span>Not yet in batch</span>
-      <span>A new class starts everyone <b>Present</b> — flip absentees. Attending morning <i>or</i> evening counts as present.</span>
+      <span>Click a cell to cycle <b>P → A → blank</b>. Column buttons: ✓ all present · ✗ all absent · – clear. Attending morning <i>or</i> evening counts as present.</span>
     </div>
   </div>
   <div id="gGrid"><div class="spinner">Loading…</div></div>`;
@@ -166,7 +166,7 @@ function drawGrid(opts = {}) {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
     ${G.dates.map(d => `<th class="datehdr" title="${esc(G.topics.get(d) || "")}">${fmtDate(d)}<span class="dc">${weekday(d)}</span>
-      <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button></div></th>`).join("")}
+      <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button><button class="c" data-all="clear" data-d="${d}" title="Clear column">–</button></div></th>`).join("")}
     <th class="c-pct">%</th></tr></thead>`;
 
   const body = G.roster.map((st, i) => {
@@ -207,12 +207,14 @@ function setMark(roll, d, status) { G.marks.set(key(roll, d), status); G.changed
 
 function cycleCell(td) {
   const roll = td.dataset.roll, d = td.dataset.date;
-  const next = G.marks.get(key(roll, d)) === "Present" ? "Absent" : "Present";
+  const cur = G.marks.get(key(roll, d));
+  // cycle Present -> Absent -> blank -> Present
+  const next = cur === "Present" ? "Absent" : cur === "Absent" ? null : "Present";
   setMark(roll, d, next);
   // update only this cell — no full re-render, so the scroll position stays put
   td.classList.remove("p", "a", "empty");
-  td.classList.add(next === "Present" ? "p" : "a", "changed");
-  td.textContent = next === "Present" ? "P" : "A";
+  td.classList.add(next === "Present" ? "p" : next === "Absent" ? "a" : "empty", "changed");
+  td.textContent = next === "Present" ? "P" : next === "Absent" ? "A" : "·";
   const st = G.roster.find(s => s.roll === roll);
   const pct = studentPct(roll, st && st.start);
   const pctCell = td.closest("tr").querySelector(".c-pct");
@@ -224,7 +226,8 @@ function cycleCell(td) {
 }
 
 function markColumn(d, status) {
-  for (const st of G.roster) { if (st.start && d < st.start) continue; setMark(st.roll, d, status); }
+  const val = status === "clear" ? null : status;   // "clear" wipes the column to blank
+  for (const st of G.roster) { if (st.start && d < st.start) continue; setMark(st.roll, d, val); }
   $("#gSave").disabled = G.changed.size === 0; drawGrid();
 }
 
@@ -246,16 +249,28 @@ function addClass() {
 async function saveGrid() {
   if (!G.changed.size) return;
   const byName = Object.fromEntries(G.roster.map(s => [s.roll, s.name]));
-  const rows = [...G.changed].map(k => {
+  const rows = [], clears = [];
+  for (const k of G.changed) {
     const [roll, d] = k.split("|");
-    return { batch_name: G.batch, date: d, roll_number: roll, name: byName[roll],
-             status: G.marks.get(k), class_type: "Day", topic: G.topics.get(d) || null, marked_by: ME.name };
-  });
+    const st = G.marks.get(k);
+    if (st === "Present" || st === "Absent")
+      rows.push({ batch_name: G.batch, date: d, roll_number: roll, name: byName[roll],
+                  status: st, class_type: "Day", topic: G.topics.get(d) || null, marked_by: ME.name });
+    else
+      clears.push({ d, roll });   // blank -> remove any saved mark
+  }
   $("#gSave").disabled = true;
-  const { error } = await sb.from("attendance_records").upsert(rows, { onConflict: "batch_name,date,roll_number,class_type" });
-  if (error) { toast(error.message, true); $("#gSave").disabled = false; return; }
+  if (rows.length) {
+    const { error } = await sb.from("attendance_records").upsert(rows, { onConflict: "batch_name,date,roll_number,class_type" });
+    if (error) { toast(error.message, true); $("#gSave").disabled = false; return; }
+  }
+  for (const c of clears) {
+    const { error } = await sb.from("attendance_records").delete()
+      .eq("batch_name", G.batch).eq("date", c.d).eq("roll_number", c.roll).eq("class_type", "Day");
+    if (error) { toast(error.message, true); $("#gSave").disabled = false; return; }
+  }
   G.changed.clear(); drawGrid();
-  toast(`Saved ${rows.length} marks ✓`);
+  toast(`Saved ✓ ${rows.length} marked${clears.length ? ", " + clears.length + " cleared" : ""}`);
 }
 
 function exportCsv() {
