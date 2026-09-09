@@ -62,10 +62,17 @@ table.grid { border-collapse: separate; border-spacing: 0; font-size: 13px; whit
 table.grid th, table.grid td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 0; height: 38px; }
 table.grid thead th { background: #f7f8fa; font-size: 11px; color: var(--muted); font-weight: 700; padding: 6px 8px; position: sticky; top: 0; z-index: 3; text-align: center; }
 table.grid .c-idx  { position: sticky; left: 0;   z-index: 4; background: #fff; width: 34px; text-align: center; color: var(--muted); }
-table.grid .c-name { position: sticky; left: 34px; z-index: 4; background: #fff; min-width: 168px; padding: 4px 10px; font-weight: 600; line-height: 1.25; }
+table.grid .c-name { position: sticky; left: 34px; z-index: 4; background: #fff; width: 200px; min-width: 200px; max-width: 200px; padding: 4px 10px; font-weight: 600; line-height: 1.25; white-space: normal; }
 table.grid .c-name .rollno { display: block; font-size: 10px; color: var(--muted); font-weight: 400; }
 table.grid thead .c-idx, table.grid thead .c-name { z-index: 6; background: #f7f8fa; }
-table.grid .c-pct  { position: sticky; right: 0; z-index: 4; background: #fff; width: 62px; text-align: center; font-weight: 700; }
+/* consecutive-absence alert on the student's name cell (2=yellow, 3=orange, 4+=red) */
+table.grid .c-name.streak2 { background: #e6a70e; color: #3d2c00; }
+table.grid .c-name.streak3 { background: #e8730a; color: #fff; }
+table.grid .c-name.streak4 { background: var(--no); color: #fff; }
+table.grid .c-name.streak2 .rollno,
+table.grid .c-name.streak3 .rollno,
+table.grid .c-name.streak4 .rollno { color: inherit; opacity: .85; }
+table.grid .c-pct  { position: sticky; right: 0; z-index: 4; background: #fff; width: 74px; min-width: 74px; max-width: 74px; text-align: center; font-weight: 700; }
 table.grid thead .c-pct { z-index: 6; }
 table.grid td.cell { text-align: center; cursor: pointer; user-select: none; min-width: 46px; font-weight: 700; }
 td.cell.p { background: var(--ok-bg);  color: var(--ok); }
@@ -76,6 +83,7 @@ td.cell.changed { box-shadow: inset 0 0 0 2px var(--brand); }
 .datehdr { cursor: default; }
 .datehdr .dc { display:block; font-size:10px; color:var(--muted); font-weight:600; }
 .datehdr .tpc { cursor:help; color:var(--brand); font-weight:700; }
+.datehdr .tpc.empty { color:#c2c8d0; }
 .legend { font-size:12px; color:var(--muted); margin:10px 2px; display:flex; gap:16px; flex-wrap:wrap; }
 .legend b { font-weight:700; }
 .sw { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:4px; }

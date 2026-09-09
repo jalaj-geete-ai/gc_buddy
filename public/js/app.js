@@ -116,6 +116,13 @@ async function renderMark() {
       <span><span class="sw" style="background:repeating-linear-gradient(45deg,#e9ebee,#e9ebee 3px,#f6f7f8 3px,#f6f7f8 6px)"></span>Not yet in batch</span>
       <span>Click a cell to cycle <b>P → A → blank</b>. Column buttons: ✓ all present · ✗ all absent · – clear. Attending morning <i>or</i> evening counts as present.</span>
     </div>
+    <div class="legend">
+      <span>Name highlight = absent in a row:</span>
+      <span><span class="sw" style="background:#e6a70e"></span>2 classes</span>
+      <span><span class="sw" style="background:#e8730a"></span>3 classes</span>
+      <span><span class="sw" style="background:var(--no)"></span>4+ classes</span>
+      <span>Hover the <b>&#9432;</b> on a date to see its topic.</span>
+    </div>
   </div>
   <div id="gGrid"><div class="spinner">Loading…</div></div>`;
 
@@ -162,6 +169,19 @@ async function loadGrid(batch) {
   drawGrid({ scrollToEnd: true });
 }
 
+// longest run of consecutive Absent marks across class dates (skips pre-enrolment days;
+// Present or blank break the run). 2=yellow, 3=orange, 4+=red on the name cell.
+function absentStreak(roll, start) {
+  let run = 0, max = 0;
+  for (const d of G.dates) {
+    if (start && d < start) continue;
+    if (G.marks.get(key(roll, d)) === "Absent") { run++; if (run > max) max = run; }
+    else run = 0;
+  }
+  return max;
+}
+function streakCls(n) { return n >= 4 ? " streak4" : n === 3 ? " streak3" : n === 2 ? " streak2" : ""; }
+
 function studentPct(roll, start) {
   let p = 0, t = 0;
   for (const d of G.dates) {
@@ -175,8 +195,8 @@ function studentPct(roll, start) {
 function drawGrid(opts = {}) {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
-    ${G.dates.map(d => `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)}${G.topics.get(d) ? ` <span class="tpc" title="${esc(G.topics.get(d))}" aria-label="${esc(G.topics.get(d))}">&#9432;</span>` : ""}</span>
-      <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button><button class="c" data-all="clear" data-d="${d}" title="Clear column">–</button></div></th>`).join("")}
+    ${G.dates.map(d => { const tp = G.topics.get(d); return `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)} <span class="tpc${tp ? "" : " empty"}" title="${tp ? "Topic: " + esc(tp) : "No topic set for this class"}" aria-label="${tp ? esc(tp) : "No topic"}">&#9432;</span></span>
+      <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button><button class="c" data-all="clear" data-d="${d}" title="Clear column">–</button></div></th>`; }).join("")}
     <th class="c-pct">%</th></tr></thead>`;
 
   const body = G.roster.map((st, i) => {
@@ -190,7 +210,10 @@ function drawGrid(opts = {}) {
     }).join("");
     const pct = studentPct(st.roll, st.start);
     const pctColor = pct == null ? "" : pct < 75 ? "color:var(--no)" : pct < 85 ? "color:var(--warn)" : "color:var(--ok)";
-    return `<tr><td class="c-idx">${i + 1}</td><td class="c-name">${esc(st.name)}<span class="rollno">${esc(st.roll)}</span></td>${cells}
+    const streak = absentStreak(st.roll, st.start);
+    const scls = streakCls(streak);
+    const stitle = streak >= 2 ? ` title="${streak} classes absent in a row"` : "";
+    return `<tr><td class="c-idx">${i + 1}</td><td class="c-name${scls}"${stitle} data-roll="${esc(st.roll)}">${esc(st.name)}<span class="rollno">${esc(st.roll)}</span></td>${cells}
       <td class="c-pct" style="${pctColor}">${pct == null ? "–" : pct + "%"}</td></tr>`;
   }).join("");
 
@@ -226,11 +249,20 @@ function cycleCell(td) {
   td.classList.add(next === "Present" ? "p" : next === "Absent" ? "a" : "empty", "changed");
   td.textContent = next === "Present" ? "P" : next === "Absent" ? "A" : "·";
   const st = G.roster.find(s => s.roll === roll);
+  const tr = td.closest("tr");
   const pct = studentPct(roll, st && st.start);
-  const pctCell = td.closest("tr").querySelector(".c-pct");
+  const pctCell = tr.querySelector(".c-pct");
   if (pctCell) {
     pctCell.textContent = pct == null ? "–" : pct + "%";
     pctCell.style.color = pct == null ? "" : pct < 75 ? "var(--no)" : pct < 85 ? "var(--warn)" : "var(--ok)";
+  }
+  const nameCell = tr.querySelector(".c-name");
+  if (nameCell) {
+    const streak = absentStreak(roll, st && st.start);
+    nameCell.classList.remove("streak2", "streak3", "streak4");
+    const c = streakCls(streak).trim();
+    if (c) nameCell.classList.add(c);
+    if (streak >= 2) nameCell.title = `${streak} classes absent in a row`; else nameCell.removeAttribute("title");
   }
   $("#gSave").disabled = G.changed.size === 0;
 }
