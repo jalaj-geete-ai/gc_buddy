@@ -149,7 +149,7 @@ async function loadGrid(batch) {
   const dates = new Set();
   (att || []).forEach(r => { G.marks.set(key(r.roll_number, r.date), r.status); dates.add(r.date); if (r.topic) G.topics.set(r.date, r.topic); });
   G.dates = [...dates].sort();
-  drawGrid();
+  drawGrid({ scrollToEnd: true });
 }
 
 function studentPct(roll, start) {
@@ -162,7 +162,7 @@ function studentPct(roll, start) {
   return t ? Math.round(100 * p / t) : null;
 }
 
-function drawGrid() {
+function drawGrid(opts = {}) {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
     ${G.dates.map(d => `<th class="datehdr" title="${esc(G.topics.get(d) || "")}">${fmtDate(d)}<span class="dc">${weekday(d)}</span>
@@ -180,12 +180,24 @@ function drawGrid() {
     }).join("");
     const pct = studentPct(st.roll, st.start);
     const pctColor = pct == null ? "" : pct < 75 ? "color:var(--no)" : pct < 85 ? "color:var(--warn)" : "color:var(--ok)";
-    return `<tr><td class="c-idx">${i + 1}</td><td class="c-name">${esc(st.name)}</td>${cells}
+    return `<tr><td class="c-idx">${i + 1}</td><td class="c-name">${esc(st.name)}<span class="rollno">${esc(st.roll)}</span></td>${cells}
       <td class="c-pct" style="${pctColor}">${pct == null ? "–" : pct + "%"}</td></tr>`;
   }).join("");
 
   const note = G.dates.length ? "" : `<div class="hint" style="padding:14px">No classes yet. Pick a date and press <b>+ Add class</b>.</div>`;
+
+  // preserve horizontal scroll across re-renders (marking shouldn't jump to the left)
+  const oldWrap = document.querySelector("#gGrid .gridwrap");
+  const savedLeft = oldWrap ? oldWrap.scrollLeft : null;
+  const savedTop = oldWrap ? oldWrap.scrollTop : null;
+
   $("#gGrid").innerHTML = `<div class="gridwrap"><table class="grid">${head}<tbody>${body}</tbody></table></div>${note}`;
+
+  const wrap = document.querySelector("#gGrid .gridwrap");
+  if (wrap) {
+    if (opts.scrollToEnd || savedLeft === null) wrap.scrollLeft = wrap.scrollWidth; // open on the latest class
+    else { wrap.scrollLeft = savedLeft; wrap.scrollTop = savedTop; }
+  }
 
   $("#gGrid").querySelectorAll("td.cell:not(.na)").forEach(td => td.addEventListener("click", () => cycleCell(td)));
   $("#gGrid").querySelectorAll(".colbtns button").forEach(b => b.addEventListener("click", () => markColumn(b.dataset.d, b.dataset.all)));
@@ -195,9 +207,20 @@ function setMark(roll, d, status) { G.marks.set(key(roll, d), status); G.changed
 
 function cycleCell(td) {
   const roll = td.dataset.roll, d = td.dataset.date;
-  const cur = G.marks.get(key(roll, d));
-  setMark(roll, d, cur === "Present" ? "Absent" : "Present");
-  $("#gSave").disabled = G.changed.size === 0; drawGrid();
+  const next = G.marks.get(key(roll, d)) === "Present" ? "Absent" : "Present";
+  setMark(roll, d, next);
+  // update only this cell — no full re-render, so the scroll position stays put
+  td.classList.remove("p", "a", "empty");
+  td.classList.add(next === "Present" ? "p" : "a", "changed");
+  td.textContent = next === "Present" ? "P" : "A";
+  const st = G.roster.find(s => s.roll === roll);
+  const pct = studentPct(roll, st && st.start);
+  const pctCell = td.closest("tr").querySelector(".c-pct");
+  if (pctCell) {
+    pctCell.textContent = pct == null ? "–" : pct + "%";
+    pctCell.style.color = pct == null ? "" : pct < 75 ? "var(--no)" : pct < 85 ? "var(--warn)" : "var(--ok)";
+  }
+  $("#gSave").disabled = G.changed.size === 0;
 }
 
 function markColumn(d, status) {
@@ -216,7 +239,7 @@ function addClass() {
     if (!G.marks.has(key(st.roll, d))) setMark(st.roll, d, "Present");
   }
   $("#gTopic").value = "";
-  $("#gSave").disabled = G.changed.size === 0; drawGrid();
+  $("#gSave").disabled = G.changed.size === 0; drawGrid({ scrollToEnd: true });
   toast(`Class ${fmtDate(d)} added — everyone Present, flip absentees then Save.`);
 }
 
