@@ -84,6 +84,7 @@ td.cell.changed { box-shadow: inset 0 0 0 2px var(--brand); }
 .datehdr .dc { display:block; font-size:10px; color:var(--muted); font-weight:600; }
 .datehdr .tpc { cursor:help; color:var(--brand); font-weight:700; }
 .datehdr .tpc.empty { color:#c2c8d0; }
+.datehdr .lvl { display:inline-block; background:#eef1f4; color:var(--muted); border-radius:3px; padding:0 3px; font-size:9px; font-weight:700; letter-spacing:.02em; }
 .legend { font-size:12px; color:var(--muted); margin:10px 2px; display:flex; gap:16px; flex-wrap:wrap; }
 .legend b { font-weight:700; }
 .sw { display:inline-block; width:11px; height:11px; border-radius:3px; vertical-align:-1px; margin-right:4px; }

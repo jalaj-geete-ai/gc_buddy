@@ -94,7 +94,8 @@ async function myBatches() {
 // ============================================================================
 // ATTENDANCE GRID
 // ============================================================================
-const G = { batch: null, roster: [], dates: [], marks: new Map(), topics: new Map(), changed: new Set(), showAll: false };
+const G = { batch: null, roster: [], dates: [], marks: new Map(), topics: new Map(), levels: new Map(), changed: new Set(), showAll: false };
+const LEVELS = ["A1", "A2", "B1", "B2"];
 const key = (roll, d) => `${roll}|${d}`;
 
 async function renderMark() {
@@ -103,6 +104,7 @@ async function renderMark() {
     <div class="row">
       <div class="field"><label>Batch</label><select id="gBatch"></select></div>
       <div class="field"><label>New class — date</label><input type="date" id="gDate" value="${today()}"></div>
+      <div class="field"><label>Level</label><select id="gLevel">${LEVELS.map(l => `<option>${l}</option>`).join("")}</select></div>
       <div class="field"><label>Topic (optional)</label><input type="text" id="gTopic" placeholder="e.g. Dative prepositions"></div>
       <div class="field"><label>&nbsp;</label><button class="btn ghost" id="gAdd">+ Add class</button></div>
       <div style="flex:1"></div>
@@ -140,7 +142,7 @@ async function renderMark() {
 }
 
 async function loadGrid(batch) {
-  G.batch = batch; G.marks = new Map(); G.topics = new Map(); G.changed = new Set();
+  G.batch = batch; G.marks = new Map(); G.topics = new Map(); G.levels = new Map(); G.changed = new Set();
   $("#gSave").disabled = true;
   $("#gGrid").innerHTML = `<div class="card spinner">Loading roster…</div>`;
 
@@ -152,7 +154,7 @@ async function loadGrid(batch) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const { data: att } = await sb.from("attendance_records")
-    .select("date, roll_number, status, topic, class_type").eq("batch_name", batch);
+    .select("date, roll_number, status, topic, level, class_type").eq("batch_name", batch);
   const dates = new Set();
   // combine Morning/Evening (and Day) per (student,date): present if present in EITHER session
   const acc = new Map();
@@ -163,22 +165,30 @@ async function loadGrid(batch) {
     acc.set(k, cur);
     dates.add(r.date);
     if (r.topic) G.topics.set(r.date, r.topic);
+    if (r.level) G.levels.set(r.date, r.level);
   });
   acc.forEach((v, k) => G.marks.set(k, v.p ? "Present" : v.a ? "Absent" : null));
   G.dates = [...dates].sort();
+  // default the Level picker to the batch's most recent class level
+  const lastLvl = G.dates.length ? G.levels.get(G.dates[G.dates.length - 1]) : null;
+  const lvlSel = $("#gLevel"); if (lvlSel && lastLvl && LEVELS.includes(lastLvl)) lvlSel.value = lastLvl;
   drawGrid({ scrollToEnd: true });
 }
 
-// longest run of consecutive Absent marks across class dates (skips pre-enrolment days;
-// Present or blank break the run). 2=yellow, 3=orange, 4+=red on the name cell.
+// CURRENT trailing run of Absents, counted backward from the most recent class.
+// Trailing unmarked classes (not yet marked) are skipped; a Present stops the run,
+// as does a gap (blank) once counting has started. 2=yellow, 3=orange, 4+=red.
 function absentStreak(roll, start) {
-  let run = 0, max = 0;
-  for (const d of G.dates) {
-    if (start && d < start) continue;
-    if (G.marks.get(key(roll, d)) === "Absent") { run++; if (run > max) max = run; }
-    else run = 0;
+  const inRange = G.dates.filter(d => !(start && d < start));
+  let i = inRange.length - 1;
+  // skip trailing classes that haven't been marked yet
+  while (i >= 0 && G.marks.get(key(roll, inRange[i])) == null) i--;
+  let run = 0;
+  for (; i >= 0; i--) {
+    if (G.marks.get(key(roll, inRange[i])) === "Absent") run++;
+    else break;   // a Present (or an unmarked gap) ends the current streak
   }
-  return max;
+  return run;
 }
 function streakCls(n) { return n >= 4 ? " streak4" : n === 3 ? " streak3" : n === 2 ? " streak2" : ""; }
 
@@ -195,7 +205,9 @@ function studentPct(roll, start) {
 function drawGrid(opts = {}) {
   const head = `<thead><tr>
     <th class="c-idx">#</th><th class="c-name">Student (${G.roster.length})</th>
-    ${G.dates.map(d => { const tp = G.topics.get(d); return `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)} <span class="tpc${tp ? "" : " empty"}" title="${tp ? "Topic: " + esc(tp) : "No topic set for this class"}" aria-label="${tp ? esc(tp) : "No topic"}">&#9432;</span></span>
+    ${G.dates.map(d => { const tp = G.topics.get(d), lv = G.levels.get(d);
+        const tip = (lv ? lv + " · " : "") + (tp || "No topic set");
+        return `<th class="datehdr">${fmtDate(d)}<span class="dc">${weekday(d)}${lv ? ` <span class="lvl">${esc(lv)}</span>` : ""} <span class="tpc${tp ? "" : " empty"}" title="${esc(tip)}" aria-label="${esc(tip)}">&#9432;</span></span>
       <div class="colbtns"><button class="p" data-all="Present" data-d="${d}" title="All present">✓</button><button class="a" data-all="Absent" data-d="${d}" title="All absent">✗</button><button class="c" data-all="clear" data-d="${d}" title="Clear column">–</button></div></th>`; }).join("")}
     <th class="c-pct">%</th></tr></thead>`;
 
@@ -277,12 +289,16 @@ function addClass() {
   const d = $("#gDate").value;
   if (!d) { toast("Pick a date first.", true); return; }
   const topic = $("#gTopic").value.trim();
+  const level = $("#gLevel").value;
   if (!G.dates.includes(d)) { G.dates.push(d); G.dates.sort(); }
   if (topic) G.topics.set(d, topic);
+  if (level) G.levels.set(d, level);
   for (const st of G.roster) {
     if (st.start && d < st.start) continue;
     if (!G.marks.has(key(st.roll, d))) setMark(st.roll, d, "Present");
   }
+  // ensure the class is saved even if no cell is flipped (records level/topic for the date)
+  for (const st of G.roster) { if (!(st.start && d < st.start)) G.changed.add(key(st.roll, d)); }
   $("#gTopic").value = "";
   $("#gSave").disabled = G.changed.size === 0; drawGrid({ scrollToEnd: true });
   toast(`Class ${fmtDate(d)} added — everyone Present, flip absentees then Save.`);
@@ -297,7 +313,8 @@ async function saveGrid() {
     const st = G.marks.get(k);
     if (st === "Present" || st === "Absent")
       rows.push({ batch_name: G.batch, date: d, roll_number: roll, name: byName[roll],
-                  status: st, class_type: "Day", topic: G.topics.get(d) || null, marked_by: ME.name });
+                  status: st, class_type: "Day", topic: G.topics.get(d) || null,
+                  level: G.levels.get(d) || null, marked_by: ME.name });
     else
       clears.push({ d, roll });   // blank -> remove any saved mark
   }
@@ -374,6 +391,33 @@ async function loadReport(batch) {
   const avg = withData.length ? Math.round(withData.reduce((s, r) => s + r.pct, 0) / withData.length) : 0;
   const atRisk = data.filter(r => (r.pct ?? 100) < 75).length;
   const fmtP = p => p == null ? "–" : p + "%";
+
+  // level-wise averages: combine sessions per (student,date), tally present/total per level
+  const { data: raw } = await sb.from("attendance_records")
+    .select("date, roll_number, status, level").eq("batch_name", batch);
+  const perDate = new Map();
+  (raw || []).forEach(r => {
+    const k = r.roll_number + "|" + r.date;
+    const cur = perDate.get(k) || { level: null, p: false, a: false };
+    if (r.level) cur.level = r.level;
+    if (r.status === "Present") cur.p = true; else if (r.status === "Absent") cur.a = true;
+    perDate.set(k, cur);
+  });
+  const lvlTally = new Map();  // roll -> { A1:{p,t}, ... }
+  perDate.forEach((v, k) => {
+    if ((!v.p && !v.a) || !v.level) return;
+    const roll = k.split("|")[0];
+    const t = lvlTally.get(roll) || {};
+    const L = t[v.level] = t[v.level] || { p: 0, t: 0 };
+    L.t++; if (v.p) L.p++;
+    lvlTally.set(roll, t);
+  });
+  const avgOf = a => a.length ? Math.round(a.reduce((s, x) => s + x, 0) / a.length) : null;
+  const presentLevels = LEVELS.filter(L => [...lvlTally.values()].some(t => t[L]));
+  const levelAvg = {};
+  presentLevels.forEach(L => { levelAvg[L] = avgOf([...lvlTally.values()].filter(t => t[L]).map(t => 100 * t[L].p / t[L].t)); });
+  const levelCards = presentLevels.map(L =>
+    `<div class="stat"><div class="muted">${L} attendance</div><div class="big">${fmtP(levelAvg[L])}</div></div>`).join("");
   const rows = data.map((r, i) => {
     const p = r.pct;
     const pill = p == null ? `<span class="pill muted">no classes</span>`
@@ -385,7 +429,8 @@ async function loadReport(batch) {
   }).join("");
   box.innerHTML = `<div class="row" style="margin-bottom:14px">
       <div class="stat"><div class="muted">Students</div><div class="big">${data.length}</div></div>
-      <div class="stat"><div class="muted">Avg attendance</div><div class="big">${avg}%</div></div>
+      <div class="stat"><div class="muted">Overall attendance</div><div class="big">${avg}%</div></div>
+      ${levelCards}
       <div class="stat"><div class="muted">Below 75%</div><div class="big">${atRisk}</div></div></div>
     <table><thead><tr><th>#</th><th>Name</th><th>Roll no.</th><th>Present/Total</th><th>Attendance</th>${dual ? "<th>Morning %</th><th>Evening %</th>" : ""}</tr></thead>
     <tbody>${rows}</tbody></table>
