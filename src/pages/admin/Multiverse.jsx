@@ -403,7 +403,7 @@ export default function Multiverse() {
                         <tr key={b.batch} style={{ borderBottom: `1px solid ${C.border}` }}>
                           <td style={{ padding: '7px 8px', fontSize: 11, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>{b.batch}</td>
                           <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{b.total}</td>
-                          {GC_TIERS.map(t => <td key={t} style={{ padding: '7px 8px', textAlign: 'center', fontSize: 12, color: b[t] ? TIER_COLOR[t] : C.border, fontWeight: b[t] ? 700 : 400, fontVariantNumeric: 'tabular-nums' }}>{b[t] || '–'}</td>)}
+                          {GC_TIERS.map(t => { const c = b[t] || 0; const p = b.total ? Math.round(c / b.total * 100) : 0; return <td key={t} style={{ padding: '7px 8px', textAlign: 'center', fontSize: 12, color: c ? TIER_COLOR[t] : C.border, fontWeight: c ? 700 : 400, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{c ? <>{c} <span style={{ color: C.textS, fontWeight: 400, fontSize: 9 }}>{p}%</span></> : '–'}</td> })}
                           <td style={{ padding: '7px 8px' }}>
                             <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', minWidth: 80, background: C.surfAlt }}>
                               {GC_TIERS.map(t => b[t] ? <div key={t} title={`${t}: ${b[t]}`} style={{ width: `${b[t] / b.total * 100}%`, background: TIER_COLOR[t] }}/> : null)}
