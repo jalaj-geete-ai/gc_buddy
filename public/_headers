@@ -1,0 +1,4 @@
+# The app's JS/CSS/HTML aren't content-hashed, so tell browsers to always
+# revalidate. This prevents faculty from seeing a stale cached bundle after a deploy.
+/*
+  Cache-Control: no-cache

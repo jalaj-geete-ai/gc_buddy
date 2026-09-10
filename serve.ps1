@@ -17,6 +17,8 @@ try {
         $bytes = [System.IO.File]::ReadAllBytes($file)
         $ext = [System.IO.Path]::GetExtension($file)
         if ($mime.ContainsKey($ext)) { $ctx.Response.ContentType = $mime[$ext] }
+        # never cache in dev, so edits show up on a plain refresh
+        $ctx.Response.Headers.Add("Cache-Control", "no-store, must-revalidate")
         $ctx.Response.ContentLength64 = $bytes.Length
         $ctx.Response.OutputStream.Write($bytes, 0, $bytes.Length)
       } else { $ctx.Response.StatusCode = 404 }
