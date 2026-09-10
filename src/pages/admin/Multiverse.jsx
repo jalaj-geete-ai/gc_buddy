@@ -52,7 +52,7 @@ const FEAT5 = [
 
 const TABS = [
   { id: 'gcbuddy',   lbl: '🇩🇪 GC Buddy',      ready: true },
-  { id: 'attendance',lbl: '📅 Attendance',    ready: false, note: 'Live-class attendance — student-wise view + metrics.' },
+  { id: 'attendance',lbl: '📅 Attendance',    ready: true },
   { id: 'gate',      lbl: '🎓 Gate Tests',    ready: false, note: 'Gate / level test results — student-wise view + metrics.' },
   { id: 'emi',       lbl: '💳 EMI',           ready: false, note: 'Fee status — paid in full / on EMI / defaulter, with a collections view.' },
   { id: 'success',   lbl: '⭐ Success Score',  ready: false, note: 'A cumulative per-student score fusing GC Buddy usage, gate tests, attendance and EMI.' },
@@ -71,6 +71,11 @@ export default function Multiverse() {
   const [weekly, setWeekly] = useState([])
   const [features, setFeatures] = useState([])
   const [featRows, setFeatRows] = useState([])
+  const [attSummary, setAttSummary] = useState(null)
+  const [attRows, setAttRows] = useState([])
+  const [attSub, setAttSub] = useState('metrics')  // 'metrics' | 'students'
+  const [attSortBy, setAttSortBy] = useState('pct')
+  const [attSortDir, setAttSortDir] = useState('asc')
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [levelFilter, setLevelFilter] = useState('all')
@@ -94,18 +99,22 @@ export default function Multiverse() {
   async function load() {
     setLoading(true)
     try {
-      const [f, d, u, w, fu] = await Promise.all([
+      const [f, d, u, w, fu, asum, arow] = await Promise.all([
         sb.rpc('get_student_funnel'),
         sb.rpc('get_gcbuddy_daily_activity', { p_days: 14 }),
         sb.rpc('get_gcbuddy_feature_usage'),
         sb.rpc('get_gcbuddy_weekly_activity', { p_weeks: 12 }),
         sb.rpc('get_gcbuddy_feature_usage_by_student'),
+        sb.rpc('get_attendance_summary'),
+        sb.rpc('get_attendance_by_student'),
       ])
       setRows((f.data || []).filter(r => !r.is_demo))
       setDaily(d.data || [])
       setFeatures(u.data || [])
       setWeekly(w.data || [])
       setFeatRows((fu.data || []).filter(r => !r.is_demo))
+      setAttSummary(asum.data || null)
+      setAttRows(arow.data || [])
     } catch (e) { console.error('multiverse load:', e.message) }
     setLoading(false)
   }
@@ -221,6 +230,44 @@ export default function Multiverse() {
   const numCell = (v, strong) => (
     <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: v > 0 ? (strong ? C.navy : C.textM) : C.border, fontWeight: v > 0 && strong ? 700 : 400 }}>{v || '–'}</td>
   )
+
+  // ── Attendance derived ──
+  const attT = attSummary?.totals || {}
+  const attByCT = attSummary?.by_class_type || []
+  const attByBatch = attSummary?.by_batch || []
+  const attWeekly = attSummary?.weekly || []
+  const attTracked = attRows.length
+  const attChronic = attRows.filter(r => Number(r.attendance_pct) < 40).length
+  const attGood = attRows.filter(r => Number(r.attendance_pct) >= 75).length
+  const attMaxBatch = Math.max(1, ...attByBatch.map(b => b.marked || 0))
+  const attFiltered = attRows.filter(r =>
+    (levelFilter === 'all' || r.level === levelFilter) &&
+    (!search || (r.name || '').toLowerCase().includes(search.toLowerCase()) || (r.roll_number || '').toLowerCase().includes(search.toLowerCase()))
+  )
+  const attSortFn = { name: r => r.name || '', batch: r => r.batches || '', pct: r => Number(r.attendance_pct), present: r => r.present, absent: r => r.absent, marked: r => r.marked }
+  const attSorted = [...attFiltered].sort((a, b) => {
+    const g = attSortFn[attSortBy] || attSortFn.pct
+    const va = g(a), vb = g(b)
+    if (typeof va === 'string') return attSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va)
+    return attSortDir === 'asc' ? va - vb : vb - va
+  })
+  const pctColor = p => p >= 75 ? C.green : p >= 40 ? C.amber : C.red
+  function attExportCsv() {
+    const head = ['roll_number', 'name', 'level', 'batches', 'marked', 'present', 'absent', 'attendance_pct', 'last_present']
+    const lines = attSorted.map(r => [r.roll_number, `"${(r.name || '').replace(/"/g, '""')}"`, r.level, `"${r.batches || ''}"`, r.marked, r.present, r.absent, r.attendance_pct, r.last_present || ''].join(','))
+    const blob = new Blob([[head.join(','), ...lines].join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob); const a = document.createElement('a')
+    a.href = url; a.download = `gcbuddy_attendance_by_student_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url)
+  }
+  function attTh(label, key, extra = {}) {
+    const active = attSortBy === key
+    return (
+      <th key={key} onClick={() => { if (attSortBy === key) setAttSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setAttSortBy(key); setAttSortDir(key === 'pct' ? 'asc' : 'desc') } }}
+        style={{ padding: '8px 10px', textAlign: extra.center ? 'center' : 'left', fontSize: 9, fontWeight: 700, color: active ? C.blue : C.textS, textTransform: 'uppercase', letterSpacing: '.05em', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt, ...(extra.style || {}) }}>
+        {label} {active ? (attSortDir === 'asc' ? '↑' : '↓') : ''}
+      </th>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column' }}>
@@ -494,8 +541,144 @@ export default function Multiverse() {
         </>
       )}
 
+      {/* ── ATTENDANCE TAB ── */}
+      {tab === 'attendance' && (
+        <>
+          <div style={{ background: C.surfAlt, borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 6, padding: '8px 16px', flexShrink: 0, overflowX: 'auto' }}>
+            {[['metrics', '📊 Metrics'], ['students', '👥 Per-Student']].map(([id, lbl]) => (
+              <button key={id} onClick={() => setAttSub(id)}
+                style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${attSub === id ? C.blue : C.border}`, background: attSub === id ? C.blueL : '#fff', color: attSub === id ? C.blue : C.textM, cursor: 'pointer', fontSize: 12, fontWeight: attSub === id ? 700 : 500, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+
+          {loading && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <Spin sz={28}/><span style={{ color: C.textS, fontSize: 12 }}>Loading attendance…</span>
+            </div>
+          )}
+
+          {!loading && attSub === 'metrics' && (
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 18 }}>
+                <MetricCard v={`${attT.pct ?? 0}%`} l="Overall attendance" ic="📊" c={pctColor(attT.pct || 0)} sub={`${attT.present || 0} of ${attT.marked || 0} marked`}/>
+                <MetricCard v={attTracked} l="Students tracked" ic="👥" c={C.navy} sub={`of ${total} approved`}/>
+                <MetricCard v={attT.present || 0} l="Present" ic="🟢" c={C.green} sub="all sessions"/>
+                <MetricCard v={attT.absent || 0} l="Absent" ic="🔴" c={C.red} sub="all sessions"/>
+                <MetricCard v={attChronic} l="Chronic (<40%)" ic="⚠️" c={C.red} sub="need intervention"/>
+                <MetricCard v={attGood} l="Regular (≥75%)" ic="⭐" c={C.green} sub="strong attenders"/>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 14, marginBottom: 18 }}>
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 12 }}>🕐 Attendance by class type</div>
+                  {attByCT.map(ct => (
+                    <div key={ct.class_type} style={{ marginBottom: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{ct.class_type}</span>
+                        <span style={{ fontSize: 11, color: C.textS }}><b style={{ color: pctColor(ct.pct) }}>{ct.pct}%</b> · {ct.present}/{ct.marked}</span>
+                      </div>
+                      <PBar pct={ct.pct} h={9} color={pctColor(ct.pct)}/>
+                    </div>
+                  ))}
+                  <div style={{ fontSize: 10, color: C.textS, marginTop: 6 }}>% of marked sessions where the student was Present.</div>
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>📈 Weekly attendance %</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Present ÷ marked each week</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 130 }}>
+                    {attWeekly.map((w, i) => (
+                      <div key={i} title={`Week of ${w.wk}: ${w.pct}% (${w.present}/${w.present + w.absent})`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 3, height: '100%' }}>
+                        <span style={{ fontSize: 8, fontWeight: 700, color: C.textM }}>{w.pct}</span>
+                        <div style={{ width: '100%', height: `${w.pct}%`, minHeight: 2, background: pctColor(w.pct), borderRadius: '3px 3px 0 0' }}/>
+                      </div>
+                    ))}
+                    {attWeekly.length === 0 && <div style={{ margin: 'auto', color: C.textS, fontSize: 11 }}>No data</div>}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 12 }}>🏫 Attendance by batch</div>
+                {attByBatch.map(b => (
+                  <div key={b.batch} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{ width: 130, fontSize: 11, color: C.navy, fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.batch}</div>
+                    <div style={{ flex: 1 }}><PBar pct={b.pct || 0} h={8} color={pctColor(b.pct || 0)}/></div>
+                    <div style={{ width: 120, fontSize: 10, color: C.textS, textAlign: 'right', flexShrink: 0 }}><b style={{ color: pctColor(b.pct || 0) }}>{b.pct}%</b> · {b.students} std</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loading && attSub === 'students' && (
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ flex: 1, minWidth: 180 }}><Inp val={search} set={setSearch} ph="🔍 Search name or roll number"/></div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {['all', ...LEVELS].map(l => (
+                    <button key={l} onClick={() => setLevelFilter(l)}
+                      style={{ padding: '7px 11px', borderRadius: 8, border: `1.5px solid ${levelFilter === l ? C.blue : C.border}`, background: levelFilter === l ? C.blueL : '#fff', color: levelFilter === l ? C.blue : C.textS, cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>
+                      {l === 'all' ? 'All lvl' : l}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={attExportCsv} style={{ padding: '7px 12px', borderRadius: 8, border: `1.5px solid ${C.border}`, background: '#fff', color: C.textM, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ CSV</button>
+                <span style={{ fontSize: 11, color: C.textS }}>{attSorted.length} shown</span>
+              </div>
+
+              <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, overflow: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
+                  <thead>
+                    <tr>
+                      {attTh('Student', 'name', { style: { position: 'sticky', left: 0, zIndex: 2, minWidth: 150 } })}
+                      {attTh('Batch', 'batch')}
+                      {attTh('Marked', 'marked', { center: true })}
+                      {attTh('Present', 'present', { center: true })}
+                      {attTh('Absent', 'absent', { center: true })}
+                      {attTh('Attendance %', 'pct', { center: true })}
+                      <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Last present</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attSorted.map(r => {
+                      const p = Number(r.attendance_pct)
+                      return (
+                        <tr key={r.roll_number} style={{ borderBottom: `1px solid ${C.border}` }}>
+                          <td style={{ padding: '8px 10px', position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: `1px solid ${C.border}` }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{r.name}</div>
+                            <div style={{ fontSize: 9, color: C.textS }}>{r.roll_number} · {r.level}</div>
+                          </td>
+                          <td style={{ padding: '8px 8px', fontSize: 10, color: C.textM, whiteSpace: 'nowrap' }}>{r.batches}</td>
+                          {numCell(r.marked)}
+                          <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: C.green, fontWeight: 600 }}>{r.present}</td>
+                          <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: r.absent > 0 ? C.red : C.border, fontWeight: 600 }}>{r.absent}</td>
+                          <td style={{ padding: '7px 8px', textAlign: 'center', minWidth: 96 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: pctColor(p) }}>{p}%</div>
+                            <PBar pct={p} h={4} color={pctColor(p)} style={{ marginTop: 3 }}/>
+                          </td>
+                          <td style={{ padding: '8px 10px', fontSize: 10, color: C.textS, whiteSpace: 'nowrap' }}>{r.last_present || '—'}</td>
+                        </tr>
+                      )
+                    })}
+                    {attSorted.length === 0 && (
+                      <tr><td colSpan={7} style={{ padding: 30, textAlign: 'center', color: C.textS, fontSize: 12 }}>No students match.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 10, color: C.textS, marginTop: 10 }}>
+                Attendance % = Present ÷ marked sessions. Only students with ≥1 marked live-class record appear ({attTracked} of {total}); the rest are app-only / not in offline batches. Sorted worst-first by default.
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       {/* ── STUB TABS (awaiting data) ── */}
-      {tab !== 'gcbuddy' && (() => {
+      {!['gcbuddy', 'attendance'].includes(tab) && (() => {
         const t = TABS.find(x => x.id === tab)
         return (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
