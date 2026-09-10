@@ -12,6 +12,15 @@ import { sb } from '../../lib/supabase'
 const now = () => Date.now()
 const day = 86400000
 
+// Indian-format money: ₹1,79,63,691 → "₹1.80 Cr", ₹21,53,993 → "₹21.5 L", else grouped.
+const inr = n => {
+  n = Number(n) || 0
+  if (n >= 1e7) return '₹' + (n / 1e7).toFixed(2) + ' Cr'
+  if (n >= 1e5) return '₹' + (n / 1e5).toFixed(1) + ' L'
+  return '₹' + n.toLocaleString('en-IN')
+}
+const inrFull = n => '₹' + (Number(n) || 0).toLocaleString('en-IN')
+
 // The GC Buddy journey, in order (used by the Usage Statistics & Analysis tabs).
 const STEPS = [
   { key: 'step_active',    short: 'Active',    icon: '🟢' },
@@ -54,7 +63,7 @@ const TABS = [
   { id: 'gcbuddy',   lbl: '🇩🇪 GC Buddy',      ready: true },
   { id: 'attendance',lbl: '📅 Attendance',    ready: true },
   { id: 'gate',      lbl: '🎓 Gate Tests',    ready: false, note: 'Gate / level test results — student-wise view + metrics.' },
-  { id: 'emi',       lbl: '💳 EMI',           ready: false, note: 'Fee status — paid in full / on EMI / defaulter, with a collections view.' },
+  { id: 'emi',       lbl: '💳 EMI',           ready: true },
   { id: 'success',   lbl: '⭐ Success Score',  ready: false, note: 'A cumulative per-student score fusing GC Buddy usage, gate tests, attendance and EMI.' },
 ]
 
@@ -76,6 +85,13 @@ export default function Multiverse() {
   const [attSub, setAttSub] = useState('metrics')  // 'metrics' | 'students'
   const [attSortBy, setAttSortBy] = useState('pct')
   const [attSortDir, setAttSortDir] = useState('asc')
+  const [emiSummary, setEmiSummary] = useState(null)
+  const [emiRows, setEmiRows] = useState([])
+  const [emiSub, setEmiSub] = useState('metrics')  // 'metrics' | 'students'
+  const [emiSortBy, setEmiSortBy] = useState('behind')
+  const [emiSortDir, setEmiSortDir] = useState('desc')
+  const [emiStatusFilter, setEmiStatusFilter] = useState('all')
+  const [emiBehindOnly, setEmiBehindOnly] = useState(false)
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [levelFilter, setLevelFilter] = useState('all')
@@ -101,7 +117,7 @@ export default function Multiverse() {
   async function load() {
     setLoading(true)
     try {
-      const [f, d, u, w, fu, asum, arow] = await Promise.all([
+      const [f, d, u, w, fu, asum, arow, esum, erow] = await Promise.all([
         sb.rpc('get_student_funnel'),
         sb.rpc('get_gcbuddy_daily_activity', { p_days: 14 }),
         sb.rpc('get_gcbuddy_feature_usage'),
@@ -109,6 +125,8 @@ export default function Multiverse() {
         sb.rpc('get_gcbuddy_feature_usage_by_student'),
         sb.rpc('get_attendance_summary'),
         sb.rpc('get_attendance_by_student'),
+        sb.rpc('get_emi_summary'),
+        sb.rpc('get_emi_by_student'),
       ])
       setRows((f.data || []).filter(r => !r.is_demo))
       setDaily(d.data || [])
@@ -117,6 +135,8 @@ export default function Multiverse() {
       setFeatRows((fu.data || []).filter(r => !r.is_demo))
       setAttSummary(asum.data || null)
       setAttRows(arow.data || [])
+      setEmiSummary(esum.data || null)
+      setEmiRows((erow.data || []).filter(r => !r.is_demo))
     } catch (e) { console.error('multiverse load:', e.message) }
     setLoading(false)
   }
@@ -303,6 +323,65 @@ export default function Multiverse() {
         {label} {active ? (attSortDir === 'asc' ? '↑' : '↓') : ''}
       </th>
     )
+  }
+
+  // ── EMI (fee collections) derived ──
+  const emiT = emiSummary?.totals || {}
+  const emiStatusObj = emiSummary?.status || {}
+  const emiByProg = emiSummary?.by_program || []
+  const emiByOwner = emiSummary?.by_owner || []
+  const emiMonthly = emiSummary?.monthly || []
+  const emiCollPct = emiT.contract ? Math.round(emiT.collected / emiT.contract * 100) : 0
+  const emiDuePct = emiT.due_to_date ? Math.round(emiT.collected / emiT.due_to_date * 100) : 0
+  const maxEmiMonth = Math.max(1, ...emiMonthly.map(m => m.amount))
+  // eMandate setup status → label + colour (this is autopay-registration state, not money)
+  const EMI_STATUS = [
+    { k: 'complete', lbl: 'Mandate complete', c: C.green, hint: 'autopay fully set' },
+    { k: 'partial', lbl: 'Partial', c: C.blue, hint: 'some instalments' },
+    { k: 'inComplete', lbl: 'Incomplete', c: C.amber, hint: 'only down-payment' },
+    { k: 'mandateCancelled', lbl: 'Mandate cancelled', c: C.red, hint: 'autopay stopped' },
+  ]
+  const emiShortOwner = e => (e || '').split('@')[0].replace(/\.(bd|gc)$/, '').replace(/\./g, ' ')
+  const emiFiltered = emiRows.filter(r =>
+    (emiStatusFilter === 'all' || r.emi_overall === emiStatusFilter) &&
+    (!emiBehindOnly || r.behind > 0) &&
+    (!search || (r.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (r.mobile || '').includes(search) || (r.roll_number || '').toLowerCase().includes(search.toLowerCase()))
+  )
+  const emiSortFn = {
+    name: r => r.name || '', contract: r => r.to_pay, collected: r => r.paid_amt,
+    pct: r => r.collection_pct, behind: r => r.behind, outstanding: r => r.outstanding,
+    next: r => r.next_due || '9999', owner: r => r.created_from || '',
+  }
+  const emiSorted = [...emiFiltered].sort((a, b) => {
+    const g = emiSortFn[emiSortBy] || emiSortFn.behind
+    const va = g(a), vb = g(b)
+    if (typeof va === 'string') return emiSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va)
+    return emiSortDir === 'asc' ? va - vb : vb - va
+  })
+  function emiExportCsv() {
+    const head = ['name', 'mobile', 'gc_roll', 'program', 'contract', 'collected', 'collection_pct', 'due_by_today', 'behind', 'outstanding', 'instalments_paid', 'next_due_date', 'next_due_amt', 'mandate_status', 'collections_owner']
+    const lines = emiSorted.map(r => [
+      `"${(r.name || '').replace(/"/g, '""')}"`, r.mobile, r.roll_number || '', `"${r.product}"`,
+      r.to_pay, r.paid_amt, r.collection_pct, r.due_to_date, r.behind, r.outstanding,
+      `${r.n_paid}/${r.n_inst}`, r.next_due || '', r.next_amt, r.emi_overall, r.created_from,
+    ].join(','))
+    const blob = new Blob([[head.join(','), ...lines].join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob); const a = document.createElement('a')
+    a.href = url; a.download = `gc_emi_collections_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url)
+  }
+  function emiTh(label, key, extra = {}) {
+    const active = emiSortBy === key
+    return (
+      <th key={key} onClick={() => { if (emiSortBy === key) setEmiSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setEmiSortBy(key); setEmiSortDir(key === 'name' ? 'asc' : 'desc') } }}
+        style={{ padding: '8px 10px', textAlign: extra.center ? 'center' : 'left', fontSize: 9, fontWeight: 700, color: active ? C.blue : C.textS, textTransform: 'uppercase', letterSpacing: '.05em', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt, ...(extra.style || {}) }}>
+        {label} {active ? (emiSortDir === 'asc' ? '↑' : '↓') : ''}
+      </th>
+    )
+  }
+  const emiStatusBadge = s => {
+    const m = EMI_STATUS.find(x => x.k === s) || { c: C.textS, lbl: s }
+    return <span style={{ fontSize: 9, fontWeight: 700, color: m.c, background: m.c + '18', padding: '3px 7px', borderRadius: 10, whiteSpace: 'nowrap' }}>{m.lbl}</span>
   }
 
   return (
@@ -797,8 +876,195 @@ export default function Multiverse() {
         </>
       )}
 
+      {/* ── EMI (fee collections) TAB ── */}
+      {tab === 'emi' && (
+        <>
+          <div style={{ background: C.surfAlt, borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 6, padding: '8px 16px', flexShrink: 0, overflowX: 'auto' }}>
+            {[['metrics', '📊 Collections'], ['students', '👤 Per-Student']].map(([id, lbl]) => (
+              <button key={id} onClick={() => setEmiSub(id)}
+                style={{ padding: '6px 14px', borderRadius: 8, border: `1px solid ${emiSub === id ? C.blue : C.border}`, background: emiSub === id ? C.blueL : '#fff', color: emiSub === id ? C.blue : C.textM, cursor: 'pointer', fontSize: 12, fontWeight: emiSub === id ? 700 : 500, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+
+          {loading && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <Spin sz={28}/><span style={{ color: C.textS, fontSize: 12 }}>Loading EMI data…</span>
+            </div>
+          )}
+
+          {!loading && emiSub === 'metrics' && (
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 18 }}>
+                <MetricCard v={inr(emiT.contract)} l="Contract value" ic="📄" c={C.navy} sub={`${emiT.students || 0} EMI students`}/>
+                <MetricCard v={inr(emiT.collected)} l="Collected" ic="✅" c={C.green} sub={`${emiCollPct}% of contract`}/>
+                <MetricCard v={inr(emiT.behind_amt)} l="Overdue / behind" ic="⚠️" c={C.red} sub={`${emiT.behind_students || 0} students behind`}/>
+                <MetricCard v={inr(emiT.due_to_date)} l="Due by today" ic="📆" c={C.amber} sub={`${emiDuePct}% of it collected`}/>
+                <MetricCard v={inr(emiT.outstanding)} l="Outstanding (full term)" ic="⏳" c={C.textM} sub="still to collect"/>
+                <MetricCard v={emiStatusObj.mandateCancelled?.n || 0} l="Mandate cancelled" ic="🛑" c={C.red} sub="autopay stopped"/>
+              </div>
+
+              <div style={{ background: C.amberL, borderRadius: 10, padding: '10px 14px', marginBottom: 18, fontSize: 11, color: C.textM, lineHeight: 1.5 }}>
+                <b style={{ color: C.navy }}>ℹ️ How this is counted:</b> <b>Collected</b> = money actually received (instalments with a real paid-date). <b>Due by today</b> = sum of instalments whose due-date has passed — of which only {inr(emiT.collected)} ({emiDuePct}%) is in, leaving <b style={{ color: C.red }}>{inr(emiT.behind_amt)}</b> overdue across <b>{emiT.behind_students}</b> students. <b>Outstanding</b> is the full remaining contract over the whole EMI term. Mandate status below is the <i>autopay-registration</i> state, not money received.
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14, marginBottom: 18 }}>
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>📈 Monthly collections</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Money received each month (by paid-date)</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140 }}>
+                    {emiMonthly.map((m, i) => (
+                      <div key={i} title={`${m.ym}: ${inrFull(m.amount)} · ${m.installments} instalments`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 4, height: '100%' }}>
+                        <span style={{ fontSize: 8.5, fontWeight: 700, color: C.textM, whiteSpace: 'nowrap' }}>{(m.amount / 1e5).toFixed(1)}L</span>
+                        <div style={{ width: '100%', height: `${Math.round(m.amount / maxEmiMonth * 100)}%`, minHeight: 2, background: i === emiMonthly.length - 1 ? C.blueM : C.blue, borderRadius: '4px 4px 0 0' }}/>
+                        <span style={{ fontSize: 8, color: C.textS, whiteSpace: 'nowrap' }}>{new Date(m.ym + '-01').toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })}</span>
+                      </div>
+                    ))}
+                    {emiMonthly.length === 0 && <div style={{ margin: 'auto', color: C.textS, fontSize: 11 }}>No data</div>}
+                  </div>
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🔖 eMandate status</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 12 }}>Autopay registration state (not money)</div>
+                  {EMI_STATUS.map(st => {
+                    const n = emiStatusObj[st.k]?.n || 0
+                    const pct = emiT.students ? Math.round(n / emiT.students * 100) : 0
+                    return (
+                      <div key={st.k} style={{ marginBottom: 11 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 11.5, fontWeight: 600, color: st.c }}>{st.lbl} <span style={{ color: C.textS, fontWeight: 400 }}>{st.hint}</span></span>
+                          <span style={{ fontSize: 11, color: C.textS }}><b style={{ color: C.navy }}>{n}</b> · {pct}%</span>
+                        </div>
+                        <PBar pct={pct} h={7} color={st.c}/>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 12 }}>🎓 By program</div>
+                  {emiByProg.map(p => {
+                    const pct = p.contract ? Math.round(p.collected / p.contract * 100) : 0
+                    return (
+                      <div key={p.product} style={{ marginBottom: 11 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, color: C.textM, fontWeight: 600 }}>{p.product.replace(' Germany Program', '')} <span style={{ color: C.textS, fontWeight: 400 }}>· {p.students}</span></span>
+                          <span style={{ fontSize: 10.5, color: C.textS }}><b style={{ color: C.green }}>{inr(p.collected)}</b> / {inr(p.contract)}</span>
+                        </div>
+                        <PBar pct={pct} h={7} color={C.green}/>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🧑‍💼 By collections owner</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 12 }}>Who set up the EMI · sorted by amount behind</div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 320 }}>
+                      <thead><tr>
+                        {['Owner', 'Std', 'Collected', 'Behind'].map((h, i) => <th key={h} style={{ textAlign: i ? 'right' : 'left', padding: '6px 6px', fontSize: 9, fontWeight: 700, color: C.textS, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}` }}>{h}</th>)}
+                      </tr></thead>
+                      <tbody>
+                        {emiByOwner.slice(0, 10).map(o => (
+                          <tr key={o.created_from} style={{ borderBottom: `1px solid ${C.border}` }}>
+                            <td style={{ padding: '6px 6px', fontSize: 11, color: C.navy, fontWeight: 600, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{emiShortOwner(o.created_from)}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', fontSize: 11, color: C.textM, fontVariantNumeric: 'tabular-nums' }}>{o.students}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', fontSize: 11, color: C.green, fontVariantNumeric: 'tabular-nums' }}>{inr(o.collected)}</td>
+                            <td style={{ padding: '6px 6px', textAlign: 'right', fontSize: 11, color: o.behind_amt ? C.red : C.border, fontWeight: o.behind_amt ? 700 : 400, fontVariantNumeric: 'tabular-nums' }}>{o.behind_amt ? inr(o.behind_amt) : '–'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!loading && emiSub === 'students' && (
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.navy }}>Status:</span>
+                {EMI_STATUS.map(st => {
+                  const n = emiStatusObj[st.k]?.n || 0
+                  return (
+                    <button key={st.k} onClick={() => setEmiStatusFilter(emiStatusFilter === st.k ? 'all' : st.k)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, color: st.c, background: emiStatusFilter === st.k ? st.c + '18' : '#fff', border: `1.5px solid ${emiStatusFilter === st.k ? st.c : C.border}` }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: st.c }}/>{st.lbl} <b style={{ color: C.navy }}>{n}</b>
+                    </button>
+                  )
+                })}
+                <button onClick={() => setEmiBehindOnly(v => !v)}
+                  style={{ padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 700, color: emiBehindOnly ? '#fff' : C.red, background: emiBehindOnly ? C.red : '#fff', border: `1.5px solid ${C.red}` }}>
+                  ⚠️ Behind only {emiT.behind_students ? `(${emiT.behind_students})` : ''}
+                </button>
+                {(emiStatusFilter !== 'all' || emiBehindOnly) && <button onClick={() => { setEmiStatusFilter('all'); setEmiBehindOnly(false) }} style={{ fontSize: 10, color: C.textS, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>clear</button>}
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ flex: 1, minWidth: 180 }}><Inp val={search} set={setSearch} ph="🔍 Search name, mobile or GC roll"/></div>
+                <button onClick={emiExportCsv} style={{ padding: '7px 12px', borderRadius: 8, border: `1.5px solid ${C.border}`, background: '#fff', color: C.textM, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ CSV</button>
+                <span style={{ fontSize: 11, color: C.textS }}>{emiSorted.length} shown</span>
+              </div>
+
+              <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, overflow: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
+                  <thead>
+                    <tr>
+                      {emiTh('Student', 'name', { style: { position: 'sticky', left: 0, zIndex: 2, minWidth: 150 } })}
+                      {emiTh('Program', 'name', { })}
+                      {emiTh('Contract', 'contract', { center: true })}
+                      {emiTh('Collected', 'collected', { center: true })}
+                      {emiTh('Collected %', 'pct', { center: true })}
+                      {emiTh('Behind', 'behind', { center: true })}
+                      {emiTh('Paid', 'name', { center: true })}
+                      {emiTh('Next due', 'next', { center: true })}
+                      <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 9, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Mandate</th>
+                      {emiTh('Owner', 'owner', { })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {emiSorted.map(r => (
+                      <tr key={r.sid} style={{ borderBottom: `1px solid ${C.border}` }}>
+                        <td style={{ padding: '8px 10px', position: 'sticky', left: 0, background: '#fff', zIndex: 1, borderRight: `1px solid ${C.border}` }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{r.name || '—'}</div>
+                          <div style={{ fontSize: 9, color: C.textS }}>{r.mobile}{r.roll_number && <span style={{ color: C.blue }}> · {r.roll_number}</span>}</div>
+                        </td>
+                        <td style={{ padding: '8px 8px', fontSize: 10, color: C.textM, whiteSpace: 'nowrap' }}>{r.product.replace(' Germany Program', '')}</td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 11, color: C.textM, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{inr(r.to_pay)}</td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 11, color: C.green, fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{inr(r.paid_amt)}</td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', minWidth: 74 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: r.collection_pct >= 50 ? C.green : r.collection_pct >= 20 ? C.amber : C.red }}>{r.collection_pct}%</div>
+                          <PBar pct={r.collection_pct} h={4} color={r.collection_pct >= 50 ? C.green : r.collection_pct >= 20 ? C.amber : C.red} style={{ marginTop: 3 }}/>
+                        </td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 11, fontWeight: r.behind ? 700 : 400, color: r.behind ? C.red : C.border, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{r.behind ? inr(r.behind) : '–'}</td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 11, color: C.textM, fontVariantNumeric: 'tabular-nums' }}>{r.n_paid}/{r.n_inst}</td>
+                        <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 10, color: C.textM, whiteSpace: 'nowrap' }}>{r.next_due ? <>{r.next_due}<div style={{ fontSize: 9, color: C.textS }}>{inrFull(r.next_amt)}</div></> : '—'}</td>
+                        <td style={{ padding: '8px 6px', textAlign: 'center' }}>{emiStatusBadge(r.emi_overall)}</td>
+                        <td style={{ padding: '8px 8px', fontSize: 10, color: C.textS, textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{emiShortOwner(r.created_from)}</td>
+                      </tr>
+                    ))}
+                    {emiSorted.length === 0 && (
+                      <tr><td colSpan={10} style={{ padding: 30, textAlign: 'center', color: C.textS, fontSize: 12 }}>No students match.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 10, color: C.textS, marginTop: 10 }}>
+                Collected = instalments with a real paid-date · Behind = amount due by today minus collected · Paid = instalments received / total. GC roll shown where the EMI email matches a GC Buddy account ({emiT.linked_gc} of {emiT.students} linked). Demo/internal accounts excluded. Data source: Testbook EMI export.
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       {/* ── STUB TABS (awaiting data) ── */}
-      {!['gcbuddy', 'attendance'].includes(tab) && (() => {
+      {!['gcbuddy', 'attendance', 'emi'].includes(tab) && (() => {
         const t = TABS.find(x => x.id === tab)
         return (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
