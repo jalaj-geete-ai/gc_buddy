@@ -81,6 +81,8 @@ export default function Multiverse() {
   const [levelFilter, setLevelFilter] = useState('all')
   const [sortBy, setSortBy] = useState('eng')
   const [sortDir, setSortDir] = useState('desc')
+  const [gcTierFilter, setGcTierFilter] = useState('all')
+  const [attTierFilter, setAttTierFilter] = useState('all')
 
   useEffect(() => { if (auth) load() }, [])
   useEffect(() => {
@@ -179,12 +181,31 @@ export default function Multiverse() {
   })).sort((a, b) => b.total - a.total)
   const maxFeat = Math.max(1, ...feat5.map(f => f.total))
   const eng = r => (r.daily_tests_completed || 0) + (r.learn_hub_completed || 0) + (r.curriculum_completed || 0)
+  // ── Engagement tiers for GC Feature Usage: recency (from funnel) × depth ──
+  // meaningful = lifetime true completions (tests + Learn Hub sets + AI lessons + vocab).
+  // Highly active = active ≤7d & meaningful ≥20 · Active = active ≤7d, or active ≤30d & ≥20
+  // Not so active = active 8–30d & <20 · Dormant = no activity in 30+ days.
+  const GC_TIERS = ['Highly active', 'Active', 'Not so active', 'Dormant']
+  const TIER_COLOR = { 'Highly active': C.green, 'Active': C.blue, 'Not so active': C.amber, 'Dormant': C.red }
+  const TIER_BG = { 'Highly active': C.greenL, 'Active': C.blueL, 'Not so active': C.amberL, 'Dormant': C.redL }
+  const recByRoll = {}; rows.forEach(r => { recByRoll[r.roll_number] = r })
+  const meaningfulOf = r => (r.daily_tests_completed || 0) + (r.learn_hub_completed || 0) + (r.curriculum_completed || 0) + (r.vocab_completed || 0)
+  const gcTierOf = r => {
+    const rec = recByRoll[r.roll_number]; const m = meaningfulOf(r)
+    if (!rec || !rec.active_30d) return 'Dormant'
+    if (rec.active_7d && m >= 20) return 'Highly active'
+    if (rec.active_7d) return 'Active'
+    if (m >= 20) return 'Active'
+    return 'Not so active'
+  }
+  const gcTierCounts = GC_TIERS.map(t => ({ t, n: featRows.filter(r => gcTierOf(r) === t).length }))
   const fuFiltered = featRows.filter(r =>
     (levelFilter === 'all' || r.level === levelFilter) &&
+    (gcTierFilter === 'all' || gcTierOf(r) === gcTierFilter) &&
     (!search || (r.name || '').toLowerCase().includes(search.toLowerCase()) || (r.roll_number || '').toLowerCase().includes(search.toLowerCase()))
   )
   const sortKey = {
-    name: r => r.name || '', level: r => r.level,
+    name: r => r.name || '', level: r => r.level, tier: r => GC_TIERS.indexOf(gcTierOf(r)),
     listening: r => r.listening_plays, learnhub: r => r.learn_hub_completed,
     tests: r => r.daily_tests_completed, vocab: r => r.vocab_actions,
     vocabdone: r => r.vocab_completed, ai: r => r.curriculum_completed, eng,
@@ -197,9 +218,9 @@ export default function Multiverse() {
   })
 
   function exportCsv() {
-    const head = ['roll_number', 'name', 'level', 'listening_plays', 'learn_hub_sets_completed', 'daily_tests_completed', 'vocab_actions', 'vocab_completed', 'curriculum_ai_completed']
+    const head = ['roll_number', 'name', 'level', 'engagement_tier', 'listening_plays', 'learn_hub_sets_completed', 'daily_tests_completed', 'vocab_actions', 'vocab_completed', 'curriculum_ai_completed']
     const lines = fuSorted.map(r => [
-      r.roll_number, `"${(r.name || '').replace(/"/g, '""')}"`, r.level,
+      r.roll_number, `"${(r.name || '').replace(/"/g, '""')}"`, r.level, gcTierOf(r),
       r.listening_plays, r.learn_hub_completed, r.daily_tests_completed, r.vocab_actions, r.vocab_completed, r.curriculum_completed,
     ].join(','))
     const blob = new Blob([[head.join(','), ...lines].join('\n')], { type: 'text/csv' })
@@ -231,20 +252,27 @@ export default function Multiverse() {
     <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: v > 0 ? (strong ? C.navy : C.textM) : C.border, fontWeight: v > 0 && strong ? 700 : 400 }}>{v || '–'}</td>
   )
 
-  // ── Attendance derived ──
+  // ── Attendance derived (all DAY-LEVEL: present if present in ANY class that date) ──
   const attT = attSummary?.totals || {}
-  const attByCT = attSummary?.by_class_type || []
+  const attTierObj = attSummary?.tiers || {}
+  const attBySlot = attSummary?.by_slot || []
   const attByBatch = attSummary?.by_batch || []
   const attWeekly = attSummary?.weekly || []
   const attTracked = attRows.length
-  const attChronic = attRows.filter(r => Number(r.attendance_pct) < 40).length
-  const attGood = attRows.filter(r => Number(r.attendance_pct) >= 75).length
-  const attMaxBatch = Math.max(1, ...attByBatch.map(b => b.marked || 0))
+  const ATT_TIERS = [
+    { t: 'Highly active', k: 'highly', c: C.green, hint: '80%+' },
+    { t: 'Active', k: 'active', c: C.blue, hint: '60–79%' },
+    { t: 'Not so active', k: 'notso', c: C.amber, hint: '30–59%' },
+    { t: 'Dormant', k: 'dormant', c: C.red, hint: '<30%' },
+  ]
+  const attTierColor = { 'Highly active': C.green, 'Active': C.blue, 'Not so active': C.amber, 'Dormant': C.red }
+  const attTierBg = { 'Highly active': C.greenL, 'Active': C.blueL, 'Not so active': C.amberL, 'Dormant': C.redL }
   const attFiltered = attRows.filter(r =>
     (levelFilter === 'all' || r.level === levelFilter) &&
+    (attTierFilter === 'all' || r.tier === attTierFilter) &&
     (!search || (r.name || '').toLowerCase().includes(search.toLowerCase()) || (r.roll_number || '').toLowerCase().includes(search.toLowerCase()))
   )
-  const attSortFn = { name: r => r.name || '', batch: r => r.batches || '', pct: r => Number(r.attendance_pct), present: r => r.present, absent: r => r.absent, marked: r => r.marked }
+  const attSortFn = { name: r => r.name || '', batch: r => r.batches || '', pct: r => Number(r.attendance_pct), attended: r => r.attended_days, total: r => r.total_days }
   const attSorted = [...attFiltered].sort((a, b) => {
     const g = attSortFn[attSortBy] || attSortFn.pct
     const va = g(a), vb = g(b)
@@ -253,8 +281,8 @@ export default function Multiverse() {
   })
   const pctColor = p => p >= 75 ? C.green : p >= 40 ? C.amber : C.red
   function attExportCsv() {
-    const head = ['roll_number', 'name', 'level', 'batches', 'marked', 'present', 'absent', 'attendance_pct', 'last_present']
-    const lines = attSorted.map(r => [r.roll_number, `"${(r.name || '').replace(/"/g, '""')}"`, r.level, `"${r.batches || ''}"`, r.marked, r.present, r.absent, r.attendance_pct, r.last_present || ''].join(','))
+    const head = ['roll_number', 'name', 'level', 'batch', 'total_classes', 'attended', 'absent', 'attendance_pct', 'tier', 'last_present']
+    const lines = attSorted.map(r => [r.roll_number, `"${(r.name || '').replace(/"/g, '""')}"`, r.level, `"${r.batches || ''}"`, r.total_days, r.attended_days, r.absent_days, r.attendance_pct, r.tier, r.last_present || ''].join(','))
     const blob = new Blob([[head.join(','), ...lines].join('\n')], { type: 'text/csv' })
     const url = URL.createObjectURL(blob); const a = document.createElement('a')
     a.href = url; a.download = `gcbuddy_attendance_by_student_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url)
@@ -481,6 +509,23 @@ export default function Multiverse() {
                 })}
               </div>
 
+              {/* Engagement tiers */}
+              <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 16px', marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, marginBottom: 8 }}>👥 Engagement tiers <span style={{ fontWeight: 400, color: C.textS }}>— recency × depth · click to filter</span></div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {gcTierCounts.map(({ t, n }) => (
+                    <button key={t} onClick={() => setGcTierFilter(gcTierFilter === t ? 'all' : t)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, color: TIER_COLOR[t], background: gcTierFilter === t ? TIER_BG[t] : '#fff', border: `1.5px solid ${gcTierFilter === t ? TIER_COLOR[t] : C.border}` }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: TIER_COLOR[t] }}/>{t} <b style={{ color: C.navy }}>{n}</b>
+                    </button>
+                  ))}
+                  {gcTierFilter !== 'all' && <button onClick={() => setGcTierFilter('all')} style={{ fontSize: 10, color: C.textS, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>clear</button>}
+                </div>
+                <div style={{ fontSize: 9.5, color: C.textS, marginTop: 8 }}>
+                  🟢 Highly active = active ≤7d & ≥20 completions · 🔵 Active = active ≤7d, or ≤30d & ≥20 · 🟡 Not so active = active 8–30d & &lt;20 · 🔴 Dormant = no activity 30d+
+                </div>
+              </div>
+
               {/* Controls */}
               <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 180 }}><Inp val={search} set={setSearch} ph="🔍 Search name or roll number"/></div>
@@ -498,11 +543,12 @@ export default function Multiverse() {
 
               {/* Per-student completions table (= the CSV, live) */}
               <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, overflow: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 860 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
                   <thead>
                     <tr>
                       {th('Student', 'name', { style: { position: 'sticky', left: 0, zIndex: 2, minWidth: 150 } })}
                       {th('Lvl', 'level')}
+                      {th('Tier', 'tier', { center: true })}
                       {th('🎙️ Listening plays', 'listening', { center: true })}
                       {th('💪 Learn Hub done', 'learnhub', { center: true })}
                       {th('📝 Tests done', 'tests', { center: true })}
@@ -519,6 +565,7 @@ export default function Multiverse() {
                           <div style={{ fontSize: 9, color: C.textS }}>{r.roll_number}</div>
                         </td>
                         <td style={{ padding: '8px 8px' }}><Badge label={r.level} color={C.blue} bg={C.blueL}/></td>
+                        <td style={{ padding: '8px 6px', textAlign: 'center' }}>{(() => { const t = gcTierOf(r); return <span style={{ fontSize: 9, fontWeight: 700, color: TIER_COLOR[t], background: TIER_BG[t], padding: '3px 7px', borderRadius: 10, whiteSpace: 'nowrap' }}>{t}</span> })()}</td>
                         {numCell(r.listening_plays)}
                         {numCell(r.learn_hub_completed, true)}
                         {numCell(r.daily_tests_completed, true)}
@@ -528,7 +575,7 @@ export default function Multiverse() {
                       </tr>
                     ))}
                     {fuSorted.length === 0 && (
-                      <tr><td colSpan={8} style={{ padding: 30, textAlign: 'center', color: C.textS, fontSize: 12 }}>No students match.</td></tr>
+                      <tr><td colSpan={9} style={{ padding: 30, textAlign: 'center', color: C.textS, fontSize: 12 }}>No students match.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -562,35 +609,37 @@ export default function Multiverse() {
           {!loading && attSub === 'metrics' && (
             <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 18 }}>
-                <MetricCard v={`${attT.pct ?? 0}%`} l="Overall attendance" ic="📊" c={pctColor(attT.pct || 0)} sub={`${attT.present || 0} of ${attT.marked || 0} marked`}/>
+                <MetricCard v={`${attT.pct ?? 0}%`} l="Overall attendance" ic="📊" c={pctColor(attT.pct || 0)} sub={`${attT.present || 0} of ${attT.marked || 0} class-days`}/>
                 <MetricCard v={attTracked} l="Students tracked" ic="👥" c={C.navy} sub={`of ${total} approved`}/>
-                <MetricCard v={attT.present || 0} l="Present" ic="🟢" c={C.green} sub="all sessions"/>
-                <MetricCard v={attT.absent || 0} l="Absent" ic="🔴" c={C.red} sub="all sessions"/>
-                <MetricCard v={attChronic} l="Chronic (<40%)" ic="⚠️" c={C.red} sub="need intervention"/>
-                <MetricCard v={attGood} l="Regular (≥75%)" ic="⭐" c={C.green} sub="strong attenders"/>
+                <MetricCard v={attTierObj.highly || 0} l="Highly active (80%+)" ic="⭐" c={C.green} sub="strong attenders"/>
+                <MetricCard v={(attTierObj.notso || 0) + (attTierObj.dormant || 0)} l="At risk (<60%)" ic="⚠️" c={C.red} sub="need intervention"/>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 14, marginBottom: 18 }}>
                 <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
-                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 12 }}>🕐 Attendance by class type</div>
-                  {attByCT.map(ct => (
-                    <div key={ct.class_type} style={{ marginBottom: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: C.navy }}>{ct.class_type}</span>
-                        <span style={{ fontSize: 11, color: C.textS }}><b style={{ color: pctColor(ct.pct) }}>{ct.pct}%</b> · {ct.present}/{ct.marked}</span>
+                  <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🏅 Attendance tiers</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 12 }}>By each student's day-level attendance %</div>
+                  {ATT_TIERS.map(tt => {
+                    const n = attTierObj[tt.k] || 0
+                    const pct = attTracked ? Math.round(n / attTracked * 100) : 0
+                    return (
+                      <div key={tt.k} style={{ marginBottom: 11 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: tt.c }}>{tt.t} <span style={{ color: C.textS, fontWeight: 400 }}>{tt.hint}</span></span>
+                          <span style={{ fontSize: 11, color: C.textS }}><b style={{ color: C.navy }}>{n}</b> · {pct}%</span>
+                        </div>
+                        <PBar pct={pct} h={8} color={tt.c}/>
                       </div>
-                      <PBar pct={ct.pct} h={9} color={pctColor(ct.pct)}/>
-                    </div>
-                  ))}
-                  <div style={{ fontSize: 10, color: C.textS, marginTop: 6 }}>% of marked sessions where the student was Present.</div>
+                    )
+                  })}
                 </div>
 
                 <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
                   <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>📈 Weekly attendance %</div>
-                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Present ÷ marked each week</div>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Class-days present ÷ class-days each week (day-level)</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 130 }}>
                     {attWeekly.map((w, i) => (
-                      <div key={i} title={`Week of ${w.wk}: ${w.pct}% (${w.present}/${w.present + w.absent})`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 3, height: '100%' }}>
+                      <div key={i} title={`Week of ${w.wk}: ${w.pct}% (${w.present}/${w.total})`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 3, height: '100%' }}>
                         <span style={{ fontSize: 8, fontWeight: 700, color: C.textM }}>{w.pct}</span>
                         <div style={{ width: '100%', height: `${w.pct}%`, minHeight: 2, background: pctColor(w.pct), borderRadius: '3px 3px 0 0' }}/>
                       </div>
@@ -598,6 +647,10 @@ export default function Multiverse() {
                     {attWeekly.length === 0 && <div style={{ margin: 'auto', color: C.textS, fontSize: 11 }}>No data</div>}
                   </div>
                 </div>
+              </div>
+
+              <div style={{ background: C.blueL, borderRadius: 10, padding: '10px 14px', marginBottom: 18, fontSize: 11, color: C.textM, lineHeight: 1.5 }}>
+                <b style={{ color: C.navy }}>ℹ️ Day-level logic:</b> a student counts Present for a date if they attended <b>any</b> class that day (Morning &amp; Evening are the same lecture, so either counts). Slot fill so far — {attBySlot.map(s => `${s.class_type} ${s.pct}%`).join(' · ')} — Morning reads low mainly because those students attend the Evening slot instead.
               </div>
 
               <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
@@ -615,6 +668,20 @@ export default function Multiverse() {
 
           {!loading && attSub === 'students' && (
             <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.navy }}>Attendance tier:</span>
+                {ATT_TIERS.map(tt => {
+                  const n = attTierObj[tt.k] || 0
+                  return (
+                    <button key={tt.k} onClick={() => setAttTierFilter(attTierFilter === tt.t ? 'all' : tt.t)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, color: tt.c, background: attTierFilter === tt.t ? attTierBg[tt.t] : '#fff', border: `1.5px solid ${attTierFilter === tt.t ? tt.c : C.border}` }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: tt.c }}/>{tt.t} <span style={{ color: C.textS, fontWeight: 400 }}>{tt.hint}</span> <b style={{ color: C.navy }}>{n}</b>
+                    </button>
+                  )
+                })}
+                {attTierFilter !== 'all' && <button onClick={() => setAttTierFilter('all')} style={{ fontSize: 10, color: C.textS, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>clear</button>}
+              </div>
+
               <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 180 }}><Inp val={search} set={setSearch} ph="🔍 Search name or roll number"/></div>
                 <div style={{ display: 'flex', gap: 4 }}>
@@ -635,10 +702,10 @@ export default function Multiverse() {
                     <tr>
                       {attTh('Student', 'name', { style: { position: 'sticky', left: 0, zIndex: 2, minWidth: 150 } })}
                       {attTh('Batch', 'batch')}
-                      {attTh('Marked', 'marked', { center: true })}
-                      {attTh('Present', 'present', { center: true })}
-                      {attTh('Absent', 'absent', { center: true })}
+                      {attTh('Total classes', 'total', { center: true })}
+                      {attTh('Attended', 'attended', { center: true })}
                       {attTh('Attendance %', 'pct', { center: true })}
+                      <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 9, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Tier</th>
                       <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Last present</th>
                     </tr>
                   </thead>
@@ -652,13 +719,13 @@ export default function Multiverse() {
                             <div style={{ fontSize: 9, color: C.textS }}>{r.roll_number} · {r.level}</div>
                           </td>
                           <td style={{ padding: '8px 8px', fontSize: 10, color: C.textM, whiteSpace: 'nowrap' }}>{r.batches}</td>
-                          {numCell(r.marked)}
-                          <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: C.green, fontWeight: 600 }}>{r.present}</td>
-                          <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: r.absent > 0 ? C.red : C.border, fontWeight: 600 }}>{r.absent}</td>
+                          {numCell(r.total_days)}
+                          <td style={{ padding: '7px 8px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: C.green, fontWeight: 600 }}>{r.attended_days}</td>
                           <td style={{ padding: '7px 8px', textAlign: 'center', minWidth: 96 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: pctColor(p) }}>{p}%</div>
                             <PBar pct={p} h={4} color={pctColor(p)} style={{ marginTop: 3 }}/>
                           </td>
+                          <td style={{ padding: '8px 6px', textAlign: 'center' }}><span style={{ fontSize: 9, fontWeight: 700, color: attTierColor[r.tier], background: attTierBg[r.tier], padding: '3px 7px', borderRadius: 10, whiteSpace: 'nowrap' }}>{r.tier}</span></td>
                           <td style={{ padding: '8px 10px', fontSize: 10, color: C.textS, whiteSpace: 'nowrap' }}>{r.last_present || '—'}</td>
                         </tr>
                       )
@@ -670,7 +737,7 @@ export default function Multiverse() {
                 </table>
               </div>
               <div style={{ fontSize: 10, color: C.textS, marginTop: 10 }}>
-                Attendance % = Present ÷ marked sessions. Only students with ≥1 marked live-class record appear ({attTracked} of {total}); the rest are app-only / not in offline batches. Sorted worst-first by default.
+                Attendance % = attended class-days ÷ total class-days (day-level: present if present in any class that date). Tiers — Highly active 80%+ · Active 60–79% · Not so active 30–59% · Dormant &lt;30%. Only students with ≥1 class record appear ({attTracked} of {total}); the rest are app-only. Sorted worst-first by default.
               </div>
             </div>
           )}
