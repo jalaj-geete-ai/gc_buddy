@@ -199,6 +199,14 @@ export default function Multiverse() {
     return 'Not so active'
   }
   const gcTierCounts = GC_TIERS.map(t => ({ t, n: featRows.filter(r => gcTierOf(r) === t).length }))
+  // Engagement tiers grouped by batch (batch from enrolment; app-only = no batch)
+  const batchTierMap = {}
+  featRows.forEach(r => {
+    const b = r.batch || 'No batch (app-only)'
+    if (!batchTierMap[b]) batchTierMap[b] = { batch: b, total: 0, 'Highly active': 0, 'Active': 0, 'Not so active': 0, 'Dormant': 0 }
+    batchTierMap[b].total++; batchTierMap[b][gcTierOf(r)]++
+  })
+  const batchTiers = Object.values(batchTierMap).sort((a, b) => b.total - a.total)
   const fuFiltered = featRows.filter(r =>
     (levelFilter === 'all' || r.level === levelFilter) &&
     (gcTierFilter === 'all' || gcTierOf(r) === gcTierFilter) &&
@@ -358,6 +366,56 @@ export default function Multiverse() {
                 <MetricCard v={`${avgStreak}d`} l="Avg streak" ic="🔥" c={C.amber} sub="current"/>
               </div>
 
+              {/* Engagement tiers overview */}
+              <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px', marginBottom: 18 }}>
+                <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🎯 Engagement tiers</div>
+                <div style={{ fontSize: 10, color: C.textS, marginBottom: 14 }}>Recency × depth. 🟢 Highly active = active ≤7d & ≥20 completions · 🔵 Active = active ≤7d, or ≤30d & ≥20 · 🟡 Not so active = active 8–30d & &lt;20 · 🔴 Dormant = no activity 30d+</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+                  {gcTierCounts.map(({ t, n }) => {
+                    const pct = total ? Math.round(n / total * 100) : 0
+                    return (
+                      <div key={t} style={{ border: `1px solid ${C.border}`, borderLeft: `3px solid ${TIER_COLOR[t]}`, borderRadius: 10, padding: '11px 13px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: TIER_COLOR[t] }}>{t}</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: C.navy, lineHeight: 1.1 }}>{n} <span style={{ fontSize: 12, fontWeight: 600, color: C.textS }}>· {pct}%</span></div>
+                        <PBar pct={pct} h={5} color={TIER_COLOR[t]} style={{ marginTop: 7 }}/>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Engagement tiers by batch */}
+              <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px', marginBottom: 18 }}>
+                <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>🏫 Engagement tiers by batch</div>
+                <div style={{ fontSize: 10, color: C.textS, marginBottom: 12 }}>Batch from enrolment records; app-only students (no batch) grouped separately.</div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left', padding: '7px 8px', color: C.textS, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Batch</th>
+                        <th style={{ textAlign: 'center', padding: '7px 8px', color: C.textS, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}`, background: C.surfAlt }}>Total</th>
+                        {GC_TIERS.map(t => <th key={t} style={{ textAlign: 'center', padding: '7px 8px', color: TIER_COLOR[t], fontSize: 9, fontWeight: 700, borderBottom: `1px solid ${C.border}`, background: C.surfAlt, whiteSpace: 'nowrap' }}>{t}</th>)}
+                        <th style={{ padding: '7px 8px', borderBottom: `1px solid ${C.border}`, background: C.surfAlt, minWidth: 90 }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {batchTiers.map(b => (
+                        <tr key={b.batch} style={{ borderBottom: `1px solid ${C.border}` }}>
+                          <td style={{ padding: '7px 8px', fontSize: 11, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap' }}>{b.batch}</td>
+                          <td style={{ padding: '7px 8px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.navy, fontVariantNumeric: 'tabular-nums' }}>{b.total}</td>
+                          {GC_TIERS.map(t => <td key={t} style={{ padding: '7px 8px', textAlign: 'center', fontSize: 12, color: b[t] ? TIER_COLOR[t] : C.border, fontWeight: b[t] ? 700 : 400, fontVariantNumeric: 'tabular-nums' }}>{b[t] || '–'}</td>)}
+                          <td style={{ padding: '7px 8px' }}>
+                            <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', minWidth: 80, background: C.surfAlt }}>
+                              {GC_TIERS.map(t => b[t] ? <div key={t} title={`${t}: ${b[t]}`} style={{ width: `${b[t] / b.total * 100}%`, background: TIER_COLOR[t] }}/> : null)}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14, marginBottom: 18 }}>
                 <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 18px' }}>
                   <div style={{ fontWeight: 700, color: C.navy, fontSize: 13, marginBottom: 2 }}>📈 Daily active users — last 14 days</div>
@@ -509,21 +567,16 @@ export default function Multiverse() {
                 })}
               </div>
 
-              {/* Engagement tiers */}
-              <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 16px', marginBottom: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, marginBottom: 8 }}>👥 Engagement tiers <span style={{ fontWeight: 400, color: C.textS }}>— recency × depth · click to filter</span></div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {gcTierCounts.map(({ t, n }) => (
-                    <button key={t} onClick={() => setGcTierFilter(gcTierFilter === t ? 'all' : t)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, color: TIER_COLOR[t], background: gcTierFilter === t ? TIER_BG[t] : '#fff', border: `1.5px solid ${gcTierFilter === t ? TIER_COLOR[t] : C.border}` }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: TIER_COLOR[t] }}/>{t} <b style={{ color: C.navy }}>{n}</b>
-                    </button>
-                  ))}
-                  {gcTierFilter !== 'all' && <button onClick={() => setGcTierFilter('all')} style={{ fontSize: 10, color: C.textS, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>clear</button>}
-                </div>
-                <div style={{ fontSize: 9.5, color: C.textS, marginTop: 8 }}>
-                  🟢 Highly active = active ≤7d & ≥20 completions · 🔵 Active = active ≤7d, or ≤30d & ≥20 · 🟡 Not so active = active 8–30d & &lt;20 · 🔴 Dormant = no activity 30d+
-                </div>
+              {/* Engagement tiers overview lives in Usage Statistics; here we keep a click-to-filter chip row */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.navy }}>Tier:</span>
+                {gcTierCounts.map(({ t, n }) => (
+                  <button key={t} onClick={() => setGcTierFilter(gcTierFilter === t ? 'all' : t)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, color: TIER_COLOR[t], background: gcTierFilter === t ? TIER_BG[t] : '#fff', border: `1.5px solid ${gcTierFilter === t ? TIER_COLOR[t] : C.border}` }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: TIER_COLOR[t] }}/>{t} <b style={{ color: C.navy }}>{n}</b>
+                  </button>
+                ))}
+                {gcTierFilter !== 'all' && <button onClick={() => setGcTierFilter('all')} style={{ fontSize: 10, color: C.textS, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>clear</button>}
               </div>
 
               {/* Controls */}
