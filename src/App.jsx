@@ -23,7 +23,7 @@ const hash = (window.location.hash || '').replace(/^#\/?/, '').toLowerCase()
 // Each value is an array of test_ids; a test counts as "cleared" at ≥60%,
 // and ≥90% of the level's tests must be cleared to move up (see checkLevelUp).
 const LEVEL_TESTS = {
-  A1: ['A1_T1','A1_T2','A1_T3','A1_T4','A1_T5','A1_T6','A1_T7','A1_T8','A1_T9','A1_T10','A1_T11','A1_T12','A1_T13','A1_T14','A1_T15','A1_T16','A1_T17','A1_T18','A1_T19','A1_T20','A1_T21'],
+  A1: ['A1_D1','A1_D2','A1_D3','A1_D4','A1_D5','A1_D6','A1_D7','A1_D8','A1_D9','A1_D10','A1_D11','A1_D12','A1_D13','A1_D14','A1_D15','A1_D16','A1_D17','A1_D18','A1_D19','A1_D20','A1_D21','A1_D22','A1_D23','A1_D24','A1_D25','A1_D26','A1_D27','A1_D28','A1_D29','A1_D30','A1_D31','A1_D32','A1_D33','A1_D34','A1_D35'],
   A2: ['A2_T1','A2_T2','A2_T3','A2_T4','A2_T5','A2_T6','A2_T7','A2_T8','A2_T9','A2_T10','A2_T11','A2_T12','A2_T13','A2_T14','A2_T15','A2_T16','A2_T17','A2_T18','A2_T19','A2_T20','A2_T21','A2_T22','A2_T23','A2_T24','A2_T25','A2_T26','A2_T27','A2_T28','A2_T29','A2_T30','A2_T31','A2_T32','A2_T33','A2_T34','A2_T35'],
   B1: ['B1_T1', 'B1_T2', 'B1_T3'],
   B2: [], // B2 is the final level — no further promotion
