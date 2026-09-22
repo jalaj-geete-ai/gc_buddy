@@ -1,0 +1,53 @@
+From e852760c647a762d4e0b677131c6f9cb4b2b0bc6 Mon Sep 17 00:00:00 2001
+From: jalaj-geete-ai <jalaj.gc@testbook.com>
+Date: Tue, 22 Sep 2026 12:07:03 +0000
+Subject: [PATCH] Exercises: add 20 new questions (10 A1 basics/vocab + 10
+ early-A2 grammar)
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011APZXG6Gp3eTJWw7vjDTzK
+---
+ src/lib/data.js | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/src/lib/data.js b/src/lib/data.js
+index 0f1a992..60311a6 100644
+--- a/src/lib/data.js
++++ b/src/lib/data.js
+@@ -134,6 +134,16 @@ A1:[
+ {q:"'Das Blut' means?",opts:["urine","saliva","sweat","blood"],ans:3},
+ {q:"'Bitte husten Sie' means?",opts:["Please sneeze","Please breathe","Please cough","Please swallow"],ans:2},
+ {q:"'Die Erkältung' means?",opts:["allergy","cold/flu","fever","infection"],ans:1},
++{q:"'Guten Morgen' is used at what time of day?",opts:["Morning","Afternoon","Evening","Night"],ans:0},
++{q:"Article for 'Frau'?",opts:["der","die","das","den"],ans:1},
++{q:"'sieben' means which number?",opts:["six","seven","eight","nine"],ans:1},
++{q:"'die Woche' means?",opts:["day","week","month","year"],ans:1},
++{q:"'Ich ___ Deutsch.' (lernen, ich-form)",opts:["lernt","lernst","lerne","lernen"],ans:2},
++{q:"'das Auge' means?",opts:["ear","eye","nose","mouth"],ans:1},
++{q:"'Danke schön' means?",opts:["Please","Sorry","Thank you very much","Good day"],ans:2},
++{q:"'rot' is which colour?",opts:["blue","green","red","yellow"],ans:2},
++{q:"'die Mutter' means?",opts:["father","sister","mother","daughter"],ans:2},
++{q:"'Ich trinke Wasser' means?",opts:["I eat bread","I drink water","I need water","I bring water"],ans:1},
+ ],
+ A2:[
+ {q:"'Blutdruck ist erhöht' means?",opts:["BP low","BP normal","BP elevated","BP dangerous"],ans:2},
+@@ -238,6 +248,16 @@ A2:[
+ {q:"'Ich dokumentiere die Pflegemaßnahmen' means?",opts:["I cancel care","I document care measures","I plan care","I review care"],ans:1},
+ {q:"'Die Einwilligung' means?",opts:["rejection","complaint","consent","referral"],ans:2},
+ {q:"'Wie lange dauert das?' asks?",opts:["How much does it cost?","How long does it take?","How often?","How painful?"],ans:1},
++{q:"Perfekt: 'Ich habe es ___.' (machen)",opts:["macht","gemacht","machen","gemachen"],ans:1},
++{q:"'Ich ___ heute arbeiten.' (must)",opts:["kann","will","muss","darf"],ans:2},
++{q:"Dative: 'Ich helfe ___ Patienten.'",opts:["der","den","dem","das"],ans:2},
++{q:"Comparative of 'alt' is?",opts:["alter","älter","altest","mehr alt"],ans:1},
++{q:"Separable verb: 'Ich stehe um 6 Uhr ___.' (aufstehen)",opts:["an","auf","aus","ab"],ans:1},
++{q:"'für' takes which case?",opts:["nominative","accusative","dative","genitive"],ans:1},
++{q:"'nach dem Essen' — 'nach' takes which case?",opts:["accusative","dative","genitive","nominative"],ans:1},
++{q:"Reflexive: 'Ich wasche ___ die Hände.'",opts:["mich","mir","sich","mein"],ans:1},
++{q:"'Ich bleibe zu Hause, ___ ich krank bin.' (because)",opts:["weil","dass","wenn","denn"],ans:0},
++{q:"Perfekt with sein: 'Ich ___ nach Berlin gefahren.'",opts:["habe","bin","war","hatte"],ans:1},
+ ],
+ B1:[
+ {q:"'Klagt über Dyspnoe' means?",opts:["Good breathing","Breathlessness complaints","No problems","Recovered"],ans:1},
+-- 
+2.43.0
+
