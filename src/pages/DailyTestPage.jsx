@@ -1969,6 +1969,13 @@ const TESTS = [
   ...B1_TESTS,
 ]
 
+// Levels that actually have tests, for the header (e.g. "A1–B1"), computed so
+// the subtitle stays correct as levels/tests are added.
+const TEST_LEVELS = LEVELS.filter(lv => TESTS.some(t => t.level === lv))
+const TEST_LEVEL_RANGE = TEST_LEVELS.length
+  ? (TEST_LEVELS.length === 1 ? TEST_LEVELS[0] : `${TEST_LEVELS[0]}–${TEST_LEVELS[TEST_LEVELS.length - 1]}`)
+  : 'A1'
+
 function checkAnswer(q, userAns) {
   const clean = (s) => s.toString().toLowerCase().trim()
     .replace(/[!?.,-]/g, '').replace(/\s+/g, ' ')
@@ -2131,7 +2138,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
     return (
       <div style={{ flex: 1, overflow: 'auto', padding: '16px 18px' }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>📝 Daily Tests</h2>
-        <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>A1 Level · Classes 1–35 · 21 tests · Auto-graded instantly</p>
+        <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>Levels {TEST_LEVEL_RANGE} · {TESTS.length} tests · Auto-graded instantly</p>
 
         {/* My history toggle */}
         {myHistory.length > 0 && (
