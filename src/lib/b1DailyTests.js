@@ -703,4 +703,564 @@ export const B1_TESTS = [
       }
     ]
   },
+  {
+    id: "B1_D26",
+    name: "Lecture 26: Coordinating Conjunctions (ADUSO)",
+    classes: "Lecture 26",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D26Q1", text: "Which conjunction follows a negation to correct it?", opts: ["aber", "sondern", "denn", "oder"], ans: 1, marks: 1 },
+          { id: "B1D26Q2", text: "Complete: \"Ich trinke keinen Kaffee, ___ Tee.\"", opts: ["aber", "und", "sondern", "denn"], ans: 2, marks: 1 },
+          { id: "B1D26Q3", text: "'denn' keeps which word order in the second clause?", opts: ["Verb-first", "V2 (normal word order)", "Verb-final", "No verb"], ans: 1, marks: 1 },
+          { id: "B1D26Q4", text: "ADUSO (coordinating) conjunctions occupy which position?", opts: ["Position 1", "Position 2", "Position 0", "End position"], ans: 2, marks: 1 },
+          { id: "B1D26Q5", text: "\"Ich kann nicht kommen, ___ ich bin krank.\" (because/for)", opts: ["denn", "weil", "obwohl", "sondern"], ans: 0, marks: 1 },
+          { id: "B1D26Q6", text: "\"Sie kauft kein Fleisch, ___ sie kauft Gemüse.\" (but rather)", opts: ["aber", "sondern", "denn", "oder"], ans: 1, marks: 1 },
+          { id: "B1D26Q7", text: "\"Er ist müde, ___ er arbeitet weiter.\" (but)", opts: ["aber", "sondern", "denn", "und"], ans: 0, marks: 1 },
+          { id: "B1D26Q8", text: "\"Wir fahren nach Berlin ___ wir bleiben hier.\" (or)", opts: ["und", "oder", "aber", "denn"], ans: 1, marks: 1 },
+          { id: "B1D26Q9", text: "'sondern' means…", opts: ["but / however", "but rather (after a negation)", "because", "or"], ans: 1, marks: 1 },
+          { id: "B1D26Q10", text: "'denn' means…", opts: ["but", "or", "because / for", "although"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D27",
+    name: "Lecture 27: Integrated Review & Quiz 3",
+    classes: "Lecture 27",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D27Q1", text: "Which verb uses 'sein' in the Perfekt?", opts: ["kaufen", "schreiben", "kommen", "essen"], ans: 2, marks: 1 },
+          { id: "B1D27Q2", text: "Where does the past participle go in a Perfekt sentence?", opts: ["Position 2", "After the subject", "At the absolute end", "Before the auxiliary"], ans: 2, marks: 1 },
+          { id: "B1D27Q3", text: "Past participle of 'fahren'?", opts: ["gefahrt", "gefahren", "fuhr", "gefahre"], ans: 1, marks: 1 },
+          { id: "B1D27Q4", text: "Modal verb position in a main clause?", opts: ["At the end", "Position 1", "Position 2", "Before the subject"], ans: 2, marks: 1 },
+          { id: "B1D27Q5", text: "Perfekt: \"Ich ___ gestern nach Hause ___.\" (gehen)", opts: ["habe … gegangen", "bin … gegangen", "bin … gegehen", "habe … gegehen"], ans: 1, marks: 1 },
+          { id: "B1D27Q6", text: "Perfekt: \"Er ___ den Brief ___.\" (schreiben)", opts: ["ist … geschrieben", "hat … geschrieben", "hat … geschreibt", "ist … geschrieben"], ans: 1, marks: 1 },
+          { id: "B1D27Q7", text: "Perfekt: \"Wir ___ ins Kino ___.\" (fahren)", opts: ["haben … gefahren", "sind … gefahren", "sind … gefahrt", "haben … gefahrt"], ans: 1, marks: 1 },
+          { id: "B1D27Q8", text: "Perfekt: \"Sie ___ das Buch ___.\" (lesen)", opts: ["ist … gelesen", "hat … gelesen", "hat … gelest", "hat … geliest"], ans: 1, marks: 1 },
+          { id: "B1D27Q9", text: "Perfekt of 'gehen' is…", opts: ["hat gegangen", "ist gegangen", "hat gegehen", "ist gegehen"], ans: 1, marks: 1 },
+          { id: "B1D27Q10", text: "Perfekt of 'sehen' is…", opts: ["ist gesehen", "hat gesehen", "hat geseht", "ist geseht"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D28",
+    name: "Lecture 28: Dative Case Intro",
+    classes: "Lecture 28",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D28Q1", text: "Which question word signals the Dative case?", opts: ["Wen?", "Was?", "Wem?", "Wer?"], ans: 2, marks: 1 },
+          { id: "B1D28Q2", text: "'die' (feminine) becomes what in the Dative?", opts: ["den", "dem", "der", "die"], ans: 2, marks: 1 },
+          { id: "B1D28Q3", text: "Which verb ALWAYS takes the Dative?", opts: ["sehen", "kaufen", "helfen", "schreiben"], ans: 2, marks: 1 },
+          { id: "B1D28Q4", text: "Dative plural: nouns add which ending?", opts: ["-e", "-s", "-n", "-er"], ans: 2, marks: 1 },
+          { id: "B1D28Q5", text: "Dativ: \"Ich helfe ___ Arzt.\" (der)", opts: ["der", "den", "dem", "des"], ans: 2, marks: 1 },
+          { id: "B1D28Q6", text: "Dativ: \"Er gibt ___ Kind das Buch.\" (das)", opts: ["das", "dem", "der", "den"], ans: 1, marks: 1 },
+          { id: "B1D28Q7", text: "Dativ: \"Sie dankt ___ Frau.\" (die)", opts: ["die", "der", "dem", "den"], ans: 1, marks: 1 },
+          { id: "B1D28Q8", text: "Dativ plural: \"Das Buch gehört ___ Schülern.\" (die, plural)", opts: ["die", "der", "den", "dem"], ans: 2, marks: 1 },
+          { id: "B1D28Q9", text: "Dative of masculine 'der' is…", opts: ["den", "dem", "des", "der"], ans: 1, marks: 1 },
+          { id: "B1D28Q10", text: "Dative of feminine 'die' is…", opts: ["der", "dem", "den", "die"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D29",
+    name: "Lecture 29: Dative Pronouns & Prepositions",
+    classes: "Lecture 29",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D29Q1", text: "Dative of 'ich' is…?", opts: ["mich", "mir", "ich", "meinen"], ans: 1, marks: 1 },
+          { id: "B1D29Q2", text: "'seit' + which tense for ongoing states?", opts: ["Perfekt", "Präteritum", "Präsens", "Futur"], ans: 2, marks: 1 },
+          { id: "B1D29Q3", text: "'zu + dem' contracts to…?", opts: ["zur", "beim", "zum", "vom"], ans: 2, marks: 1 },
+          { id: "B1D29Q4", text: "Which preposition means 'since/for' (ongoing)?", opts: ["nach", "von", "seit", "aus"], ans: 2, marks: 1 },
+          { id: "B1D29Q5", text: "Dativ pronoun: \"Kannst du ___ helfen?\" (ich)", opts: ["mich", "mir", "ich", "mein"], ans: 1, marks: 1 },
+          { id: "B1D29Q6", text: "Dativ pronoun: \"Ich schreibe ___ einen Brief.\" (du)", opts: ["dich", "dir", "du", "dein"], ans: 1, marks: 1 },
+          { id: "B1D29Q7", text: "Dativ pronoun: \"Das Buch gehört ___.\" (er)", opts: ["ihn", "ihm", "er", "sein"], ans: 1, marks: 1 },
+          { id: "B1D29Q8", text: "Dativ pronoun (formal): \"Wir danken ___ sehr.\" (Sie)", opts: ["Sie", "Ihnen", "Ihr", "euch"], ans: 1, marks: 1 },
+          { id: "B1D29Q9", text: "'bei + dem' contracts to…", opts: ["beim", "bei dem", "vom", "zum"], ans: 0, marks: 1 },
+          { id: "B1D29Q10", text: "'von + dem' contracts to…", opts: ["vom", "von dem", "beim", "zur"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D30",
+    name: "Lecture 30: Two-Way Prepositions",
+    classes: "Lecture 30",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D30Q1", text: "Wohin? triggers which case?", opts: ["Dative", "Nominative", "Accusative", "Genitive"], ans: 2, marks: 1 },
+          { id: "B1D30Q2", text: "'in + dem' contracts to…?", opts: ["ins", "im", "am", "ans"], ans: 1, marks: 1 },
+          { id: "B1D30Q3", text: "Which verb pair is correct for motion/position?", opts: ["legen/liegen", "legen/stehen", "stellen/legen", "setzen/stellen"], ans: 0, marks: 1 },
+          { id: "B1D30Q4", text: "How many Wechselpräpositionen (two-way prepositions) are there?", opts: ["7", "8", "9", "10"], ans: 2, marks: 1 },
+          { id: "B1D30Q5", text: "Wo? (Dativ): \"Das Buch liegt auf ___ Tisch.\" (der)", opts: ["der", "den", "dem", "des"], ans: 2, marks: 1 },
+          { id: "B1D30Q6", text: "Wohin? (Akk): \"Ich lege das Buch auf ___ Tisch.\" (der)", opts: ["der", "den", "dem", "des"], ans: 1, marks: 1 },
+          { id: "B1D30Q7", text: "Wo? (Dativ): \"Die Katze schläft unter ___ Bett.\" (das)", opts: ["das", "dem", "den", "der"], ans: 1, marks: 1 },
+          { id: "B1D30Q8", text: "Wohin? (Akk): \"Er stellt die Lampe neben ___ Fenster.\" (das)", opts: ["das", "dem", "den", "der"], ans: 0, marks: 1 },
+          { id: "B1D30Q9", text: "'legen' means…", opts: ["to stand (static)", "to lay flat (motion)", "to lie flat (static)", "to place upright"], ans: 1, marks: 1 },
+          { id: "B1D30Q10", text: "'stellen' means…", opts: ["to stand (static)", "to lie flat", "to place upright (motion)", "to sit"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D31",
+    name: "Lecture 31: Body & Health",
+    classes: "Lecture 31",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D31Q1", text: "\"Meine Beine ___ weh.\" — correct verb?", opts: ["tut", "tun", "macht", "haben"], ans: 1, marks: 1 },
+          { id: "B1D31Q2", text: "Which word means \"runny nose / cold\"?", opts: ["Fieber", "Husten", "Schnupfen", "Schmerz"], ans: 2, marks: 1 },
+          { id: "B1D31Q3", text: "\"Ich brauche einen Termin ___ Arzt.\"", opts: ["von dem", "bei den", "beim", "zum"], ans: 2, marks: 1 },
+          { id: "B1D31Q4", text: "Where do you go for over-the-counter medicine in Germany?", opts: ["Krankenhaus", "Apotheke", "Arztpraxis", "Notaufnahme"], ans: 1, marks: 1 },
+          { id: "B1D31Q5", text: "Vokabel: \"Mein ___ tut weh.\" (back)", opts: ["Rücken", "Bauch", "Kopf", "Arm"], ans: 0, marks: 1 },
+          { id: "B1D31Q6", text: "Vokabel: \"Meine ___ tun weh.\" (legs)", opts: ["Arme", "Beine", "Hände", "Füße"], ans: 1, marks: 1 },
+          { id: "B1D31Q7", text: "Vokabel: \"Ich habe ___.\" (cough)", opts: ["Fieber", "Husten", "Schnupfen", "Durchfall"], ans: 1, marks: 1 },
+          { id: "B1D31Q8", text: "Vokabel: \"Er hat ___ seit gestern.\" (fever)", opts: ["Husten", "Fieber", "Schnupfen", "Schmerzen"], ans: 1, marks: 1 },
+          { id: "B1D31Q9", text: "'Apotheke' means…", opts: ["hospital", "pharmacy", "doctor", "clinic"], ans: 1, marks: 1 },
+          { id: "B1D31Q10", text: "'wehtun' means…", opts: ["to heal", "to hurt", "to rest", "to breathe"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D32",
+    name: "Lecture 32: Roleplay: Doctor & Clinic",
+    classes: "Lecture 32",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D32Q1", text: "\"___ Sie viel Wasser!\" — correct Imperativ of trinken?", opts: ["Trink", "Trinken", "Trank", "Getrunken"], ans: 1, marks: 1 },
+          { id: "B1D32Q2", text: "Imperativ Sie-form =", opts: ["infinitive + du", "infinitive + Sie", "infinitive + er", "past participle"], ans: 1, marks: 1 },
+          { id: "B1D32Q3", text: "\"Was ___ Ihnen?\" — standard doctor question", opts: ["macht", "fehlt", "tut", "haben"], ans: 1, marks: 1 },
+          { id: "B1D32Q4", text: "'Seit wann…' asks for…?", opts: ["a place", "a reason", "a duration", "a price"], ans: 2, marks: 1 },
+          { id: "B1D32Q5", text: "Modal: \"Sie ___ viel Wasser trinken.\" (should — instruction)", opts: ["müssen", "sollen", "dürfen", "können"], ans: 1, marks: 1 },
+          { id: "B1D32Q6", text: "Modal: \"Sie ___ nicht arbeiten.\" (must not)", opts: ["müssen nicht", "dürfen nicht", "sollen nicht", "können nicht"], ans: 1, marks: 1 },
+          { id: "B1D32Q7", text: "Modal: \"Er ___ sofort ins Krankenhaus.\" (must)", opts: ["soll", "muss", "darf", "kann"], ans: 1, marks: 1 },
+          { id: "B1D32Q8", text: "Modal: \"Sie ___ morgen wieder kommen.\" (can)", opts: ["müssen", "sollen", "dürfen", "können"], ans: 3, marks: 1 },
+          { id: "B1D32Q9", text: "'dürfen nicht' means…", opts: ["must / have to", "must not", "can", "should"], ans: 1, marks: 1 },
+          { id: "B1D32Q10", text: "'sollen' means…", opts: ["must", "can", "should (instruction)", "may"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D33",
+    name: "Lecture 33: Formal Writing",
+    classes: "Lecture 33",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D33Q1", text: "Formal closing in German letters?", opts: ["Liebe Grüße,", "Tschüss,", "Mit freundlichen Grüßen,", "Viele Grüße,"], ans: 2, marks: 1 },
+          { id: "B1D33Q2", text: "\"Sehr geehrte ___ Schmidt,\" (female)", opts: ["Herrn", "Herr", "Frau", "Fräulein"], ans: 2, marks: 1 },
+          { id: "B1D33Q3", text: "What comes directly after \"Mit freundlichen Grüßen,\"?", opts: ["Your address", "The Betreff", "A blank line, then your name", "The Anrede"], ans: 2, marks: 1 },
+          { id: "B1D33Q4", text: "Informal salutation to a friend named Jonas?", opts: ["Sehr geehrter Jonas,", "Hallo Jonas, / Lieber Jonas,", "Geehrter Herr Jonas,", "Sehr lieber Jonas,"], ans: 1, marks: 1 },
+          { id: "B1D33Q5", text: "Formal salutation to unknown recipients: \"___ Damen und Herren,\"", opts: ["Liebe", "Sehr geehrte", "Hallo", "Werte"], ans: 1, marks: 1 },
+          { id: "B1D33Q6", text: "Formal salutation to a known man: \"Sehr geehrter ___ Müller,\"", opts: ["Herr", "Herrn", "Herren", "Herrns"], ans: 1, marks: 1 },
+          { id: "B1D33Q7", text: "Formal closing: \"Mit ___ Grüßen,\"", opts: ["freundlich", "freundliche", "freundlichen", "freundlicher"], ans: 2, marks: 1 },
+          { id: "B1D33Q8", text: "The subject-line label in a German letter is called the…", opts: ["Anrede", "Betreff", "Absender", "Grußformel"], ans: 1, marks: 1 },
+          { id: "B1D33Q9", text: "'Absender' means…", opts: ["subject line", "salutation", "sender", "closing phrase"], ans: 2, marks: 1 },
+          { id: "B1D33Q10", text: "'Anrede' means…", opts: ["sender", "subject line", "greeting / salutation", "closing phrase"], ans: 2, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D34",
+    name: "Lecture 34: Exam Prep: Reading & Listening",
+    classes: "Lecture 34",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D34Q1", text: "What is the pass mark for each module?", opts: ["50%", "55%", "60%", "70%"], ans: 2, marks: 1 },
+          { id: "B1D34Q2", text: "In Hören (listening), the audio is played…?", opts: ["once", "twice", "three times", "as many times as needed"], ans: 1, marks: 1 },
+          { id: "B1D34Q3", text: "Best strategy for Lesen (reading) True/False items?", opts: ["Guess from the topic", "Read the whole text first", "Find the exact line in the text", "Skip and answer at the end"], ans: 2, marks: 1 },
+          { id: "B1D34Q4", text: "What does 'Notaufnahme' mean?", opts: ["Main entrance", "Pharmacy", "Emergency room", "Waiting room"], ans: 2, marks: 1 },
+          { id: "B1D34Q5", text: "True or False: \"Die Praxis öffnet um 8 Uhr.\" → \"Die Praxis ist um 8 Uhr geschlossen.\"", opts: ["True", "False", "Not stated", "Both"], ans: 1, marks: 1 },
+          { id: "B1D34Q6", text: "True or False: \"Der Kurs findet montags und mittwochs statt.\" → \"Der Kurs ist zweimal pro Woche.\"", opts: ["True", "False", "Not stated", "Both"], ans: 0, marks: 1 },
+          { id: "B1D34Q7", text: "True or False: \"Bitte Personalausweis mitbringen.\" → \"Man braucht keinen Ausweis.\"", opts: ["True", "False", "Not stated", "Both"], ans: 1, marks: 1 },
+          { id: "B1D34Q8", text: "True or False: \"Eintritt frei.\" → \"Der Eintritt kostet Geld.\"", opts: ["True", "False", "Not stated", "Both"], ans: 1, marks: 1 },
+          { id: "B1D34Q9", text: "'Lesen' is the ___ module.", opts: ["listening", "reading", "writing", "speaking"], ans: 1, marks: 1 },
+          { id: "B1D34Q10", text: "'Hören' is the ___ module.", opts: ["listening", "reading", "writing", "speaking"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D35",
+    name: "Lecture 35: Exam Prep: Writing & Speaking",
+    classes: "Lecture 35",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D35Q1", text: "Schreiben Task 2 requires approximately how many words?", opts: ["10", "20", "30", "50"], ans: 2, marks: 1 },
+          { id: "B1D35Q2", text: "\"Können Sie das bitte ___?\" (please repeat)", opts: ["erklären", "verstehen", "wiederholen", "buchstabieren"], ans: 2, marks: 1 },
+          { id: "B1D35Q3", text: "In Sprechen Part 2, you must…?", opts: ["Read a text aloud", "Ask your partner a question", "Fill in a form", "Write a message"], ans: 1, marks: 1 },
+          { id: "B1D35Q4", text: "\"Mit ___ Grüßen,\" — correct adjective ending?", opts: ["freundlich", "freundlichen", "freundliche", "freundlicher"], ans: 1, marks: 1 },
+          { id: "B1D35Q5", text: "Form field for your last name (German label):", opts: ["Vorname", "Familienname", "Geburtsdatum", "Beruf"], ans: 1, marks: 1 },
+          { id: "B1D35Q6", text: "Form field for your date of birth (German label):", opts: ["Geburtsort", "Geburtsdatum", "Staatsangehörigkeit", "Anschrift"], ans: 1, marks: 1 },
+          { id: "B1D35Q7", text: "Form field for your nationality (German label):", opts: ["Beruf", "Familienname", "Staatsangehörigkeit", "Wohnort"], ans: 2, marks: 1 },
+          { id: "B1D35Q8", text: "Form field for your job / profession (German label):", opts: ["Beruf", "Hobby", "Anrede", "Betreff"], ans: 0, marks: 1 },
+          { id: "B1D35Q9", text: "'Wo arbeiten Sie?' relates to the topic…", opts: ["Hobby", "Arbeit", "Essen", "Wohnen"], ans: 1, marks: 1 },
+          { id: "B1D35Q10", text: "'Was machen Sie in der Freizeit?' relates to the topic…", opts: ["Arbeit", "Hobby", "Essen", "Wohnen"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D36",
+    name: "Lecture 36: Subordinating Conjunctions",
+    classes: "Lecture 36",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D36Q1", text: "Which conjunction sends the verb to the END of the clause?", opts: ["denn", "oder", "weil", "und"], ans: 2, marks: 1 },
+          { id: "B1D36Q2", text: "Which is correct?", opts: ["\"…weil ich bin krank.\"", "\"…weil ich krank bin.\"", "\"…weil krank ich bin.\"", "\"…weil bin ich krank.\""], ans: 1, marks: 1 },
+          { id: "B1D36Q3", text: "What does 'obwohl' mean?", opts: ["because", "although", "so that", "whether"], ans: 1, marks: 1 },
+          { id: "B1D36Q4", text: "Which conjunction CANNOT start a subordinate clause?", opts: ["weil", "damit", "denn", "obwohl"], ans: 2, marks: 1 },
+          { id: "B1D36Q5", text: "\"Ich frage, ___ er kommt.\" Choose the right word:", opts: ["ob", "obwohl", "damit", "weil"], ans: 0, marks: 1 },
+          { id: "B1D36Q6", text: "\"Ich bin müde, ___ ich wenig geschlafen habe.\"", opts: ["weil", "denn", "obwohl", "damit"], ans: 0, marks: 1 },
+          { id: "B1D36Q7", text: "\"Sie weiß nicht, ___ er morgen kommt.\"", opts: ["ob", "dass", "weil", "damit"], ans: 0, marks: 1 },
+          { id: "B1D36Q8", text: "\"___ er krank ist, geht er trotzdem arbeiten.\"", opts: ["Obwohl", "Weil", "Damit", "Dass"], ans: 0, marks: 1 },
+          { id: "B1D36Q9", text: "\"Er lernt Deutsch, ___ er in Deutschland arbeiten kann.\"", opts: ["damit", "obwohl", "weil", "ob"], ans: 0, marks: 1 },
+          { id: "B1D36Q10", text: "\"Ich denke, ___ das richtig ist.\"", opts: ["dass", "wenn", "ob", "weil"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D37",
+    name: "Lecture 37: Genitive Case & Relative Clauses",
+    classes: "Lecture 37",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D37Q1", text: "Which genitive article is used for MASCULINE nouns?", opts: ["der", "dem", "des", "den"], ans: 2, marks: 1 },
+          { id: "B1D37Q2", text: "What ending is added to Masc./Neut. nouns in the Genitive?", opts: ["-en", "-s / -es", "-em", "-er"], ans: 1, marks: 1 },
+          { id: "B1D37Q3", text: "The relative pronoun for Dative Plural is:", opts: ["die", "den", "denen", "deren"], ans: 2, marks: 1 },
+          { id: "B1D37Q4", text: "Which sentence is correct?", opts: ["\"Das ist der Mann, das ich kenne.\"", "\"Das ist der Mann, den ich kenne.\"", "\"Das ist der Mann, dem ich kenne.\"", "\"Das ist der Mann, der ich kenne.\""], ans: 1, marks: 1 },
+          { id: "B1D37Q5", text: "'Trotz' requires which case?", opts: ["Dative", "Accusative", "Genitive", "Nominative"], ans: 2, marks: 1 },
+          { id: "B1D37Q6", text: "Genitiv: \"das Buch ___ Arztes\"", opts: ["des", "der", "dem", "den"], ans: 0, marks: 1 },
+          { id: "B1D37Q7", text: "Genitiv: \"die Meinung ___ Ärztin\"", opts: ["des", "der", "dem", "den"], ans: 1, marks: 1 },
+          { id: "B1D37Q8", text: "Genitiv: \"wegen ___ Wetters\"", opts: ["des", "der", "dem", "das"], ans: 0, marks: 1 },
+          { id: "B1D37Q9", text: "Genitiv: \"trotz ___ Müdigkeit\"", opts: ["des", "der", "dem", "den"], ans: 1, marks: 1 },
+          { id: "B1D37Q10", text: "Genitiv (N-Deklination): \"der Name ___ Patienten\"", opts: ["des", "der", "dem", "den"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D38",
+    name: "Lecture 38: Passive Voice",
+    classes: "Lecture 38",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D38Q1", text: "The Präsens Passiv formula is:", opts: ["sein + Partizip II", "werden + Partizip II", "haben + Partizip II", "werden + worden"], ans: 1, marks: 1 },
+          { id: "B1D38Q2", text: "The Perfekt Passiv formula is:", opts: ["werden + Partizip II + worden", "sein + Partizip II + worden", "haben + Partizip II", "ist + werden"], ans: 1, marks: 1 },
+          { id: "B1D38Q3", text: "The optional agent in the passive uses:", opts: ["mit + Dative", "von + Dative", "für + Accusative", "zu + Dative"], ans: 1, marks: 1 },
+          { id: "B1D38Q4", text: "Which is correct Präsens Passiv?", opts: ["\"Er wird untersucht.\"", "\"Er ist untersucht.\"", "\"Er hat untersucht.\"", "\"Er wird untersuchen.\""], ans: 0, marks: 1 },
+          { id: "B1D38Q5", text: "In the passive, the Partizip II goes to:", opts: ["Position 2", "Position 1", "the end of the clause", "after the subject"], ans: 2, marks: 1 },
+          { id: "B1D38Q6", text: "Passive of \"Der Arzt untersucht den Patienten.\"", opts: ["Der Patient wird untersucht.", "Der Patient ist untersucht.", "Der Patient hat untersucht.", "Der Patient wird untersuchen."], ans: 0, marks: 1 },
+          { id: "B1D38Q7", text: "Passive of \"Man reinigt das Zimmer jeden Tag.\"", opts: ["Das Zimmer wird jeden Tag gereinigt.", "Das Zimmer ist jeden Tag gereinigt.", "Das Zimmer hat jeden Tag gereinigt.", "Das Zimmer wird jeden Tag reinigen."], ans: 0, marks: 1 },
+          { id: "B1D38Q8", text: "Passive of \"Wir messen den Blutdruck morgens.\"", opts: ["Der Blutdruck wird morgens gemessen.", "Der Blutdruck ist morgens gemessen.", "Der Blutdruck wird morgens messen.", "Der Blutdruck hat morgens gemessen."], ans: 0, marks: 1 },
+          { id: "B1D38Q9", text: "Perfekt Passiv: \"Die Diagnose ___ gestellt worden.\"", opts: ["hat", "ist", "wird", "war"], ans: 1, marks: 1 },
+          { id: "B1D38Q10", text: "Passive of \"Die Krankenschwester wechselt den Verband.\"", opts: ["Der Verband wird gewechselt.", "Der Verband ist gewechselt.", "Der Verband hat gewechselt.", "Der Verband wird wechseln."], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D39",
+    name: "Lecture 39: Medical & Professional German",
+    classes: "Lecture 39",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D39Q1", text: "What does 'sturzgefährdet' mean?", opts: ["unconscious", "fall risk", "feverish", "confused"], ans: 1, marks: 1 },
+          { id: "B1D39Q2", text: "How do you say 'to administer medication' in German?", opts: ["Medikamente nehmen", "Medikamente verabreichen", "Medikamente geben", "Medikamente schreiben"], ans: 1, marks: 1 },
+          { id: "B1D39Q3", text: "'RR' stands for:", opts: ["Atemfrequenz", "Herzfrequenz", "Blutdruck", "Blutzucker"], ans: 2, marks: 1 },
+          { id: "B1D39Q4", text: "Which phrase begins a hand-over patient ID?", opts: ["\"Der Patient lautet…\"", "\"Der Patient auf Zimmer…\"", "\"Im Zimmer der Patient…\"", "\"Patient der auf Zimmer…\""], ans: 1, marks: 1 },
+          { id: "B1D39Q5", text: "'Flüssigkeitsbilanz dokumentieren' means:", opts: ["Document vital signs", "Document fluid balance", "Document medications", "Document diagnosis"], ans: 1, marks: 1 },
+          { id: "B1D39Q6", text: "Abbreviation: ___ steht für Blutdruck.", opts: ["RR", "HF", "BZ", "AF"], ans: 0, marks: 1 },
+          { id: "B1D39Q7", text: "Abbreviation: ___ bedeutet Herzfrequenz.", opts: ["RR", "HF", "AF", "BZ"], ans: 1, marks: 1 },
+          { id: "B1D39Q8", text: "Abbreviation: 'i.v.' bedeutet…", opts: ["intravenös", "per os", "subkutan", "intramuskulär"], ans: 0, marks: 1 },
+          { id: "B1D39Q9", text: "Abbreviation: ___ steht für Blutzucker.", opts: ["KG", "BZ", "AF", "RR"], ans: 1, marks: 1 },
+          { id: "B1D39Q10", text: "Abbreviation: 'p.o.' bedeutet…", opts: ["per os (oral)", "intravenös", "subkutan", "rektal"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D40",
+    name: "Lecture 40: B1 Mock Exam & Final Review",
+    classes: "Lecture 40",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D40Q1", text: "Which formula is correct for Perfekt Passiv?", opts: ["werden + Partizip II", "sein + Partizip II + worden", "haben + Partizip II + worden", "werden + worden"], ans: 1, marks: 1 },
+          { id: "B1D40Q2", text: "'Dessen' is the relative pronoun for:", opts: ["Feminine Nominative", "Masculine/Neuter Genitive", "Plural Dative", "Masculine Accusative"], ans: 1, marks: 1 },
+          { id: "B1D40Q3", text: "Subordinating conjunctions send the verb to:", opts: ["Position 1", "Position 2", "the end of the clause", "after the subject"], ans: 2, marks: 1 },
+          { id: "B1D40Q4", text: "'Des Patienten' is correct for which gender?", opts: ["Feminine", "Plural", "Masculine/Neuter", "Dative"], ans: 2, marks: 1 },
+          { id: "B1D40Q5", text: "What does 'ansprechbar' mean in medical German?", opts: ["fall risk", "responsive / conscious", "confused", "discharged"], ans: 1, marks: 1 },
+          { id: "B1D40Q6", text: "Passive: \"Der Patient ___ täglich untersucht.\"", opts: ["wird", "wurde", "worden", "ist"], ans: 0, marks: 1 },
+          { id: "B1D40Q7", text: "Subordinating: \"Ich bleibe zu Hause, ___ ich krank bin.\"", opts: ["weil", "denn", "dass", "und"], ans: 0, marks: 1 },
+          { id: "B1D40Q8", text: "Relative (Dativ, vertrauen): \"Das ist die Ärztin, ___ ich vertraue.\"", opts: ["die", "der", "den", "deren"], ans: 1, marks: 1 },
+          { id: "B1D40Q9", text: "Genitiv: \"Das Buch ___ Arztes liegt hier.\"", opts: ["des", "der", "dem", "den"], ans: 0, marks: 1 },
+          { id: "B1D40Q10", text: "Perfekt Passiv: \"Die Diagnose ist gestellt ___.\"", opts: ["worden", "geworden", "werden", "wird"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D41",
+    name: "Lecture 41: Konjunktiv II",
+    classes: "Lecture 41",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D41Q1", text: "Which is the correct Konjunktiv II of 'sein'?", opts: ["sei", "wäre", "wird", "war"], ans: 1, marks: 1 },
+          { id: "B1D41Q2", text: "\"Wenn ich mehr Zeit ___, würde ich mehr lernen.\" (haben)", opts: ["habe", "hätte", "hatte", "haben"], ans: 1, marks: 1 },
+          { id: "B1D41Q3", text: "Which sentence uses Konjunktiv II correctly?", opts: ["Könnten Sie helfen?", "Könntest du Helfen?", "Können Sie helfen würden?", "Sie könnte helfen."], ans: 0, marks: 1 },
+          { id: "B1D41Q4", text: "\"Ich ___ gern Deutsch sprechen.\" (wish)", opts: ["will", "werde", "würde", "wurde"], ans: 2, marks: 1 },
+          { id: "B1D41Q5", text: "\"Es ___ schön, in Deutschland zu wohnen.\"", opts: ["wird", "wäre", "war", "sei"], ans: 1, marks: 1 },
+          { id: "B1D41Q6", text: "\"Wenn ich Zeit ___ (haben), würde ich mehr üben.\"", opts: ["hätte", "habe", "hatte", "haben"], ans: 0, marks: 1 },
+          { id: "B1D41Q7", text: "\"___ Sie mir bitte helfen? (polite request)\"", opts: ["Könnten", "Können", "Konnten", "Kennten"], ans: 0, marks: 1 },
+          { id: "B1D41Q8", text: "\"Es ___ schön, in Deutschland zu arbeiten.\"", opts: ["wäre", "war", "wird", "sei"], ans: 0, marks: 1 },
+          { id: "B1D41Q9", text: "\"Wenn er krank ___ (sein), könnte er nicht arbeiten.\"", opts: ["wäre", "sei", "ist", "war"], ans: 0, marks: 1 },
+          { id: "B1D41Q10", text: "\"Ich ___ gern Ärztin werden.\"", opts: ["würde", "werde", "wurde", "will"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D42",
+    name: "Lecture 42: Infinitive Clauses",
+    classes: "Lecture 42",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D42Q1", text: "'um…zu' is used to express:", opts: ["contrast", "purpose", "time", "condition"], ans: 1, marks: 1 },
+          { id: "B1D42Q2", text: "Which sentence is correct?", opts: ["Ich lerne, um arbeiten zu.", "Ich lerne, um zu arbeiten.", "Ich lerne um arbeiten.", "Ich lerne, damit zu arbeiten."], ans: 1, marks: 1 },
+          { id: "B1D42Q3", text: "'anstatt…zu' means:", opts: ["in order to", "without", "instead of", "while"], ans: 2, marks: 1 },
+          { id: "B1D42Q4", text: "The separable verb 'aufstehen' with 'zu':", opts: ["zu aufstehen", "aufzustehen", "aufstehenzu", "stehenzuauf"], ans: 1, marks: 1 },
+          { id: "B1D42Q5", text: "'Er arbeitet, ohne Pause zu machen.' — what does this express?", opts: ["purpose", "condition", "doing something without something else", "result"], ans: 2, marks: 1 },
+          { id: "B1D42Q6", text: "\"Ich lerne Deutsch, ___ in Deutschland zu arbeiten.\"", opts: ["um", "ohne", "anstatt", "damit"], ans: 0, marks: 1 },
+          { id: "B1D42Q7", text: "\"Er ist gegangen, ___ sich zu verabschieden.\"", opts: ["um", "ohne", "anstatt", "damit"], ans: 1, marks: 1 },
+          { id: "B1D42Q8", text: "\"Sie hat angerufen, ___ zu schreiben.\"", opts: ["um", "ohne", "anstatt", "damit"], ans: 2, marks: 1 },
+          { id: "B1D42Q9", text: "\"Wir üben, ___ die Prüfung zu bestehen.\"", opts: ["um", "ohne", "anstatt", "weil"], ans: 0, marks: 1 },
+          { id: "B1D42Q10", text: "\"Er hat gegessen, ___ die Hände zu waschen.\"", opts: ["um", "ohne", "anstatt", "damit"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D43",
+    name: "Lecture 43: Adjective Declension",
+    classes: "Lecture 43",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D43Q1", text: "After 'der' (definite article), the adjective is:", opts: ["strong", "weak", "mixed", "unchanged"], ans: 1, marks: 1 },
+          { id: "B1D43Q2", text: "'ein alt___ Mann' — the correct ending is:", opts: ["-e", "-en", "-er", "-em"], ans: 2, marks: 1 },
+          { id: "B1D43Q3", text: "'frisch___ Milch' (no article, Nom. Fem.) — the correct ending is:", opts: ["-e", "-en", "-em", "-er"], ans: 0, marks: 1 },
+          { id: "B1D43Q4", text: "Which declension type is used after 'kein'?", opts: ["strong", "weak", "mixed", "unchanged"], ans: 2, marks: 1 },
+          { id: "B1D43Q5", text: "'den alten Mann' — which case and which declension?", opts: ["Nom., weak", "Akk., weak", "Dat., mixed", "Akk., strong"], ans: 1, marks: 1 },
+          { id: "B1D43Q6", text: "Adjektivendung: \"Das ist ein alt___ Patient.\" (Nom, masc.)", opts: ["alte", "alten", "alter", "altes"], ans: 2, marks: 1 },
+          { id: "B1D43Q7", text: "Adjektivendung: \"Ich sehe die jung___ Ärztin.\" (Akk, fem.)", opts: ["junge", "jungen", "junger", "junges"], ans: 0, marks: 1 },
+          { id: "B1D43Q8", text: "Adjektivendung: \"Er gibt dem krank___ Kind Medikamente.\" (Dat, neut.)", opts: ["kranke", "kranken", "krankes", "kranker"], ans: 1, marks: 1 },
+          { id: "B1D43Q9", text: "Adjektivendung: \"Wir trinken frisch___ Wasser.\" (Akk, neut., no article)", opts: ["frische", "frischen", "frisches", "frischem"], ans: 2, marks: 1 },
+          { id: "B1D43Q10", text: "Adjektivendung: \"…die Meinung einer erfahr___ Krankenschwester.\" (Gen, fem.)", opts: ["erfahrene", "erfahrenen", "erfahrener", "erfahrenes"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D44",
+    name: "Lecture 44: Reported Speech (Indirekte Rede)",
+    classes: "Lecture 44",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D44Q1", text: "Konjunktiv I of 'sein' (er/sie) is:", opts: ["ist", "wäre", "sei", "sein"], ans: 2, marks: 1 },
+          { id: "B1D44Q2", text: "When do we use Konjunktiv II in reported speech?", opts: ["always", "when Konjunktiv I looks the same as the Indicative", "for the past tense only", "never"], ans: 1, marks: 1 },
+          { id: "B1D44Q3", text: "'Sie sagt, sie ___ Schmerzen.' (haben → Konjunktiv I):", opts: ["hat", "hätte", "habe", "haben"], ans: 2, marks: 1 },
+          { id: "B1D44Q4", text: "'Er sagt, er ___ nicht kommen.' (können → Konjunktiv I):", opts: ["kann", "könnte", "könne", "konnte"], ans: 2, marks: 1 },
+          { id: "B1D44Q5", text: "Which word is optional in 'Er sagt, (dass) er komme'?", opts: ["er", "sagt", "dass", "komme"], ans: 2, marks: 1 },
+          { id: "B1D44Q6", text: "\"Er sagt, er ___ müde.\" (sein)", opts: ["sei", "ist", "wäre", "war"], ans: 0, marks: 1 },
+          { id: "B1D44Q7", text: "\"Sie sagt, sie ___ Kopfschmerzen.\" (haben)", opts: ["hat", "habe", "hätte", "haben"], ans: 1, marks: 1 },
+          { id: "B1D44Q8", text: "\"Er sagt, er ___ nicht aufstehen.\" (können)", opts: ["kann", "könne", "könnte", "konnte"], ans: 1, marks: 1 },
+          { id: "B1D44Q9", text: "\"Sie sagt, sie ___ das Medikament.\" (nehmen)", opts: ["nimmt", "nehme", "nähme", "nehmen"], ans: 1, marks: 1 },
+          { id: "B1D44Q10", text: "\"Er sagt, er ___ allergisch gegen Penicillin.\" (sein)", opts: ["ist", "sei", "wäre", "war"], ans: 1, marks: 1 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "B1_D45",
+    name: "Lecture 45: B1 Comprehensive Review & Speaking Prep",
+    classes: "Lecture 45",
+    level: 'B1',
+    totalMarks: 10,
+    timeMinutes: 10,
+    passMark: 60,
+    sections: [
+      {
+        title: 'Daily Test — Multiple Choice (10 Questions)',
+        marks: 10,
+        type: 'mcq',
+        questions: [
+          { id: "B1D45Q1", text: "'weil' sends the verb to:", opts: ["position 1", "position 2", "the end of the clause", "nowhere — it stays the same"], ans: 2, marks: 1 },
+          { id: "B1D45Q2", text: "'um…zu' requires:", opts: ["different subjects", "the same subject", "Konjunktiv II", "no infinitive"], ans: 1, marks: 1 },
+          { id: "B1D45Q3", text: "After 'der' (Nom., masc.), the adjective ending is:", opts: ["-er", "-en", "-e", "-es"], ans: 2, marks: 1 },
+          { id: "B1D45Q4", text: "Konjunktiv I of 'sein' (er) is:", opts: ["ist", "war", "wäre", "sei"], ans: 3, marks: 1 },
+          { id: "B1D45Q5", text: "In the passive voice, the auxiliary verb is:", opts: ["haben", "sein", "werden", "würden"], ans: 2, marks: 1 },
+          { id: "B1D45Q6", text: "\"Ich lerne Deutsch, ___ ich in Deutschland arbeiten kann.\"", opts: ["damit", "weil", "obwohl", "ob"], ans: 0, marks: 1 },
+          { id: "B1D45Q7", text: "\"Das ist die Ärztin, ___ mich behandelt.\" (Nom, fem.)", opts: ["die", "der", "den", "deren"], ans: 0, marks: 1 },
+          { id: "B1D45Q8", text: "\"Das Zimmer wird täglich ___.\" (passive)", opts: ["gereinigt", "reinigen", "gereinigen", "reinigt"], ans: 0, marks: 1 },
+          { id: "B1D45Q9", text: "\"___ Sie mir helfen? (polite)\"", opts: ["Könnten", "Können", "Konnten", "Kennten"], ans: 0, marks: 1 },
+          { id: "B1D45Q10", text: "\"Er geht, ___ sich zu verabschieden.\"", opts: ["ohne", "um", "anstatt", "damit"], ans: 0, marks: 1 },
+        ]
+      }
+    ]
+  },
 ]
