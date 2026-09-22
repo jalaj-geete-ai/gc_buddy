@@ -1,4 +1,5 @@
-// 200 questions per level (10 sets × 20) — each session picks 20 randomly
+// Nursing-focused MCQ bank, one array per level (A1/A2/B1/B2). Each Learn Hub
+// session picks 20 questions at random via pickExercises(level).
 
 export const EXERCISES = {
 A1:[
@@ -134,6 +135,11 @@ A1:[
 {q:"'Das Blut' means?",opts:["urine","saliva","sweat","blood"],ans:3},
 {q:"'Bitte husten Sie' means?",opts:["Please sneeze","Please breathe","Please cough","Please swallow"],ans:2},
 {q:"'Die Erkältung' means?",opts:["allergy","cold/flu","fever","infection"],ans:1},
+{q:"'Die Decke' means?",opts:["pillow","blanket","towel","curtain"],ans:1},
+{q:"'Bitte legen Sie sich hin' means?",opts:["Please stand up","Please lie down","Please sit up","Please turn around"],ans:1},
+{q:"'Wie fühlen Sie sich?' asks?",opts:["Where does it hurt?","How do you feel?","What is your name?","When did it start?"],ans:1},
+{q:"In time, 'halb neun' means?",opts:["9:30","8:15","8:30","9:15"],ans:2},
+{q:"'Möchten Sie etwas essen?' means?",opts:["Would you like to sleep?","Would you like to eat something?","Do you need help?","Are you in pain?"],ans:1},
 ],
 A2:[
 {q:"'Blutdruck ist erhöht' means?",opts:["BP low","BP normal","BP elevated","BP dangerous"],ans:2},
@@ -238,6 +244,11 @@ A2:[
 {q:"'Ich dokumentiere die Pflegemaßnahmen' means?",opts:["I cancel care","I document care measures","I plan care","I review care"],ans:1},
 {q:"'Die Einwilligung' means?",opts:["rejection","complaint","consent","referral"],ans:2},
 {q:"'Wie lange dauert das?' asks?",opts:["How much does it cost?","How long does it take?","How often?","How painful?"],ans:1},
+{q:"Comparative of 'gut' (good) is?",opts:["guter","gutter","besser","meist"],ans:2},
+{q:"'Der Termin' means?",opts:["the treatment","the appointment","the ward","the shift"],ans:1},
+{q:"'Ich muss Sie wiegen' means?",opts:["I have to wash you","I have to weigh you","I have to wake you","I have to move you"],ans:1},
+{q:"'Ziehen Sie sich bitte aus' means?",opts:["Please sit down","Please undress","Please get dressed","Please come in"],ans:1},
+{q:"'Ich habe gut geschlafen' is in which tense?",opts:["Present","Perfekt (past)","Future","Imperative"],ans:1},
 ],
 B1:[
 {q:"'Klagt über Dyspnoe' means?",opts:["Good breathing","Breathlessness complaints","No problems","Recovered"],ans:1},
@@ -329,6 +340,11 @@ B1:[
 {q:"'Ich halte Rücksprache mit dem Arzt' means?",opts:["I inform the patient","I consult with the doctor","I write the report","I call the family"],ans:1},
 {q:"'sobald' means?",opts:["as long as","until","as soon as","since"],ans:2},
 {q:"'Die Vitalzeichen engmaschig überwachen' means?",opts:["Check vitals once","Monitor vitals closely","Record vitals weekly","Ignore vitals"],ans:1},
+{q:"'Blut wird abgenommen' is in which voice?",opts:["Active","Passive","Imperative","Subjunctive"],ans:1},
+{q:"'Die Angehörigen' means?",opts:["the caregivers","the relatives","the colleagues","the patients"],ans:1},
+{q:"In 'Der Patient, der gestürzt ist', the word 'der' (2nd) is a?",opts:["definite article","relative pronoun","preposition","conjunction"],ans:1},
+{q:"'Er leidet an Diabetes' — 'an' here takes which case?",opts:["Nominative","Accusative","Dative","Genitive"],ans:2},
+{q:"After 'weil', the conjugated verb goes?",opts:["to position 2","right after weil","to the end of the clause","before the subject"],ans:2},
 ],
 B2:[
 {q:"'Symptomatik unspezifisch' means?",opts:["Clear symptoms","Non-specific symptoms","Severe symptoms","Improving symptoms"],ans:1},
@@ -412,6 +428,11 @@ B2:[
 {q:"'nosokomiale Infektion' means?",opts:["community infection","hospital-acquired infection","chronic infection","viral infection"],ans:1},
 {q:"'interdisziplinäre Fallkonferenz' means?",opts:["Single doctor review","Interdisciplinary case conference","Patient interview","Nurse handover"],ans:1},
 {q:"'Die Prognose ist verhalten optimistisch' means?",opts:["Prognosis is very good","Prognosis is poor","Prognosis is cautiously optimistic","Prognosis is unknown"],ans:2},
+{q:"'Etwas in Betracht ziehen' means?",opts:["to rule out","to consider","to postpone","to document"],ans:1},
+{q:"'Der Patient ist unruhig' means?",opts:["The patient is calm","The patient is restless","The patient is asleep","The patient is stable"],ans:1},
+{q:"The connector 'sodass' expresses?",opts:["a condition","a consequence/result","a contrast","a purpose"],ans:1},
+{q:"In 'der frisch operierte Patient', 'operierte' is a?",opts:["finite verb","participial (extended) attribute","relative clause","modal verb"],ans:1},
+{q:"'Jemandem zur Verfügung stehen' means?",opts:["to report someone","to be available to someone","to replace someone","to instruct someone"],ans:1},
 ],
 }
 

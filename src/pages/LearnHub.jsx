@@ -1,312 +1,80 @@
 import { useState } from 'react'
 import { C } from '../lib/constants'
-import { EXERCISES, pickExercises } from '../lib/data'
+import { EXERCISES } from '../lib/data'
+import { GRAMMAR, GRAMMAR_LEVELS } from '../lib/grammar'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
 
-// ── EXPANDED GRAMMAR ──────────────────────────────────────────────────────────
-const GRAMMAR = [
-  {
-    level:'A1/A2',
-    t:'Articles: der / die / das',
-    c:`German has THREE genders — every noun has an article you must memorize!
-
-MASCULINE (der):
-→ der Arzt (doctor), der Patient (patient), der Arm (arm), der Bauch (stomach), der Rücken (back)
-→ der Rollstuhl (wheelchair), der Blutdruck (blood pressure), der Puls (pulse)
-
-FEMININE (die):
-→ die Krankenschwester (nurse), die Klinik (clinic), die Wunde (wound), die Tablette (tablet)
-→ die Pflege (care), die Behandlung (treatment), die Station (ward), die Diagnose (diagnosis)
-
-NEUTER (das):
-→ das Krankenhaus (hospital), das Medikament (medication), das Bett (bed), das Blut (blood)
-→ das Fieber (fever), das Rezept (prescription), das Formular (form), das Zimmer (room)
-
-💡 TIP: Always learn the article WITH the noun — never separate them!
-Wrong: "Krankenhaus" ✗  →  Correct: "das Krankenhaus" ✓
-
-PLURAL → always "die":
-→ die Tabletten, die Patienten, die Ärzte, die Krankenschwestern`
-  },
-  {
-    level:'A1/A2',
-    t:'Present Tense (Präsens)',
-    c:`REGULAR VERBS — Example: arbeiten (to work)
-
-ich arbeite          → I work
-du arbeitest         → you work (informal)
-er/sie/es arbeitet   → he/she/it works
-wir arbeiten         → we work
-ihr arbeitet         → you (plural) work
-sie/Sie arbeiten     → they/You (formal) work
-
-⚠️ In nursing we ALWAYS use "Sie" (formal) with patients!
-
-NURSING EXAMPLES:
-→ Ich arbeite auf der Intensivstation. (I work in ICU)
-→ Der Patient schläft gut. (The patient sleeps well)
-→ Wie fühlen Sie sich? (How do you feel? — formal)
-→ Ich messe Ihren Blutdruck. (I measure your blood pressure)
-→ Der Arzt kommt gleich. (The doctor comes shortly)
-
-IRREGULAR VERBS (must memorize!):
-sein (to be):      ich bin / du bist / er ist / wir sind
-haben (to have):   ich habe / du hast / er hat / wir haben
-gehen (to go):     ich gehe / du gehst / er geht / wir gehen
-nehmen (to take):  ich nehme / du nimmst / er nimmt / wir nehmen`
-  },
-  {
-    level:'A2',
-    t:'Cases: Nominativ, Akkusativ, Dativ',
-    c:`German has 4 cases — articles CHANGE based on role in sentence!
-
-NOMINATIV (subject — who is doing the action):
-→ Der Patient liegt im Bett. (The patient lies in bed)
-→ Die Schwester kommt. (The nurse comes)
-→ Das Fieber steigt. (The fever rises)
-
-AKKUSATIV (direct object — what/who receives the action):
-→ Ich rufe den Arzt. (I call the doctor) [der → den]
-→ Ich nehme die Tablette. (I take the tablet) [die → die — unchanged!]
-→ Ich prüfe das Formular. (I check the form) [das → das — unchanged!]
-
-DATIV (indirect object — to/for whom):
-→ Ich gebe dem Patienten die Tablette. (I give the patient the tablet) [der → dem]
-→ Ich helfe der Patientin. (I help the patient/female) [die → der]
-→ Ich erkläre dem Kind die Lage. (I explain the situation to the child) [das → dem]
-
-QUICK REFERENCE TABLE:
-         | m (der) | f (die) | n (das)
-Nominativ|  der    |  die    |  das
-Akkusativ|  den    |  die    |  das
-Dativ    |  dem    |  der    |  dem
-
-NURSING EXAMPLE:
-→ Ich gebe dem Patienten (Dat) die Medikamente (Akk).
-   I give the patient his medications.`
-  },
-  {
-    level:'A2/B1',
-    t:'Modal Verbs (Modalverben)',
-    c:`Modal verbs express ability, permission, obligation — essential in nursing!
-
-MÜSSEN (must / have to):
-→ Patient muss nüchtern bleiben. (Patient must stay fasting)
-→ Sie müssen die Tabletten regelmäßig nehmen. (You must take tablets regularly)
-→ Ich muss den Arzt informieren. (I must inform the doctor)
-
-KÖNNEN (can / to be able to):
-→ Können Sie einatmen? (Can you breathe in?)
-→ Ich kann Ihnen helfen. (I can help you)
-→ Der Patient kann nicht aufstehen. (The patient cannot stand up)
-
-DÜRFEN (may / to be allowed to):
-→ Sie dürfen aufstehen. (You may stand up)
-→ Patienten dürfen nicht rauchen. (Patients are not allowed to smoke)
-→ Darf ich Ihren Arm nehmen? (May I take your arm?)
-
-SOLLEN (should / supposed to):
-→ Medikament soll nach dem Essen genommen werden. (Medicine should be taken after eating)
-→ Sie sollen morgen nüchtern kommen. (You should come fasting tomorrow)
-
-WOLLEN (want to):
-→ Der Patient will nach Hause. (The patient wants to go home)
-→ Ich will den Arzt sprechen. (I want to speak to the doctor)
-
-⚠️ WORD ORDER: Modal + infinitive at END of sentence!
-→ Ich kann Ihnen die Spritze geben. ✓
-→ Ich kann geben Ihnen die Spritze. ✗`
-  },
-  {
-    level:'B1',
-    t:'Perfekt (Past Tense)',
-    c:`The Perfekt is the most common past tense in spoken German!
-
-FORMATION: haben/sein + Partizip II (past participle)
-
-MOST VERBS → use HABEN:
-→ Ich habe die Tablette genommen. (I took the tablet)
-→ Der Patient hat gut geschlafen. (The patient slept well)
-→ Ich habe den Verband gewechselt. (I changed the bandage)
-→ Die Ärztin hat die Diagnose gestellt. (The doctor made the diagnosis)
-
-VERBS OF MOVEMENT/CHANGE → use SEIN:
-→ Der Patient ist aufgestanden. (The patient got up) [aufstehen]
-→ Ich bin ins Zimmer gegangen. (I went into the room) [gehen]
-→ Das Fieber ist gesunken. (The fever went down) [sinken]
-→ Der Zustand ist besser geworden. (The condition improved) [werden]
-
-PARTIZIP II PATTERNS:
-Regular:   ge + stem + t   → gearbeitet, gemacht, gefragt
-Irregular: ge + stem + en  → genommen, gegeben, gefunden, geschrieben
-sep. verb: stem + ge + part → aufgenommen, abgenommen, eingenommen
-
-NURSING USAGE:
-→ Ich habe die Vitalzeichen gemessen. (I measured the vital signs)
-→ Patient hat Schmerzmittel erhalten. (Patient received painkillers)
-→ Die Wundversorgung ist erfolgt. (Wound care has been carried out)
-→ Blut wurde abgenommen. (Blood was drawn) — PASSIVE Perfekt!`
-  },
-  {
-    level:'B1',
-    t:'Subordinate Clauses (Nebensätze)',
-    c:`In subordinate clauses, the VERB goes to the END — very important for B1!
-
-WEIL (because):
-→ Ich rufe den Arzt, weil der Patient Schmerzen hat.
-  (I call the doctor because the patient has pain.)
-→ Sie bleibt im Bett, weil sie Fieber hat.
-  (She stays in bed because she has fever.)
-
-OBWOHL (although):
-→ Obwohl er Schmerzen hat, bleibt er ruhig.
-  (Although he has pain, he stays calm.)
-→ Sie isst nicht, obwohl sie Hunger hat.
-  (She doesn't eat although she is hungry.)
-
-WENN/FALLS (if / when):
-→ Wenn Sie Schmerzen haben, klingeln Sie bitte.
-  (If/When you have pain, please ring the bell.)
-→ Falls die Übelkeit schlimmer wird, sagen Sie mir Bescheid.
-  (If the nausea gets worse, let me know.)
-
-DAMIT (so that):
-→ Ich erkläre die Medikamente, damit Sie sie richtig nehmen.
-  (I explain the medications so that you take them correctly.)
-
-SOBALD (as soon as):
-→ Sobald der Arzt da ist, informiere ich Sie.
-  (As soon as the doctor is here, I will inform you.)
-
-BEVOR (before) / NACHDEM (after):
-→ Bevor Sie schlafen, nehmen Sie die Tablette.
-  (Before you sleep, take the tablet.)
-→ Nachdem die Visite ist, erkläre ich alles.
-  (After the ward round, I will explain everything.)
-
-⚠️ REMEMBER: Verb always at END of subordinate clause!`
-  },
-  {
-    level:'B1/B2',
-    t:'Passive Voice (Passiv)',
-    c:`PASSIVE is essential for medical documentation and nursing reports!
-
-PRESENT PASSIVE (Präsens Passiv):
-Formation: werden + Partizip II
-
-→ Das Medikament wird gegeben. (The medication is given)
-→ Der Verband wird gewechselt. (The dressing is changed)
-→ Die Wunde wird versorgt. (The wound is treated)
-→ Der Patient wird untersucht. (The patient is examined)
-→ Blut wird abgenommen. (Blood is drawn)
-→ Maßnahmen werden eingeleitet. (Measures are initiated)
-
-PAST PASSIVE (Perfekt Passiv):
-Formation: sein + Partizip II + worden
-
-→ Das Medikament ist gegeben worden. (The medication was given)
-→ Der Patient ist aufgenommen worden. (The patient was admitted)
-→ Die Operation ist durchgeführt worden. (The operation was performed)
-
-WITH AGENT (von = by):
-→ Das Medikament wird vom Arzt verschrieben. (prescribed by the doctor)
-→ Der Verband wird von der Schwester gewechselt. (changed by the nurse)
-
-NURSING DOCUMENTATION:
-→ Vitaldaten wurden dokumentiert. ✓
-→ Medikamente wurden verabreicht. ✓
-→ Patient wurde informiert und aufgeklärt. ✓
-→ Wundversorgung wurde täglich durchgeführt. ✓
-
-💡 Use passive when the ACTION is more important than WHO does it.`
-  },
-  {
-    level:'B2',
-    t:'Konjunktiv II (Subjunctive)',
-    c:`Konjunktiv II is used for polite requests, recommendations, hypotheticals — essential for professional B2 communication!
-
-POLITE RECOMMENDATIONS (very common in nursing!):
-→ Ich würde empfehlen, dass Sie ruhen. (I would recommend that you rest)
-→ Es wäre besser, wenn Sie mehr trinken würden. (It would be better if you drank more)
-→ Könnten Sie mir bitte die Hand geben? (Could you please give me your hand?)
-→ Dürfte ich fragen, wie alt Sie sind? (May I ask how old you are?)
-→ Würden Sie bitte ruhig bleiben? (Would you please stay calm?)
-
-HYPOTHETICAL SITUATIONS:
-→ Wenn der Patient früher gekommen wäre, hätte man besser helfen können.
-  (If the patient had come earlier, we could have helped better.)
-→ Wenn ich an Ihrer Stelle wäre, würde ich den Arzt fragen.
-  (If I were in your position, I would ask the doctor.)
-
-KEY FORMS (often irregular!):
-sein   → wäre     (would be)
-haben  → hätte    (would have)
-können → könnte   (could)
-müssen → müsste   (should/would have to)
-dürfen → dürfte   (would be allowed to)
-werden → würde    (would)
-wollen → wollte   (would want)
-
-PROFESSIONAL COMMUNICATION:
-→ Ich würde vorschlagen... (I would suggest...)
-→ Es wäre ratsam... (It would be advisable...)
-→ Man könnte erwägen... (One could consider...)
-→ Wäre es möglich... (Would it be possible...)
-
-💡 In professional settings Konjunktiv II sounds more polite and respectful!`
-  },
-  {
-    level:'B2',
-    t:'Medical Documentation Language',
-    c:`Special language patterns used in German medical records and nursing documentation:
-
-OBJECTIVE STYLE (no "I" — use passive or impersonal forms):
-→ Patient klagt über... (Patient complains of...)
-→ Es wurde festgestellt, dass... (It was determined that...)
-→ Die Untersuchung ergibt... (The examination shows...)
-→ Befund: unauffällig / auffällig (Finding: normal / abnormal)
-
-ABBREVIATIONS COMMON IN DOCS:
-→ RR = Blutdruck (blood pressure — Riva-Rocci)
-→ HF = Herzfrequenz (heart rate)
-→ AF = Atemfrequenz (respiratory rate)
-→ T° = Temperatur
-→ SpO2 = Sauerstoffsättigung
-→ BZ = Blutzucker (blood sugar)
-→ i.v. = intravenös / s.c. = subkutan / p.o. = per os (oral)
-→ n.N. = nach Notwendigkeit (as needed / PRN)
-
-DESCRIBING SYMPTOMS:
-→ Der Patient gibt an, ... (The patient states that...)
-→ Schmerzen werden als ... beschrieben. (Pain is described as...)
-→ stechend (stabbing), dumpf (dull), brennend (burning), drückend (pressing)
-→ zeitweise (intermittent), dauerhaft (persistent), anfallsweise (in episodes)
-
-HANDOVER (Übergabe) STRUCTURE — SBAR:
-S = Situation: "Patient X, 65 Jahre, auf Station 3..."
-B = Background: "Aufnahme wegen... Vorerkrankungen..."
-A = Assessment: "Aktuell klagt über... Vitalzeichen..."
-R = Recommendation: "Bitte beachten Sie... Maßnahmen..."
-
-NURSING RECORD PHRASES:
-→ Pflegemaßnahmen wurden durchgeführt. ✓
-→ Patient war kooperativ / nicht kooperativ.
-→ Zustand stabil / verschlechtert / verbessert.
-→ Nächste Kontrolle: [time/date].`
-  },
-]
+// ── Grammar block renderer ────────────────────────────────────────────────────
+// Grammar content is structured (see lib/grammar.js) so we render clean lists,
+// tables and example pairs instead of a monospace text dump.
+function GrammarBlock({ b }) {
+  const heading = b.h && (
+    <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, margin: '2px 0 6px' }}>{b.h}</div>
+  )
+  if (b.type === 'note') {
+    return <div style={{ marginBottom: 12 }}>{heading}
+      <p style={{ fontSize: 12, color: C.textM, lineHeight: 1.6, margin: 0 }}>{b.text}</p>
+    </div>
+  }
+  if (b.type === 'list') {
+    return <div style={{ marginBottom: 12 }}>{heading}
+      <ul style={{ margin: 0, paddingLeft: 16 }}>
+        {b.items.map((it, i) => (
+          <li key={i} style={{ fontSize: 12, color: C.textM, lineHeight: 1.7, marginBottom: 2 }}>{it}</li>
+        ))}
+      </ul>
+    </div>
+  }
+  if (b.type === 'ex') {
+    return <div style={{ marginBottom: 12 }}>{heading}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {b.items.map(([de, en], i) => (
+          <div key={i} style={{ background: C.blueL, borderRadius: 8, padding: '8px 11px', borderLeft: `3px solid ${C.blue}` }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, lineHeight: 1.5 }}>{de}</div>
+            <div style={{ fontSize: 11, color: C.textM, fontStyle: 'italic', marginTop: 1 }}>{en}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  }
+  if (b.type === 'table') {
+    return <div style={{ marginBottom: 12 }}>{heading}
+      <div style={{ overflowX: 'auto', border: `1px solid ${C.border}`, borderRadius: 8 }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11.5 }}>
+          <thead>
+            <tr>{b.cols.map((c, i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '7px 10px', background: C.surfAlt, color: C.navy, fontWeight: 700, borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{c}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {b.rows.map((r, ri) => (
+              <tr key={ri} style={{ background: ri % 2 ? C.surfAlt : '#fff' }}>
+                {r.map((cell, ci) => (
+                  <td key={ci} style={{ padding: '7px 10px', color: ci === 0 ? C.navy : C.textM, fontWeight: ci === 0 ? 600 : 400, borderBottom: ri < b.rows.length - 1 ? `1px solid ${C.border}` : 'none', verticalAlign: 'top' }}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+  return null
+}
 
 export default function LearnHub({ user, onAddScore }) {
   const [sub, setSub] = useState('exercises')
 
   // EXERCISES STATE
-  const [setNum, setSetNum] = useState(null)   // which of 10 sets
+  const [setNum, setSetNum] = useState(null)   // which of 20 sets
   const [exSt, setExSt] = useState(null)
   const [showSetPicker, setShowSetPicker] = useState(false)
 
   // GRAMMAR STATE
-  const [gramIdx, setGramIdx] = useState(null)
+  const [gramId, setGramId] = useState(null)                      // expanded card id
+  const [gramLevel, setGramLevel] = useState(user?.level || 'A1') // level filter
+  const [gramQuery, setGramQuery] = useState('')                  // search text
 
   const scores = JSON.parse(localStorage.getItem(`gc_ex_${user?.level}`) || '[]')
   const lastScore = scores[scores.length - 1]
@@ -347,6 +115,18 @@ export default function LearnHub({ user, onAddScore }) {
         setExSt({ ...ns, cur: ns.cur + 1, sel: null })
       }
     }, 800)
+  }
+
+  // Grammar filtered by level + search
+  const query = gramQuery.trim().toLowerCase()
+  const gramList = (GRAMMAR[gramLevel] || []).filter(g =>
+    !query || g.title.toLowerCase().includes(query) || (g.sub || '').toLowerCase().includes(query)
+  )
+
+  function openGrammar(id) {
+    const next = gramId === id ? null : id
+    setGramId(next)
+    if (next) trackEvent(user?.rollNumber, 'grammar_open', 'learn', id, gramLevel)
   }
 
   return (
@@ -390,7 +170,7 @@ export default function LearnHub({ user, onAddScore }) {
               </div>
             </div>
 
-            {/* 10 set buttons */}
+            {/* 20 set buttons */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 8 }}>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => {
                 const sessionScores = JSON.parse(localStorage.getItem(`gc_ex_set_${user?.level}_${n}`) || 'null')
@@ -408,7 +188,7 @@ export default function LearnHub({ user, onAddScore }) {
                 )
               })}
             </div>
-            <p style={{ fontSize: 10, color: C.textS, textAlign: 'center' }}>Each session randomly picks 20 questions from 200+ question bank</p>
+            <p style={{ fontSize: 10, color: C.textS, textAlign: 'center' }}>Each session randomly picks 20 questions from the {user?.level} question bank</p>
           </div>
         ) : exSt.done ? (
           <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '24px', textAlign: 'center' }}>
@@ -453,27 +233,76 @@ export default function LearnHub({ user, onAddScore }) {
       {/* ── GRAMMAR ── */}
       {sub === 'grammar' && (
         <div>
-          <div style={{ background: C.greenL, border: `1px solid ${C.green}33`, borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>📐 All levels covered: A1 · A2 · B1 · B2</div>
-            <div style={{ fontSize: 10, color: C.textM, marginTop: 2 }}>With nursing examples, use cases and professional documentation language</div>
+          {/* Level selector — mirrors the whole curriculum, A1 → B2 */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            {GRAMMAR_LEVELS.map(lv => {
+              const active = gramLevel === lv
+              const isMine = user?.level === lv
+              return (
+                <button key={lv} onClick={() => { setGramLevel(lv); setGramId(null) }}
+                  style={{ flex: 1, padding: '8px 4px', borderRadius: 9, border: `2px solid ${active ? C.blue : C.border}`, background: active ? C.blue : '#fff', color: active ? '#fff' : C.textM, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, position: 'relative', transition: 'all .15s' }}>
+                  {lv}
+                  {isMine && (
+                    <span style={{ position: 'absolute', top: -7, right: -4, background: C.green, color: '#fff', fontSize: 7, fontWeight: 700, padding: '1px 4px', borderRadius: 6 }}>YOU</span>
+                  )}
+                </button>
+              )
+            })}
           </div>
-          {GRAMMAR.map((g, i) => (
-            <div key={i} style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 14px', marginBottom: 8, cursor: 'pointer' }}
-              onClick={() => setGramIdx(gramIdx === i ? null : i)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <span style={{ background: C.blueL, color: C.blue, fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 10, marginRight: 7 }}>{g.level}</span>
-                  <span style={{ fontWeight: 600, color: C.navy, fontSize: 12 }}>{g.t}</span>
+
+          {/* Search */}
+          <input value={gramQuery} onChange={e => setGramQuery(e.target.value)}
+            placeholder="🔍 Search grammar topics…"
+            style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 12, fontFamily: 'inherit', color: C.text, marginBottom: 10, outline: 'none' }} />
+
+          {/* Level intro strip */}
+          <div style={{ background: C.blueL, border: `1px solid ${C.blue}33`, borderRadius: 10, padding: '9px 13px', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: C.blue, fontWeight: 700 }}>📐 {gramLevel} Grammar · {(GRAMMAR[gramLevel] || []).length} topics</div>
+            <div style={{ fontSize: 10, color: C.textM, marginTop: 2 }}>Follows the {gramLevel} curriculum, with nursing examples, tables and common mistakes.</div>
+          </div>
+
+          {gramList.length === 0 && (
+            <div style={{ textAlign: 'center', color: C.textS, fontSize: 12, padding: '24px 0' }}>No topics match “{gramQuery}”.</div>
+          )}
+
+          {gramList.map(g => {
+            const open = gramId === g.id
+            return (
+              <div key={g.id} style={{ background: '#fff', borderRadius: 12, border: `1px solid ${open ? C.blue : C.border}`, marginBottom: 8, overflow: 'hidden', transition: 'border-color .15s' }}>
+                <div onClick={() => openGrammar(g.id)}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{g.icon}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, color: C.navy, fontSize: 12.5, lineHeight: 1.3 }}>{g.title}</div>
+                      {g.sub && <div style={{ fontSize: 10, color: C.textS, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.sub}</div>}
+                    </div>
+                  </div>
+                  <span style={{ color: C.blue, fontSize: 12, flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
                 </div>
-                <span style={{ color: C.blue, fontSize: 12, flexShrink: 0, marginLeft: 8 }}>{gramIdx === i ? '▲' : '▼'}</span>
+
+                {open && (
+                  <div style={{ padding: '4px 14px 14px', borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ height: 10 }} />
+                    {g.blocks.map((b, i) => <GrammarBlock key={i} b={b} />)}
+
+                    {g.tip && (
+                      <div style={{ background: C.greenL, borderLeft: `3px solid ${C.green}`, borderRadius: 8, padding: '8px 11px', marginTop: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.green }}>💡 Tip · </span>
+                        <span style={{ fontSize: 11.5, color: C.textM, lineHeight: 1.5 }}>{g.tip}</span>
+                      </div>
+                    )}
+                    {g.mistake && (
+                      <div style={{ background: C.amberL, borderLeft: `3px solid ${C.amber}`, borderRadius: 8, padding: '8px 11px', marginTop: 7 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.amber }}>⚠️ Common mistake · </span>
+                        <span style={{ fontSize: 11.5, color: C.textM, lineHeight: 1.5 }}>{g.mistake}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {gramIdx === i && (
-                <div style={{ marginTop: 11, fontSize: 11, color: C.textM, lineHeight: 1.9, whiteSpace: 'pre-line', borderTop: `1px solid ${C.border}`, paddingTop: 11, fontFamily: 'monospace' }}>
-                  {g.c}
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
