@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { C, LEVELS } from '../lib/constants'
 import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { sb, trackEvent } from '../lib/supabase'
+import { B1_TESTS } from '../lib/b1DailyTests'
 
 // ── TEST DATA (from PDF) ────────────────────────────────────────────────────
 const TESTS = [
@@ -1964,7 +1965,8 @@ const TESTS = [
         ]
       }
     ]
-  }
+  },
+  ...B1_TESTS,
 ]
 
 function checkAnswer(q, userAns) {
