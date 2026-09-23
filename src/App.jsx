@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { C } from './lib/constants'
-import { sb, checkRoll, loadProg, saveProg, trackEvent } from './lib/supabase'
+import { sb, checkRoll, loadProg, saveProg, trackEvent, getActiveDevice, claimDevice, releaseDevice } from './lib/supabase'
+import { getDeviceId, getDeviceKind, getDeviceLabel } from './lib/device'
 import { Btn, Inp, Spin } from './components/UI'
 import Onboard from './pages/Onboard'
 import PlacementIntro from './pages/PlacementIntro'
@@ -37,6 +38,16 @@ export default function App() {
   const [completedTopics, setCompletedTopics] = useState([])
   const [exerciseScores, setExerciseScores] = useState([])
   const [levelUpMsg, setLevelUpMsg] = useState(null) // e.g. {from:'A1', to:'A2'}
+  const [kicked, setKicked] = useState(null) // message shown on onboard after a forced sign-out
+
+  // Sign out locally because this account was taken over on another device of
+  // the same kind (or on manual/forced logout). deviceId persists (see device.js).
+  function forceLogout(kind) {
+    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+    setUser(null); setProgress(null); setCompletedTopics([]); setExerciseScores([])
+    setKicked(`You were signed out because your account was opened on another ${kind==='mobile'?'phone':'laptop'}.`)
+    setScreen('onboard')
+  }
 
   // Portal routing
   if (params.get('admin')==='1' || hash==='admin') return <AdminPanel/>
@@ -50,16 +61,48 @@ export default function App() {
     const roll = localStorage.getItem('gc_roll')
     const placed = localStorage.getItem('gc_placed')
     if (roll && placed==='1') {
-      loadProg(roll).then(prog => {
-        const u = { name: localStorage.getItem('gc_name')||'', email: localStorage.getItem('gc_email')||'', rollNumber: roll, level: prog?.level||'A1' }
-        setUser(u); setProgress(prog)
-        setCompletedTopics(prog?.completed_topics||[])
-        setExerciseScores(prog?.exercise_scores||[])
-        trackEvent(roll,'session_start','login','restore',u.level)
-        setScreen('app')
+      const kind = getDeviceKind(), myId = getDeviceId()
+      // If another device of this kind took over while we were away, don't restore.
+      getActiveDevice(roll, kind).then(active => {
+        if (active && active.device_id && active.device_id !== myId) {
+          ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+          setKicked(`You were signed out because your account was opened on another ${kind==='mobile'?'phone':'laptop'}.`)
+          setScreen('onboard'); return
+        }
+        claimDevice(roll, kind, myId, getDeviceLabel()) // (re)assert this device as active
+        loadProg(roll).then(prog => {
+          const u = { name: localStorage.getItem('gc_name')||'', email: localStorage.getItem('gc_email')||'', rollNumber: roll, level: prog?.level||'A1' }
+          setUser(u); setProgress(prog)
+          setCompletedTopics(prog?.completed_topics||[])
+          setExerciseScores(prog?.exercise_scores||[])
+          trackEvent(roll,'session_start','login','restore',u.level)
+          setScreen('app')
+        })
       })
     } else { setScreen('onboard') }
   }, [])
+
+  // Enforce the one-mobile + one-laptop limit: poll our device slot and sign out
+  // if a newer device of the same kind has taken it over. Also refreshes our own
+  // "last active" heartbeat, and re-claims the slot if it was cleared.
+  useEffect(() => {
+    if (screen !== 'app' || !user) return
+    const roll = user.rollNumber, kind = getDeviceKind(), myId = getDeviceId()
+    let cancelled = false
+    async function check() {
+      if (document.visibilityState === 'hidden') return
+      const active = await getActiveDevice(roll, kind)
+      if (cancelled) return
+      if (!active) { claimDevice(roll, kind, myId, getDeviceLabel()); return }
+      if (active.device_id && active.device_id !== myId) { forceLogout(kind); return }
+      claimDevice(roll, kind, myId, getDeviceLabel()) // still ours — refresh heartbeat
+    }
+    const iv = setInterval(check, 30000)
+    const onVis = () => { if (document.visibilityState === 'visible') check() }
+    document.addEventListener('visibilitychange', onVis)
+    check()
+    return () => { cancelled = true; clearInterval(iv); document.removeEventListener('visibilitychange', onVis) }
+  }, [screen, user])
 
   // Auto-save progress
   useEffect(() => {
@@ -151,13 +194,16 @@ export default function App() {
   }
 
   function handleLogout() {
-    ['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+    const roll = user?.rollNumber
+    if (roll) releaseDevice(roll, getDeviceKind(), getDeviceId()) // free this device's slot
+    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
     setUser(null); setProgress(null); setCompletedTopics([]); setExerciseScores([])
+    setKicked(null)
     setScreen('onboard')
   }
 
   if (screen==='loading') return <div style={{minHeight:'100vh',background:C.bg,display:'flex',alignItems:'center',justifyContent:'center'}}><Spin sz={32}/></div>
-  if (screen==='onboard') return <Onboard onLogin={handleLogin}/>
+  if (screen==='onboard') return <Onboard onLogin={handleLogin} notice={kicked}/>
   if (screen==='placement-intro') return <PlacementIntro user={user} onStart={()=>setScreen('placement')} onSkip={()=>handlePlacementDone()}/>
   if (screen==='placement') return <PlacementTest user={user} onComplete={handlePlacementDone}/>
   if (screen==='app') return (
