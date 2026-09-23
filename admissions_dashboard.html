@@ -88,6 +88,15 @@
     
     /* Stage pill */
     .stage-pill { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 500; background: #f3f4f6; color: #374151; }
+
+    /* Document links */
+    .doc-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .doc-link, .doc-none { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; text-decoration: none; border: 1px solid transparent; }
+    .doc-link { background: #eef2ff; color: #3730a3; border-color: #e0e7ff; }
+    .doc-link:hover { background: #e0e7ff; }
+    .doc-link-green { background: #ecfdf5; color: #065f46; border-color: #d1fae5; }
+    .doc-link-green:hover { background: #d1fae5; }
+    .doc-none { background: #f9fafb; color: #b6bac2; border-color: #eef0f3; cursor: default; }
     
     /* Pagination */
     .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); flex-wrap: wrap; gap: 8px; }
@@ -151,7 +160,7 @@
       try {
         const { data, error: err } = await db
           .from('admissions')
-          .select('id, candidate_name, candidate_phone, admitted_at, stage, roll_number')
+          .select('id, candidate_name, candidate_phone, admitted_at, stage, roll_number, payment_status, letter_url, receipt_url')
           .order('admitted_at', { ascending: false });
         if (err) throw err;
         setRows(data || []);
@@ -317,6 +326,7 @@
                         <SortIcon dir={sortCol === c.id ? sortDir : null} />
                       </th>
                     ))}
+                    <th style={{cursor:'default'}}>Documents</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -335,6 +345,16 @@
                         {r.roll_number
                           ? <span className="badge badge-green">{r.roll_number}</span>
                           : <span className="badge badge-amber">Not Assigned</span>}
+                      </td>
+                      <td>
+                        <div className="doc-links">
+                          {r.letter_url
+                            ? <a className="doc-link" href={r.letter_url} target="_blank" rel="noopener noreferrer" title="Download Admission Letter">📄 Letter</a>
+                            : <span className="doc-none" title="Admission letter not generated yet">📄 Letter</span>}
+                          {r.receipt_url
+                            ? <a className="doc-link doc-link-green" href={r.receipt_url} target="_blank" rel="noopener noreferrer" title="Download Payment Receipt">🧾 Receipt</a>
+                            : <span className="doc-none" title={r.payment_status === 'approved' ? 'Receipt generating…' : 'Receipt available after approval'}>🧾 Receipt</span>}
+                        </div>
                       </td>
                     </tr>
                   ))}
