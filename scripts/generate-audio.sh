@@ -17,10 +17,13 @@
 # VOICE
 # Piper neural TTS, German female voice "kerstin" (low quality tier — the only
 # German female voice mirrored on GitHub; HuggingFace was unreachable from the
-# build sandbox). If you can reach a commercial TTS API, prefer it: the whole
-# corpus is ~72k characters, which is about $1.15 on Google or Azure neural
-# voices and sounds markedly better. Keep the filenames identical and nothing
-# in the app needs to change.
+# build sandbox). This is the OFFLINE FALLBACK generator.
+#
+# The clips currently shipped in public/audio were produced by the higher-quality
+# scripts/generate-audio-edge.py (Microsoft Edge neural voice de-DE-KatjaNeural
+# at -15% speed) — students found the old Piper clips too fast and unclear.
+# Prefer that generator when the Edge speech endpoint is reachable. Either way,
+# keep the filenames identical and nothing in the app needs to change.
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
