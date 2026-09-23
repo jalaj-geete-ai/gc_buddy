@@ -1999,7 +1999,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
   const [submitting, setSubmitting] = useState(false)
   const [myHistory, setMyHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
-  const [expLevel, setExpLevel] = useState(user?.level || 'A1')
+  const [expLevel, setExpLevel] = useState(null) // null = level folders view; else the opened level
   const startTimeRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -2162,86 +2162,88 @@ export default function DailyTestPage({ user, onTestComplete }) {
           </div>
         )}
 
-        {/* Test cards — collapsible per level (same as Curriculum) */}
-        {LEVELS.map(lv => {
-          const levelTests = TESTS.filter(t => t.level === lv)
-          if (levelTests.length === 0) return null
-          const passedCount = levelTests.filter(t => {
-            const b = bestScore(t.id)
-            return b !== null && Math.round((b / t.totalMarks) * 100) >= t.passMark
-          }).length
-          const isCur = lv === user?.level
-          const isExp = expLevel === lv
+        {/* Level folders — click a level to open only its tests; back returns here */}
+        {expLevel === null ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {LEVELS.map(lv => {
+              const levelTests = TESTS.filter(t => t.level === lv)
+              if (levelTests.length === 0) return null
+              const passedCount = levelTests.filter(t => {
+                const b = bestScore(t.id)
+                return b !== null && Math.round((b / t.totalMarks) * 100) >= t.passMark
+              }).length
+              const isCur = lv === user?.level
+              const th = LEVEL_THEME[lv]
+              return (
+                <div key={lv} onClick={() => setExpLevel(lv)}
+                  style={{ background: th.main, color: th.on, borderRadius: 13, padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.sh }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: th.on, flexShrink: 0 }}>{lv}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14 }}>Level {lv} Daily Tests{isCur ? ' · your level' : ''}</div>
+                    <div style={{ fontSize: 11, opacity: .85, marginTop: 2 }}>{passedCount}/{levelTests.length} passed · {levelTests.length} tests</div>
+                  </div>
+                  <span style={{ fontSize: 18, opacity: .9 }}>→</span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (() => {
+          const lv = expLevel
           const th = LEVEL_THEME[lv]
+          const levelTests = TESTS.filter(t => t.level === lv)
           return (
-            <div key={lv} style={{ marginBottom: 10 }}>
-              <div onClick={() => setExpLevel(isExp ? null : lv)}
-                style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, borderLeft: `4px solid ${th.main}`, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: C.sh }}>
-                <div style={{ width: 34, height: 34, borderRadius: 8, background: th.main, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, color: th.on, flexShrink: 0 }}>{lv}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, color: C.navy, fontSize: 12 }}>Level {lv} Daily Tests</span>
-                    {isCur && <Badge label="Current" color={th.main} bg={th.light} />}
-                  </div>
-                  <PBar pct={(passedCount / levelTests.length) * 100} color={th.main} h={4} />
-                  <div style={{ fontSize: 10, color: C.textS, marginTop: 2 }}>{passedCount}/{levelTests.length} tests passed</div>
-                </div>
-                <span style={{ color: C.textS, fontSize: 12 }}>{isExp ? '▲' : '▼'}</span>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <button onClick={() => setExpLevel(null)}
+                  style={{ background: th.light, color: C.navy, border: `1px solid ${th.main}`, borderRadius: 9, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' }}>← All levels</button>
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: th.main, color: th.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{lv}</div>
+                <span style={{ fontWeight: 700, color: C.navy, fontSize: 13 }}>Level {lv} Daily Tests</span>
               </div>
-              {isExp && <div style={{ marginTop: 10 }}>
-        {levelTests.map(test => {
-          const attempts = attempted(test.id)
-          const best = bestScore(test.id)
-          const bestPct = best !== null ? Math.round((best / test.totalMarks) * 100) : null
-          const passed = bestPct !== null && bestPct >= test.passMark
-
-          return (
-            <div key={test.id} style={{ background: '#fff', borderRadius: 14, border: `2px solid ${passed ? C.green : C.border}`, padding: '15px', marginBottom: 10, boxShadow: C.sh }}>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 3 }}>{test.name}</div>
-                  <div style={{ fontSize: 10, color: C.textS }}>{test.classes} · {test.totalMarks} marks · {test.timeMinutes} min</div>
-                </div>
-                {passed && <span style={{ fontSize: 18 }}>✅</span>}
-              </div>
-
-              {/* Sections preview */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-                {test.sections.map((s, i) => (
-                  <span key={i} style={{ background: C.surfAlt, color: C.textS, fontSize: 9, padding: '2px 7px', borderRadius: 8, fontWeight: 500 }}>
-                    {s.title.split(':')[0]} ({s.marks}m)
-                  </span>
-                ))}
-              </div>
-
-              {/* Stats */}
-              {attempts.length > 0 && (
-                <div style={{ display: 'flex', gap: 10, marginBottom: 10, background: passed ? C.greenL : C.amberL, borderRadius: 8, padding: '8px 10px' }}>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: passed ? C.green : C.amber }}>{best}/{test.totalMarks}</div>
-                    <div style={{ fontSize: 9, color: C.textS }}>Best Score</div>
+              {levelTests.map(test => {
+                const attempts = attempted(test.id)
+                const best = bestScore(test.id)
+                const bestPct = best !== null ? Math.round((best / test.totalMarks) * 100) : null
+                const passed = bestPct !== null && bestPct >= test.passMark
+                return (
+                  <div key={test.id} style={{ background: '#fff', borderRadius: 14, border: `2px solid ${passed ? C.green : C.border}`, borderLeft: `4px solid ${th.main}`, padding: '15px', marginBottom: 10, boxShadow: C.sh }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, marginBottom: 3 }}>{test.name}</div>
+                        <div style={{ fontSize: 10, color: C.textS }}>{test.classes} · {test.totalMarks} marks · {test.timeMinutes} min</div>
+                      </div>
+                      {passed && <span style={{ fontSize: 18 }}>✅</span>}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
+                      {test.sections.map((s, i) => (
+                        <span key={i} style={{ background: C.surfAlt, color: C.textS, fontSize: 9, padding: '2px 7px', borderRadius: 8, fontWeight: 500 }}>
+                          {s.title.split(':')[0]} ({s.marks}m)
+                        </span>
+                      ))}
+                    </div>
+                    {attempts.length > 0 && (
+                      <div style={{ display: 'flex', gap: 10, marginBottom: 10, background: passed ? C.greenL : C.amberL, borderRadius: 8, padding: '8px 10px' }}>
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: passed ? C.green : C.amber }}>{best}/{test.totalMarks}</div>
+                          <div style={{ fontSize: 9, color: C.textS }}>Best Score</div>
+                        </div>
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: passed ? C.green : C.amber }}>{bestPct}%</div>
+                          <div style={{ fontSize: 9, color: C.textS }}>Best %</div>
+                        </div>
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: C.navy }}>{attempts.length}</div>
+                          <div style={{ fontSize: 9, color: C.textS }}>Attempts</div>
+                        </div>
+                      </div>
+                    )}
+                    <Btn label={attempts.length > 0 ? '🔄 Retake Test' : '▶ Start Test'}
+                      onClick={() => startTest(test)} variant={passed ? 'outline' : 'primary'} style={{ width: '100%', ...(passed ? {} : { background: th.main }) }} />
                   </div>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: passed ? C.green : C.amber }}>{bestPct}%</div>
-                    <div style={{ fontSize: 9, color: C.textS }}>Best %</div>
-                  </div>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: C.navy }}>{attempts.length}</div>
-                    <div style={{ fontSize: 9, color: C.textS }}>Attempts</div>
-                  </div>
-                </div>
-              )}
-
-              <Btn label={attempts.length > 0 ? '🔄 Retake Test' : '▶ Start Test'}
-                onClick={() => startTest(test)} variant={passed ? 'outline' : 'primary'} style={{ width: '100%' }} />
+                )
+              })}
             </div>
           )
-        })}
-              </div>}
-            </div>
-          )
-        })}
+        })()}
 
         <div style={{ background: C.amberL, border: `1px solid ${C.amber}33`, borderRadius: 10, padding: '10px 13px', marginTop: 4 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📌 Instructions</div>

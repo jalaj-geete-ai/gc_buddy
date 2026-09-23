@@ -760,8 +760,7 @@ B2:[
 }
 
 export default function ListeningPage({ user }) {
-  const initLevel = PH[user?.level] ? user.level : 'A1'
-  const [openLevel, setOpenLevel] = useState(initLevel)
+  const [openLevel, setOpenLevel] = useState(null) // null = level folders view; else the opened level
   const [playing, setPlaying] = useState(null)   // `${lvl}:${i}:${mode}` | null
   const [failKey, setFailKey] = useState(null)    // `${lvl}:${i}` | null
 
@@ -769,6 +768,7 @@ export default function ListeningPage({ user }) {
   useEffect(() => stopAll, [])
 
   function stopSpeaking() { stopAll(); setPlaying(null) }
+  function openFolder(lv) { setOpenLevel(lv); stopSpeaking() }
 
   // Plays the pre-generated German clip shipped in public/audio — works in
   // Android WebView, which has no Web Speech API. Speech engine is a fallback.
@@ -796,64 +796,78 @@ export default function ListeningPage({ user }) {
         {totalPhrases} nursing phrases · A1–B2 · Tap a level, then listen &amp; repeat aloud
       </p>
 
-      {/* Tips */}
-      <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '9px 12px', marginBottom: 14 }}>
-        <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-          🔊 plays at normal speed · 🐢 plays slowly, sound by sound — repeat each phrase aloud. Make sure your volume is on.
-        </div>
-      </div>
-
-      {/* Collapsible level sections */}
-      {LEVELS.map(lv => {
-        const list = PH[lv] || []
-        const t = LEVEL_THEME[lv]
-        const isOpen = openLevel === lv
-        const isCur = lv === user?.level
-        return (
-          <div key={lv} style={{ marginBottom: 12 }}>
-            {/* Header */}
-            <div onClick={() => { setOpenLevel(isOpen ? null : lv); stopSpeaking() }}
-              style={{ background: t.main, color: t.on, borderRadius: isOpen ? '13px 13px 0 0' : 13, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.sh }}>
-              <div style={{ width: 38, height: 38, borderRadius: 9, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, color: t.on, flexShrink: 0 }}>{lv}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-.01em' }}>Level {lv}{isCur ? ' · your level' : ''}</div>
-                <div style={{ fontSize: 11, opacity: .85 }}>{list.length} phrases</div>
-              </div>
-              <span style={{ fontSize: 13, opacity: .9 }}>{isOpen ? '▲' : '▼'}</span>
+      {openLevel === null ? (
+        <>
+          {/* Tips */}
+          <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '9px 12px', marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+              🔊 plays at normal speed · 🐢 plays slowly, sound by sound — repeat each phrase aloud. Make sure your volume is on.
             </div>
-            {/* Body */}
-            {isOpen && (
-              <div style={{ background: t.light, borderRadius: '0 0 13px 13px', padding: '10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {list.map((p, i) => {
-                  const normKey = `${lv}:${i}:normal`
-                  const slowKey = `${lv}:${i}:slow`
-                  const failed = failKey === `${lv}:${i}`
-                  return (
-                    <div key={i} style={{ background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, borderLeft: `4px solid ${t.main}`, padding: '10px 12px', display: 'flex', gap: 9, alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: t.main, minWidth: 24, marginTop: 2 }}>#{i + 1}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.5 }}>{p.de}</div>
-                        <div style={{ fontSize: 11, color: C.textM, fontStyle: 'italic', marginTop: 2, lineHeight: 1.45 }}>{p.en}</div>
-                        {failed && <div style={{ fontSize: 9, color: C.red, marginTop: 4 }}>🔇 Could not play — check volume / silent mode, then tap again.</div>}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                        <button onClick={() => play(lv, i, 1)} title="Normal speed"
-                          style={{ ...iconBtn, border: 'none', background: playing === normKey ? C.red : t.main, color: '#fff' }}>
-                          {playing === normKey ? '⏹' : '🔊'}
-                        </button>
-                        <button onClick={() => play(lv, i, 0.7)} title="Slow"
-                          style={{ ...iconBtn, border: `1.5px solid ${playing === slowKey ? C.red : t.main}`, background: playing === slowKey ? C.red : '#fff', color: playing === slowKey ? '#fff' : t.main }}>
-                          {playing === slowKey ? '⏹' : '🐢'}
-                        </button>
-                      </div>
+          </div>
+          {/* Level folders */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {LEVELS.map(lv => {
+              const list = PH[lv] || []
+              const th = LEVEL_THEME[lv]
+              const isCur = lv === user?.level
+              return (
+                <div key={lv} onClick={() => openFolder(lv)}
+                  style={{ background: th.main, color: th.on, borderRadius: 13, padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.sh }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: th.on, flexShrink: 0 }}>{lv}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14 }}>Level {lv}{isCur ? ' · your level' : ''}</div>
+                    <div style={{ fontSize: 11, opacity: .85, marginTop: 2 }}>{list.length} phrases</div>
+                  </div>
+                  <span style={{ fontSize: 18, opacity: .9 }}>→</span>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      ) : (() => {
+        const lv = openLevel
+        const th = LEVEL_THEME[lv]
+        const list = PH[lv] || []
+        return (
+          <div>
+            {/* Back to levels */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <button onClick={() => openFolder(null)}
+                style={{ background: th.light, color: C.navy, border: `1px solid ${th.main}`, borderRadius: 9, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' }}>← All levels</button>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: th.main, color: th.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{lv}</div>
+              <span style={{ fontWeight: 700, color: C.navy, fontSize: 13 }}>Level {lv} · {list.length} phrases</span>
+            </div>
+            {/* Phrases */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {list.map((p, i) => {
+                const normKey = `${lv}:${i}:normal`
+                const slowKey = `${lv}:${i}:slow`
+                const failed = failKey === `${lv}:${i}`
+                return (
+                  <div key={i} style={{ background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, borderLeft: `4px solid ${th.main}`, padding: '10px 12px', display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: th.main, minWidth: 24, marginTop: 2 }}>#{i + 1}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.5 }}>{p.de}</div>
+                      <div style={{ fontSize: 11, color: C.textM, fontStyle: 'italic', marginTop: 2, lineHeight: 1.45 }}>{p.en}</div>
+                      {failed && <div style={{ fontSize: 9, color: C.red, marginTop: 4 }}>🔇 Could not play — check volume / silent mode, then tap again.</div>}
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <button onClick={() => play(lv, i, 1)} title="Normal speed"
+                        style={{ ...iconBtn, border: 'none', background: playing === normKey ? C.red : th.main, color: '#fff' }}>
+                        {playing === normKey ? '⏹' : '🔊'}
+                      </button>
+                      <button onClick={() => play(lv, i, 0.7)} title="Slow"
+                        style={{ ...iconBtn, border: `1.5px solid ${playing === slowKey ? C.red : th.main}`, background: playing === slowKey ? C.red : '#fff', color: playing === slowKey ? '#fff' : th.main }}>
+                        {playing === slowKey ? '⏹' : '🐢'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )
-      })}
+      })()}
     </div>
   )
 }
