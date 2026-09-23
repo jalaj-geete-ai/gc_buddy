@@ -72,6 +72,31 @@ export const saveProg = async (roll, updates) => {
   if (error) console.error('saveProg:', error.message)
   return newStreak
 }
+// ── Device sessions (one mobile + one laptop per student) ────────────────────
+// The active device for a (roll_number, device_kind) pair is whatever's stored
+// here; logging in on a new device of that kind overwrites the slot, and the
+// old device notices the mismatch on its next poll and logs itself out.
+export const getActiveDevice = async (roll, kind) => {
+  const { data } = await sb.from('device_sessions')
+    .select('device_id, device_label, updated_at')
+    .eq('roll_number', roll).eq('device_kind', kind).single()
+  return data || null
+}
+export const claimDevice = async (roll, kind, deviceId, label) => {
+  const { error } = await sb.from('device_sessions').upsert({
+    roll_number: roll, device_kind: kind, device_id: deviceId,
+    device_label: label, updated_at: new Date().toISOString(),
+  })
+  if (error) console.error('claimDevice:', error.message)
+}
+export const releaseDevice = async (roll, kind, deviceId) => {
+  // Only clear the slot if we still own it, so we never delete a newer device's claim.
+  try {
+    await sb.from('device_sessions').delete()
+      .eq('roll_number', roll).eq('device_kind', kind).eq('device_id', deviceId)
+  } catch { /* best-effort */ }
+}
+
 export const trackEvent = async (roll, eventType, section = '', detail = '', level = '', score = null) => {
   if (!roll) return
   try {
