@@ -61,7 +61,11 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
           {NAV.map(n => (
             <button key={n.id} onClick={() => goTab(n.id)} className={`nav-btn${tab === n.id || (tab === 'lesson' && n.id === 'curriculum') ? ' active' : ''}`}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', border: 'none', background: (tab === n.id || (tab === 'lesson' && n.id === 'curriculum')) ? C.blueL : 'transparent', color: (tab === n.id || (tab === 'lesson' && n.id === 'curriculum')) ? C.blue : C.textM, cursor: 'pointer', fontSize: 12, fontWeight: (tab === n.id) ? 600 : 400, textAlign: 'left', borderLeft: `3px solid ${(tab === n.id || (tab === 'lesson' && n.id === 'curriculum')) ? C.blue : 'transparent'}`, fontFamily: 'inherit', width: '100%', transition: 'all .12s' }}>
-              <span className="nav-icon" style={{ fontSize: 15 }}>{n.icon}</span>
+              <span className="nav-icon" style={{ fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {n.icon.startsWith('/')
+                  ? <img src={n.icon} alt="" style={{ width: 19, height: 19, objectFit: 'contain', display: 'block' }}/>
+                  : n.icon}
+              </span>
               <span className="nav-lbl">{n.lbl}</span>
             </button>
           ))}
@@ -72,7 +76,11 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
         </main>
       </div>
       {/* Mobile FAB for GC Buddy — hidden on the chat tab itself (redundant + would overlap the send button) */}
-      {tab !== 'gcbuddy' && <button className="mobile-fab" onClick={() => goTab('gcbuddy')}>🇩🇪</button>}
+      {tab !== 'gcbuddy' && (
+        <button className="mobile-fab" onClick={() => goTab('gcbuddy')} aria-label="Ask GC Buddy">
+          <img src="/mascot-face.png" alt="" style={{ width: '92%', height: '92%', objectFit: 'contain', display: 'block' }}/>
+        </button>
+      )}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}`}</style>
     </div>
   )

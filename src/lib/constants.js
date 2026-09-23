@@ -222,7 +222,7 @@ export const NAV = [
   {id:'listening',icon:'🎙️',lbl:'Listening'},
   {id:'interview',icon:'🎭',lbl:'Interview'},
   {id:'dailytest',icon:'📝',lbl:'Daily Test'},
-  {id:'gcbuddy',icon:'🇩🇪',lbl:'GC Buddy'},
+  {id:'gcbuddy',icon:'/mascot-face.png',lbl:'GC Buddy'},
   {id:'referral',icon:'🎁',lbl:'Refer'},
 ]
 

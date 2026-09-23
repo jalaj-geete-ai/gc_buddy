@@ -58,9 +58,14 @@ export const saveProg = async (roll, updates) => {
     newStreak = 1
   }
 
+  // Email was removed from the login flow, so it now arrives empty — don't let
+  // that overwrite an email a student may already have on file.
+  const clean = { ...updates }
+  if (!clean.email) delete clean.email
+
   const { error } = await sb.from('student_progress').upsert({
     roll_number: roll,
-    ...updates,
+    ...clean,
     streak: updates.streak !== undefined ? updates.streak : newStreak,
     last_active: now.toISOString()
   })
