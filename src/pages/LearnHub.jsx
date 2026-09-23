@@ -4,6 +4,7 @@ import { EXERCISES } from '../lib/data'
 import { GRAMMAR, GRAMMAR_LEVELS } from '../lib/grammar'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
+import MediaPage from './MediaPage'
 
 // ── Grammar block renderer ────────────────────────────────────────────────────
 // Grammar content is structured (see lib/grammar.js) so we render clean lists,
@@ -132,11 +133,11 @@ export default function LearnHub({ user, onAddScore }) {
   return (
     <div style={{ flex: 1, overflow: 'auto', padding: '16px 18px' }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>📚 Learn Hub</h2>
-      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>Exercises · Grammar</p>
+      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>Exercises · Grammar · Media</p>
 
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 3, marginBottom: 14, background: '#fff', borderRadius: 10, padding: 3, border: `1px solid ${C.border}` }}>
-        {[['exercises', '💪 Exercises'], ['grammar', '📐 Grammar']].map(([id, lbl]) => (
+        {[['exercises', '💪 Exercises'], ['grammar', '📐 Grammar'], ['media', '🎬 Media']].map(([id, lbl]) => (
           <button key={id} onClick={() => setSub(id)}
             style={{ flex: 1, padding: '7px', borderRadius: 7, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 11, fontFamily: 'inherit', background: sub === id ? C.navy : 'transparent', color: sub === id ? '#fff' : C.textS, transition: 'all .15s' }}>
             {lbl}
@@ -305,6 +306,9 @@ export default function LearnHub({ user, onAddScore }) {
           })}
         </div>
       )}
+
+      {/* ── MEDIA ── */}
+      {sub === 'media' && <MediaPage embedded user={user}/>}
     </div>
   )
 }
