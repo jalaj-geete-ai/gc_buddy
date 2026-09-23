@@ -4,16 +4,15 @@ import { Btn, Inp, Spin } from '../components/UI'
 
 export default function Onboard({ onLogin }) {
   const [name,setName]=useState('')
-  const [email,setEmail]=useState('')
   const [roll,setRoll]=useState('')
   const [err,setErr]=useState('')
   const [loading,setLoading]=useState(false)
   const [showStaff,setShowStaff]=useState(false)
 
   async function go() {
-    if(!name.trim()||!email.trim()||!roll.trim()){setErr('Please fill all fields.');return}
+    if(!name.trim()||!roll.trim()){setErr('Please fill your name and roll number.');return}
     setErr('');setLoading(true)
-    try{await onLogin(name.trim(),email.trim(),roll.trim())}
+    try{await onLogin(name.trim(),'',roll.trim())}
     catch(e){setErr(e.message)}
     setLoading(false)
   }
@@ -21,7 +20,10 @@ export default function Onboard({ onLogin }) {
   return (
     <div style={{minHeight:'100vh',background:`linear-gradient(160deg,${C.navy} 0%,#0d1f4a 100%)`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 16px'}}>
       {/* Logo */}
-      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:12,marginBottom:28}}>
+      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:12,marginBottom:22}}>
+        <img src="/mascot.png" alt="GC Buddy"
+          style={{height:150,marginBottom:-2,filter:'drop-shadow(0 10px 26px rgba(0,0,0,.4))'}}
+          onError={e=>{e.target.style.display='none'}}/>
         <div style={{background:'#fff',borderRadius:14,padding:'9px 22px',boxShadow:'0 4px 20px rgba(0,0,0,.18)'}}>
           <img src="https://cdn-cp-assets-public.classplus.co/CampaignManager/e2f0b190-395e-11f1-b13e-e7dfbc3a8a04.jpeg"
             alt="Testbook" style={{height:30,display:'block'}}
@@ -36,8 +38,7 @@ export default function Onboard({ onLogin }) {
       <div style={{width:'100%',maxWidth:400,background:'#fff',borderRadius:20,padding:'26px 22px',boxShadow:'0 24px 64px rgba(0,0,0,.28)'}}>
         <div style={{display:'flex',flexDirection:'column',gap:10}}>
           {[['Your Full Name','text',name,setName,'e.g. Priya Sharma'],
-            ['Email','email',email,setEmail,'priya@email.com'],
-            ['Roll Number','text',roll,setRoll,'e.g. GCT26114']
+            ['GC Buddy Roll Number','text',roll,setRoll,'e.g. GCT26114']
           ].map(([lbl,type,val,set,ph])=>(
             <div key={lbl}>
               <div style={{fontSize:10,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:5}}>{lbl}</div>
