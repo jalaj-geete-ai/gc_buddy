@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { C, LEVELS, LEVEL_THEME } from '../lib/constants'
+import { useNav } from '../lib/nav'
 import { trackEvent } from '../lib/supabase'
 import { playGerman, stopAll, clipUrlPhrase } from '../lib/tts'
 
@@ -760,6 +761,7 @@ B2:[
 }
 
 export default function ListeningPage({ user }) {
+  const nav = useNav()
   const [openLevel, setOpenLevel] = useState(null) // null = level folders view; else the opened level
   const [playing, setPlaying] = useState(null)   // `${lvl}:${i}:${mode}` | null
   const [failKey, setFailKey] = useState(null)    // `${lvl}:${i}` | null
@@ -768,7 +770,9 @@ export default function ListeningPage({ user }) {
   useEffect(() => stopAll, [])
 
   function stopSpeaking() { stopAll(); setPlaying(null) }
-  function openFolder(lv) { setOpenLevel(lv); stopSpeaking() }
+  // Open a level folder and register a Back handler so the system Back button
+  // (or the "← All levels" button, via nav.goBack) returns to the folder grid.
+  function openFolder(lv) { setOpenLevel(lv); stopSpeaking(); nav.pushView(() => { setOpenLevel(null); stopSpeaking() }) }
 
   // Plays the pre-generated German clip shipped in public/audio — works in
   // Android WebView, which has no Web Speech API. Speech engine is a fallback.
@@ -832,7 +836,7 @@ export default function ListeningPage({ user }) {
           <div>
             {/* Back to levels */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <button onClick={() => openFolder(null)}
+              <button onClick={() => nav.goBack()}
                 style={{ background: th.light, color: C.navy, border: `1px solid ${th.main}`, borderRadius: 9, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' }}>← All levels</button>
               <div style={{ width: 30, height: 30, borderRadius: 8, background: th.main, color: th.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{lv}</div>
               <span style={{ fontWeight: 700, color: C.navy, fontSize: 13 }}>Level {lv} · {list.length} phrases</span>
