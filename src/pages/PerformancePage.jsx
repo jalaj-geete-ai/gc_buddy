@@ -60,7 +60,7 @@ function MiniBar({ scores, h = 40 }) {
   )
 }
 
-export default function PerformancePage({ user, completedTopics, exerciseScores, progress }) {
+export default function PerformancePage({ user, completedTopics, exerciseScores, progress, embedded = false }) {
   const [loading, setLoading] = useState(true)
   const [testData, setTestData] = useState([])
   const [usageEvents, setUsageEvents] = useState([])
@@ -151,15 +151,19 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
   })()
 
   if (loading) return (
-    <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:10 }}>
-      <Spin sz={28}/><div style={{ color:C.textS, fontSize:12 }}>Loading your dashboard...</div>
+    <div style={{ ...(embedded ? {} : { flex:1 }), display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:10, padding: embedded ? '24px 0' : 0 }}>
+      <Spin sz={embedded ? 20 : 28}/><div style={{ color:C.textS, fontSize:12 }}>Loading your dashboard...</div>
     </div>
   )
 
   return (
-    <div style={{ flex:1, overflow:'auto', padding:'16px 18px' }}>
-      <h2 style={{ fontSize:16, fontWeight:700, color:C.navy, marginBottom:2 }}>📈 My Dashboard</h2>
-      <p style={{ fontSize:11, color:C.textS, marginBottom:12 }}>Your GC Buddy engagement and progress</p>
+    <div style={embedded ? {} : { flex:1, overflow:'auto', padding:'16px 18px' }}>
+      {embedded
+        ? <div style={{ fontSize:11, fontWeight:700, color:C.textS, textTransform:'uppercase', letterSpacing:'.07em', marginBottom:9 }}>📈 Your Performance</div>
+        : <>
+            <h2 style={{ fontSize:16, fontWeight:700, color:C.navy, marginBottom:2 }}>📈 My Dashboard</h2>
+            <p style={{ fontSize:11, color:C.textS, marginBottom:12 }}>Your GC Buddy engagement and progress</p>
+          </>}
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:3, marginBottom:14, background:'#fff', borderRadius:10, padding:3, border:`1px solid ${C.border}` }}>

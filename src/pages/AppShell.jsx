@@ -13,7 +13,6 @@ import MediaPage from './MediaPage'
 import ReferralPage from './ReferralPage'
 import LessonChat from './LessonChat'
 import DailyTestPage from './DailyTestPage'
-import PerformancePage from './PerformancePage'
 
 export default function AppShell({ user, progress, completedTopics, exerciseScores, onLogout, onMarkTopic, onAddScore, onTestComplete }) {
   const [tab, setTab] = useState('home')
@@ -52,7 +51,6 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
     if (tab === 'media') return <MediaPage user={user}/>
     if (tab === 'referral') return <ReferralPage user={user}/>
     if (tab === 'dailytest') return <DailyTestPage user={user} onTestComplete={onTestComplete}/>
-    if (tab === 'performance') return <PerformancePage user={user} completedTopics={completedTopics} exerciseScores={exerciseScores} progress={progress}/>
     return null
   }
 
@@ -75,8 +73,8 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
           {content()}
         </main>
       </div>
-      {/* Mobile FAB for GC Buddy */}
-      <button className="mobile-fab" onClick={() => goTab('gcbuddy')}>🇩🇪</button>
+      {/* Mobile FAB for GC Buddy — hidden on the chat tab itself (redundant + would overlap the send button) */}
+      {tab !== 'gcbuddy' && <button className="mobile-fab" onClick={() => goTab('gcbuddy')}>🇩🇪</button>}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}`}</style>
     </div>
   )
