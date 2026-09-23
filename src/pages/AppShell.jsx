@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { C, NAV, CURRICULUM } from '../lib/constants'
 import { AppHeader } from '../components/UI'
+import { NavContext } from '../lib/nav'
 import { trackEvent } from '../lib/supabase'
 import Home from './Home'
 import CurriculumPage from './CurriculumPage'
@@ -16,30 +17,51 @@ import DailyTestPage from './DailyTestPage'
 export default function AppShell({ user, progress, completedTopics, exerciseScores, onLogout, onMarkTopic, onAddScore, onTestComplete }) {
   const [tab, setTab] = useState('home')
   const [lesson, setLesson] = useState(null)
+  const backStack = useRef([]) // stack of onBack handlers; last entry = deepest view
 
+  // Capture the system / browser Back button and step back through the views the
+  // user actually visited — the previous tab, or an in-page sub-view (e.g. a
+  // drilled-in level folder) — instead of always jumping straight to Home.
+  // Every forward navigation registers a handler and a history entry; each Back
+  // press consumes the most recent one. A spare entry is always kept so Back
+  // stays captured and the app/webview never exits unexpectedly.
   useEffect(() => {
-    const pop = () => {
-      if (lesson) { setLesson(null); setTab('curriculum') }
-      else if (tab !== 'home') setTab('home')
+    window.history.pushState({ gc: true }, '')
+    const onPop = () => {
+      const handler = backStack.current.pop()
+      window.history.pushState({ gc: true }, '') // restore the spare entry
+      if (handler) handler()
     }
-    window.history.pushState(null, '', window.location.href)
-    window.addEventListener('popstate', pop)
-    return () => window.removeEventListener('popstate', pop)
-  }, [tab, lesson])
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  // Register a Back handler for a newly entered view (+ a history entry to consume).
+  function pushView(onBack) {
+    backStack.current.push(onBack)
+    window.history.pushState({ gc: true }, '')
+  }
+  // In-app Back / close controls call this so history stays in sync.
+  function goBack() { window.history.back() }
 
   function goTab(id) {
+    if (id === tab && !lesson) return
+    const prevTab = tab, prevLesson = lesson
     setLesson(null); setTab(id)
+    pushView(() => { setLesson(prevLesson); setTab(prevTab) })
     trackEvent(user?.rollNumber, 'section_open', id, '', user?.level)
   }
 
   function openLesson(topic, level) {
+    const prevTab = tab
     setLesson({ topic, level: level || user.level })
     setTab('lesson')
+    pushView(() => { setLesson(null); setTab(prevTab) })
     trackEvent(user?.rollNumber, 'lesson_start', 'curriculum', topic.title, level || user.level)
   }
 
   const content = () => {
-    if (tab === 'lesson' && lesson) return <LessonChat user={user} topic={lesson.topic} level={lesson.level} onBack={() => { setLesson(null); setTab('curriculum') }} onMarkDone={onMarkTopic}/>
+    if (tab === 'lesson' && lesson) return <LessonChat user={user} topic={lesson.topic} level={lesson.level} onBack={goBack} onMarkDone={onMarkTopic}/>
     if (tab === 'home') return <Home user={user} progress={progress} completedTopics={completedTopics} exerciseScores={exerciseScores} onNav={goTab} onOpenLesson={openLesson}/>
     if (tab === 'curriculum') return <CurriculumPage user={user} completedTopics={completedTopics} onOpenLesson={openLesson}/>
     if (tab === 'learn') return <LearnHub user={user} onAddScore={onAddScore}/>
@@ -53,6 +75,7 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
   }
 
   return (
+    <NavContext.Provider value={{ pushView, goBack }}>
     <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <AppHeader user={user} onHome={() => goTab('home')} onLogout={onLogout}/>
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -83,5 +106,6 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
       )}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}`}</style>
     </div>
+    </NavContext.Provider>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { C, LEVELS, LEVEL_THEME } from '../lib/constants'
+import { useNav } from '../lib/nav'
 import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { sb, trackEvent } from '../lib/supabase'
 import { B1_TESTS } from '../lib/b1DailyTests'
@@ -2000,6 +2001,8 @@ export default function DailyTestPage({ user, onTestComplete }) {
   const [myHistory, setMyHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
   const [expLevel, setExpLevel] = useState(null) // null = level folders view; else the opened level
+  const nav = useNav()
+  const openFolder = lv => { setExpLevel(lv); nav.pushView(() => setExpLevel(null)) }
   const startTimeRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -2175,7 +2178,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
               const isCur = lv === user?.level
               const th = LEVEL_THEME[lv]
               return (
-                <div key={lv} onClick={() => setExpLevel(lv)}
+                <div key={lv} onClick={() => openFolder(lv)}
                   style={{ background: th.main, color: th.on, borderRadius: 13, padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.sh }}>
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, color: th.on, flexShrink: 0 }}>{lv}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -2194,7 +2197,7 @@ export default function DailyTestPage({ user, onTestComplete }) {
           return (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <button onClick={() => setExpLevel(null)}
+                <button onClick={() => nav.goBack()}
                   style={{ background: th.light, color: C.navy, border: `1px solid ${th.main}`, borderRadius: 9, padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' }}>← All levels</button>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: th.main, color: th.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{lv}</div>
                 <span style={{ fontWeight: 700, color: C.navy, fontSize: 13 }}>Level {lv} Daily Tests</span>
