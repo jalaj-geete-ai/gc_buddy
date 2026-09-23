@@ -50,7 +50,7 @@ export const AppHeader = ({user,onHome,onLogout}) => {
   return (
     <header style={{background:C.navy,height:52,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px',position:'sticky',top:0,zIndex:100,flexShrink:0,boxShadow:'0 2px 12px rgba(10,36,99,.25)'}}>
       <div onClick={onHome} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
-        <div style={{width:28,height:28,borderRadius:8,background:'rgba(255,255,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>🇩🇪</div>
+        <div style={{width:28,height:28,borderRadius:8,background:'rgba(255,255,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}><img src="/mascot-face.png" alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/></div>
         <div>
           <div style={{fontWeight:800,fontSize:13,color:'#fff',letterSpacing:'-.01em'}}>GC Buddy</div>
           <div style={{fontSize:8,color:'rgba(255,255,255,.4)'}}>by Global Careers × Testbook</div>

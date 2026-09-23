@@ -86,7 +86,7 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
     <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',background:'#f0f4ff'}}>
       {/* Header */}
       <div style={{background:`linear-gradient(135deg,${C.navy},${C.navyM})`,padding:'12px 16px',display:'flex',alignItems:'center',gap:10,flexShrink:0}}>
-        <div style={{width:38,height:38,borderRadius:11,background:'linear-gradient(135deg,#4dabf7,#1e90ff)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>🇩🇪</div>
+        <div style={{width:38,height:38,borderRadius:11,background:'linear-gradient(135deg,#4dabf7,#1e90ff)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,overflow:'hidden'}}><img src="/mascot-face.png" alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/></div>
         <div style={{flex:1}}>
           <div style={{fontWeight:800,fontSize:14,color:'#fff',letterSpacing:'-.01em'}}>GC Buddy</div>
           <div style={{fontSize:10,color:'rgba(255,255,255,.5)',display:'flex',alignItems:'center',gap:5}}>
@@ -118,7 +118,7 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
         {msgs.map((m,i)=>(
           <div key={i} style={{display:'flex',flexDirection:m.role==='user'?'row-reverse':'row',gap:7,alignItems:'flex-end',animation:'fadeIn .2s ease'}}>
             <div style={{width:28,height:28,borderRadius:8,background:m.role==='user'?`linear-gradient(135deg,${C.navy},${C.blue})`:'linear-gradient(135deg,#4dabf7,#1e90ff)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:m.role==='user'?10:14,fontWeight:700,color:'#fff',flexShrink:0,marginBottom:2}}>
-              {m.role==='user'?ini:'🇩🇪'}
+              {m.role==='user'?ini:<img src="/mascot-face.png" alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>}
             </div>
             <div style={{maxWidth:'78%'}}>
               <div style={{background:m.role==='user'?`linear-gradient(135deg,${C.navy},${C.navyM})`:'#fff',color:m.role==='user'?'#fff':C.text,padding:'10px 13px',borderRadius:m.role==='user'?'14px 14px 3px 14px':'14px 14px 14px 3px',fontSize:13,lineHeight:1.65,boxShadow:'0 2px 8px rgba(10,36,99,.07)',wordBreak:'break-word',border:m.role==='assistant'?`1px solid ${C.border}`:'none'}}
@@ -136,7 +136,7 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
         ))}
         {loading&&(
           <div style={{display:'flex',gap:7,alignItems:'flex-end'}}>
-            <div style={{width:28,height:28,borderRadius:8,background:'linear-gradient(135deg,#4dabf7,#1e90ff)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14}}>🇩🇪</div>
+            <div style={{width:28,height:28,borderRadius:8,background:'linear-gradient(135deg,#4dabf7,#1e90ff)',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}><img src="/mascot-face.png" alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/></div>
             <div style={{background:'#fff',padding:'11px 15px',borderRadius:'14px 14px 14px 3px',border:`1px solid ${C.border}`,boxShadow:'0 2px 8px rgba(10,36,99,.07)'}}>
               <div style={{display:'flex',gap:4}}>{[0,.18,.36].map((d,i)=><div key={i} style={{width:6,height:6,borderRadius:'50%',background:C.blue,animation:`bounce 1.1s ${d}s infinite`}}/>)}</div>
             </div>
