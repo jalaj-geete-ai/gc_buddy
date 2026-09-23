@@ -1,35 +1,6 @@
-import { useState, useEffect } from 'react'
 import { C, CURRICULUM } from '../lib/constants'
-import { PBar, Btn, Spin, Badge } from '../components/UI'
-import { sb } from '../lib/supabase'
-
-function ScheduleCard() {
-  const [data,setData]=useState([])
-  const [loading,setLoading]=useState(true)
-  useEffect(()=>{
-    sb.from('batch_schedule').select('*').order('created_at',{ascending:false}).limit(3)
-      .then(({data:d})=>{setData(d||[]);setLoading(false)}).catch(()=>setLoading(false))
-  },[])
-  return (
-    <div style={{marginBottom:14}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>📅 Your Schedule</div>
-      <div style={{background:'#fff',borderRadius:12,border:`1px solid ${C.border}`,overflow:'hidden'}}>
-        {loading?<div style={{padding:18,textAlign:'center'}}><Spin sz={18}/></div>
-         :data.length===0?<div style={{padding:'18px 16px',textAlign:'center'}}><div style={{fontSize:20,marginBottom:5}}>📭</div><div style={{fontSize:12,color:C.textS}}>No schedule yet — faculty will add it soon.</div></div>
-         :data.map((s,i)=>(
-          <div key={i} style={{padding:'11px 15px',borderBottom:i<data.length-1?`1px solid ${C.border}`:'none'}}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-              <div style={{fontWeight:600,fontSize:12,color:C.navy}}>{s.batch_name}</div>
-              <Badge label={`Week ${s.week_number}`} color={C.blue} bg={C.blueL}/>
-            </div>
-            {s.topics_covered&&<div style={{fontSize:11,color:C.textM,marginBottom:2}}>📚 {s.topics_covered}</div>}
-            {s.live_dates&&<div style={{fontSize:11,color:C.green}}>🗓️ {s.live_dates}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+import { PBar, Btn } from '../components/UI'
+import PerformancePage from './PerformancePage'
 
 function StreakCard({ streak, lastActive }) {
   // Compute hours since last activity
@@ -221,19 +192,8 @@ export default function Home({ user, progress, completedTopics, exerciseScores, 
         ))}
       </div>}
 
-      {/* Quick Actions */}
-      <div style={{fontSize:11,fontWeight:700,color:C.textS,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:7}}>⚡ Quick Actions</div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:16}}>
-        {[['💪','Exercises','learn'],['🔤','Vocabulary','vocab'],['🎙️','Listening','listening']].map(([ic,lb,nv])=>(
-          <div key={lb} onClick={()=>onNav(nv)}
-            style={{background:'#fff',borderRadius:11,border:`1px solid ${C.border}`,padding:'13px 8px',textAlign:'center',cursor:'pointer',transition:'box-shadow .15s'}}
-            onMouseEnter={e=>e.currentTarget.style.boxShadow=C.shM} onMouseLeave={e=>e.currentTarget.style.boxShadow='none'}>
-            <div style={{fontSize:22,marginBottom:4}}>{ic}</div>
-            <div style={{fontSize:11,fontWeight:600,color:C.navy}}>{lb}</div>
-          </div>
-        ))}
-      </div>
-      <ScheduleCard/>
+      {/* Performance (moved here from its own tab) */}
+      <PerformancePage embedded user={user} completedTopics={completedTopics} exerciseScores={exerciseScores} progress={progress}/>
     </div>
   )
 }
