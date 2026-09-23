@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { C } from '../lib/constants'
+import { C, LEVEL_THEME } from '../lib/constants'
 import { EXERCISES } from '../lib/data'
 import { GRAMMAR, GRAMMAR_LEVELS } from '../lib/grammar'
 import { PBar, Btn } from '../components/UI'
@@ -9,7 +9,9 @@ import MediaPage from './MediaPage'
 // ── Grammar block renderer ────────────────────────────────────────────────────
 // Grammar content is structured (see lib/grammar.js) so we render clean lists,
 // tables and example pairs instead of a monospace text dump.
-function GrammarBlock({ b }) {
+function GrammarBlock({ b, th }) {
+  const accent = th?.main || C.blue
+  const tint = th?.light || C.blueL
   const heading = b.h && (
     <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, margin: '2px 0 6px' }}>{b.h}</div>
   )
@@ -31,7 +33,7 @@ function GrammarBlock({ b }) {
     return <div style={{ marginBottom: 12 }}>{heading}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {b.items.map(([de, en], i) => (
-          <div key={i} style={{ background: C.blueL, borderRadius: 8, padding: '8px 11px', borderLeft: `3px solid ${C.blue}` }}>
+          <div key={i} style={{ background: tint, borderRadius: 8, padding: '8px 11px', borderLeft: `3px solid ${accent}` }}>
             <div style={{ fontSize: 12.5, fontWeight: 700, color: C.navy, lineHeight: 1.5 }}>{de}</div>
             <div style={{ fontSize: 11, color: C.textM, fontStyle: 'italic', marginTop: 1 }}>{en}</div>
           </div>
@@ -123,6 +125,7 @@ export default function LearnHub({ user, onAddScore }) {
   const gramList = (GRAMMAR[gramLevel] || []).filter(g =>
     !query || g.title.toLowerCase().includes(query) || (g.sub || '').toLowerCase().includes(query)
   )
+  const gth = LEVEL_THEME[gramLevel] || LEVEL_THEME.A1
 
   function openGrammar(id) {
     const next = gramId === id ? null : id
@@ -239,9 +242,10 @@ export default function LearnHub({ user, onAddScore }) {
             {GRAMMAR_LEVELS.map(lv => {
               const active = gramLevel === lv
               const isMine = user?.level === lv
+              const lt = LEVEL_THEME[lv] || LEVEL_THEME.A1
               return (
                 <button key={lv} onClick={() => { setGramLevel(lv); setGramId(null) }}
-                  style={{ flex: 1, padding: '8px 4px', borderRadius: 9, border: `2px solid ${active ? C.blue : C.border}`, background: active ? C.blue : '#fff', color: active ? '#fff' : C.textM, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, position: 'relative', transition: 'all .15s' }}>
+                  style={{ flex: 1, padding: '8px 4px', borderRadius: 9, border: `2px solid ${active ? lt.main : C.border}`, background: active ? lt.main : '#fff', color: active ? lt.on : C.textM, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, position: 'relative', transition: 'all .15s' }}>
                   {lv}
                   {isMine && (
                     <span style={{ position: 'absolute', top: -7, right: -4, background: C.green, color: '#fff', fontSize: 7, fontWeight: 700, padding: '1px 4px', borderRadius: 6 }}>YOU</span>
@@ -257,8 +261,8 @@ export default function LearnHub({ user, onAddScore }) {
             style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 9, border: `1px solid ${C.border}`, fontSize: 12, fontFamily: 'inherit', color: C.text, marginBottom: 10, outline: 'none' }} />
 
           {/* Level intro strip */}
-          <div style={{ background: C.blueL, border: `1px solid ${C.blue}33`, borderRadius: 10, padding: '9px 13px', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: C.blue, fontWeight: 700 }}>📐 {gramLevel} Grammar · {(GRAMMAR[gramLevel] || []).length} topics</div>
+          <div style={{ background: gth.light, borderLeft: `3px solid ${gth.main}`, border: `1px solid ${gth.main}33`, borderRadius: 10, padding: '9px 13px', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: C.navy, fontWeight: 700 }}>📐 {gramLevel} Grammar · {(GRAMMAR[gramLevel] || []).length} topics</div>
             <div style={{ fontSize: 10, color: C.textM, marginTop: 2 }}>Follows the {gramLevel} curriculum, with nursing examples, tables and common mistakes.</div>
           </div>
 
@@ -269,7 +273,7 @@ export default function LearnHub({ user, onAddScore }) {
           {gramList.map(g => {
             const open = gramId === g.id
             return (
-              <div key={g.id} style={{ background: '#fff', borderRadius: 12, border: `1px solid ${open ? C.blue : C.border}`, marginBottom: 8, overflow: 'hidden', transition: 'border-color .15s' }}>
+              <div key={g.id} style={{ background: '#fff', borderRadius: 12, border: `1px solid ${open ? gth.main : C.border}`, borderLeft: `4px solid ${gth.main}`, marginBottom: 8, overflow: 'hidden', transition: 'border-color .15s' }}>
                 <div onClick={() => openGrammar(g.id)}
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', cursor: 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -279,13 +283,13 @@ export default function LearnHub({ user, onAddScore }) {
                       {g.sub && <div style={{ fontSize: 10, color: C.textS, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.sub}</div>}
                     </div>
                   </div>
-                  <span style={{ color: C.blue, fontSize: 12, flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
+                  <span style={{ color: gth.main, fontSize: 12, flexShrink: 0, marginLeft: 8 }}>{open ? '▲' : '▼'}</span>
                 </div>
 
                 {open && (
                   <div style={{ padding: '4px 14px 14px', borderTop: `1px solid ${C.border}` }}>
                     <div style={{ height: 10 }} />
-                    {g.blocks.map((b, i) => <GrammarBlock key={i} b={b} />)}
+                    {g.blocks.map((b, i) => <GrammarBlock key={i} b={b} th={gth} />)}
 
                     {g.tip && (
                       <div style={{ background: C.greenL, borderLeft: `3px solid ${C.green}`, borderRadius: 8, padding: '8px 11px', marginTop: 4 }}>

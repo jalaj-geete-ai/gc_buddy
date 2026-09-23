@@ -15,6 +15,17 @@ export const C = {
 
 export const LEVELS = ['A1','A2','B1','B2']
 
+// Per-level colour scheme, shared across Listening, Curriculum, Daily Tests,
+// Grammar and Media so each CEFR level reads the same everywhere.
+// main = solid/accent colour, light = tint background, on = text colour that
+// stays legible on `main` (dark on the light mustard, white on the others).
+export const LEVEL_THEME = {
+  A1: { main:'#1034A6', light:'#E7ECF8', on:'#ffffff' }, // Egyptian blue
+  A2: { main:'#CC5500', light:'#FBEADD', on:'#ffffff' }, // burnt orange
+  B1: { main:'#E1AD01', light:'#FBF1D0', on:'#3A2C00' }, // mustard yellow
+  B2: { main:'#01796F', light:'#DCEFED', on:'#ffffff' }, // pine green
+}
+
 export const CURRICULUM = {
   A1:[
     {id:'a1-1',title:'Phonetics & Basics',icon:'🔤',desc:'Alphabet, Umlauts, pronunciation rules',
