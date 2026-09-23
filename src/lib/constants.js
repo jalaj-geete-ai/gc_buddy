@@ -223,7 +223,6 @@ export const NAV = [
   {id:'interview',icon:'🎭',lbl:'Interview'},
   {id:'dailytest',icon:'📝',lbl:'Daily Test'},
   {id:'gcbuddy',icon:'🇩🇪',lbl:'GC Buddy'},
-  {id:'media',icon:'🎬',lbl:'Media'},
   {id:'referral',icon:'🎁',lbl:'Refer'},
 ]
 

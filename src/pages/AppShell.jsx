@@ -9,7 +9,6 @@ import VocabPage from './VocabPage'
 import ListeningPage from './ListeningPage'
 import InterviewPage from './InterviewPage'
 import GCBuddyChat from './GCBuddyChat'
-import MediaPage from './MediaPage'
 import ReferralPage from './ReferralPage'
 import LessonChat from './LessonChat'
 import DailyTestPage from './DailyTestPage'
@@ -48,7 +47,6 @@ export default function AppShell({ user, progress, completedTopics, exerciseScor
     if (tab === 'listening') return <ListeningPage user={user}/>
     if (tab === 'interview') return <InterviewPage user={user} completedTopics={completedTopics} onAddScore={onAddScore}/>
     if (tab === 'gcbuddy') return <GCBuddyChat user={user} progress={progress} completedTopics={completedTopics} exerciseScores={exerciseScores}/>
-    if (tab === 'media') return <MediaPage user={user}/>
     if (tab === 'referral') return <ReferralPage user={user}/>
     if (tab === 'dailytest') return <DailyTestPage user={user} onTestComplete={onTestComplete}/>
     return null

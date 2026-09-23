@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { C, MEDIA, LEVELS } from '../lib/constants'
 import { Badge } from '../components/UI'
 const ICONS={podcast:'🎙️',series:'📺',app:'📱',health:'🏥',news:'📰',channel:'▶️',course:'📚',magazine:'📄'}
-export default function MediaPage({ user }) {
+export default function MediaPage({ user, embedded = false }) {
   const [lv,setLv]=useState(user?.level)
   return (
-    <div style={{flex:1,overflow:'auto',padding:'16px 18px'}}>
-      <h2 style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:3}}>🎬 Learning Media</h2>
-      <p style={{fontSize:11,color:C.textS,marginBottom:12}}>Curated content for nurses at every level</p>
+    <div style={embedded ? {} : {flex:1,overflow:'auto',padding:'16px 18px'}}>
+      {!embedded && <>
+        <h2 style={{fontSize:16,fontWeight:700,color:C.navy,marginBottom:3}}>🎬 Learning Media</h2>
+        <p style={{fontSize:11,color:C.textS,marginBottom:12}}>Curated content for nurses at every level</p>
+      </>}
       <div style={{display:'flex',gap:4,marginBottom:14}}>
         {LEVELS.map(l=>(
           <button key={l} onClick={()=>setLv(l)} style={{flex:1,padding:'6px',borderRadius:7,border:`1.5px solid ${lv===l?C.blue:C.border}`,background:lv===l?C.blueL:'transparent',color:lv===l?C.blue:C.textS,cursor:'pointer',fontSize:11,fontWeight:600,fontFamily:'inherit'}}>
