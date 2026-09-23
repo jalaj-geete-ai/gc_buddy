@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { C } from '../lib/constants'
-import { PBar, Btn } from '../components/UI'
+import { C, LEVELS } from '../lib/constants'
 import { trackEvent } from '../lib/supabase'
 import { playGerman, stopAll, clipUrlPhrase } from '../lib/tts'
 
@@ -761,116 +760,110 @@ B2:[
 }
 
 export default function ListeningPage({ user }) {
-  const [cur, setCur] = useState(0)
-  const [playing, setPlaying] = useState(null) // null | 'normal' | 'slow'
-  const [ttsMsg, setTtsMsg] = useState(null)
-  const lvl = PH[user?.level] ? user.level : 'A1'
-  const phrases = PH[lvl]
-  const ph = phrases[Math.min(cur, phrases.length - 1)]
+  // Per-level theme colours (requested): A1 Egyptian blue, A2 burnt orange,
+  // B1 mustard yellow, B2 pine green. `on` is the header text colour picked for
+  // contrast (dark on the light mustard, white on the darker three).
+  const LEVEL_THEME = {
+    A1: { label: 'Egyptian Blue',  main: '#1034A6', light: '#E7ECF8', on: '#ffffff' },
+    A2: { label: 'Burnt Orange',   main: '#CC5500', light: '#FBEADD', on: '#ffffff' },
+    B1: { label: 'Mustard Yellow', main: '#E1AD01', light: '#FBF1D0', on: '#3A2C00' },
+    B2: { label: 'Pine Green',     main: '#01796F', light: '#DCEFED', on: '#ffffff' },
+  }
+
+  const initLevel = PH[user?.level] ? user.level : 'A1'
+  const [openLevel, setOpenLevel] = useState(initLevel)
+  const [playing, setPlaying] = useState(null)   // `${lvl}:${i}:${mode}` | null
+  const [failKey, setFailKey] = useState(null)    // `${lvl}:${i}` | null
 
   // Stop any clip when leaving the page
   useEffect(() => stopAll, [])
 
-  // Audio playback.
-  // Plays the pre-generated German clip shipped in public/audio — this works
-  // in Android WebView, which has no Web Speech API at all. The speech engine
-  // is only a fallback for anything without a clip.
-  function speak(rate = 1) {
+  function stopSpeaking() { stopAll(); setPlaying(null) }
+
+  // Plays the pre-generated German clip shipped in public/audio — works in
+  // Android WebView, which has no Web Speech API. Speech engine is a fallback.
+  function play(lvl, i, rate) {
     const mode = rate < 1 ? 'slow' : 'normal'
-    setTtsMsg(null)
-    playGerman(clipUrlPhrase(lvl, cur), ph.de, {
+    const key = `${lvl}:${i}:${mode}`
+    if (playing === key) { stopSpeaking(); return }
+    stopAll(); setFailKey(null)
+    playGerman(clipUrlPhrase(lvl, i), PH[lvl][i].de, {
       rate,
-      onStart: () => setPlaying(mode),
+      onStart: () => setPlaying(key),
       onEnd: () => setPlaying(null),
-      onFail: () => { setPlaying(null); setTtsMsg('unavailable') },
+      onFail: () => { setPlaying(null); setFailKey(`${lvl}:${i}`) },
     })
-    trackEvent(user?.rollNumber, 'listening_play', 'listening', `Phrase ${cur + 1}`, user?.level)
+    trackEvent(user?.rollNumber, 'listening_play', 'listening', `${lvl} #${i + 1}`, user?.level)
   }
 
-  function stopSpeaking() {
-    stopAll()
-    setPlaying(null)
-  }
-
-  function goTo(i) {
-    // Move first: navigation must never depend on the speech engine.
-    setCur(i)
-    stopSpeaking()
-  }
+  const iconBtn = { width: 40, height: 34, borderRadius: 8, cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', flexShrink: 0 }
+  const totalPhrases = LEVELS.reduce((n, lv) => n + (PH[lv]?.length || 0), 0)
 
   return (
     <div style={{ flex: 1, overflow: 'auto', padding: '16px 18px' }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>🎙️ Listening Practice</h2>
-      <p style={{ fontSize: 11, color: C.textS, marginBottom: 8 }}>
-        Level {user?.level} · {phrases.length} nursing phrases · Listen & repeat aloud
+      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>
+        {totalPhrases} nursing phrases · A1–B2 · Tap a level, then listen &amp; repeat aloud
       </p>
-      <PBar pct={Math.round(((cur + 1) / phrases.length) * 100)} h={5} style={{ marginBottom: 4 }} />
-      <div style={{ fontSize: 10, color: C.textS, textAlign: 'right', marginBottom: 12 }}>{cur + 1} / {phrases.length}</div>
 
-      {/* Main phrase card */}
-      <div style={{ background: `linear-gradient(135deg,${C.navy},${C.navyM})`, borderRadius: 16, padding: '24px 18px', marginBottom: 13, textAlign: 'center', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 10, right: 12, background: 'rgba(255,255,255,.1)', borderRadius: 20, padding: '3px 10px', fontSize: 10, color: 'rgba(255,255,255,.5)' }}>#{cur + 1}</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.65, marginBottom: 10 }}>{ph.de}</div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', fontStyle: 'italic', lineHeight: 1.5 }}>{ph.en}</div>
+      {/* Tips */}
+      <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '9px 12px', marginBottom: 14 }}>
+        <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
+          🔊 plays at normal speed · 🐢 plays slowly, sound by sound — repeat each phrase aloud. Make sure your volume is on.
+        </div>
       </div>
 
-      {/* Audio controls — big tap targets for mobile */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button
-          onClick={playing === 'normal' ? stopSpeaking : () => speak(1)}
-          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: 'none', background: playing === 'normal' ? C.red : C.blue, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          {playing === 'normal' ? '⏹ Stop' : '🔊 Normal Speed'}
-        </button>
-        <button
-          onClick={playing === 'slow' ? stopSpeaking : () => speak(0.7)}
-          style={{ flex: 1, padding: '14px 8px', borderRadius: 11, border: `2px solid ${playing === 'slow' ? C.red : C.border}`, background: playing === 'slow' ? C.red : '#fff', color: playing === 'slow' ? '#fff' : C.navy, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          {playing === 'slow' ? '⏹ Stop' : '🐢 Slow'}
-        </button>
-      </div>
-
-      {/* Navigation — big buttons for mobile */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <button onClick={() => goTo(Math.max(0, cur - 1))} disabled={cur === 0}
-          style={{ flex: 1, padding: '12px', borderRadius: 10, border: `2px solid ${cur === 0 ? C.border : C.navy}`, background: cur === 0 ? C.surfAlt : '#fff', color: cur === 0 ? C.textS : C.navy, cursor: cur === 0 ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit' }}>
-          ← Prev
-        </button>
-        <button onClick={() => goTo(Math.min(phrases.length - 1, cur + 1))} disabled={cur === phrases.length - 1}
-          style={{ flex: 1, padding: '12px', borderRadius: 10, border: 'none', background: cur === phrases.length - 1 ? C.border : C.navy, color: '#fff', cursor: cur === phrases.length - 1 ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit' }}>
-          Next →
-        </button>
-      </div>
-
-      {ttsMsg === 'unavailable' ? (
-        <div style={{ background: C.redL, border: `1px solid ${C.red}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.red, marginBottom: 4 }}>🔇 Could not play audio</div>
-          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-            Check that your volume is up and Silent mode is off, then tap play again.
-            If it still fails, close and reopen the app.
+      {/* Collapsible level sections */}
+      {LEVELS.map(lv => {
+        const list = PH[lv] || []
+        const t = LEVEL_THEME[lv]
+        const isOpen = openLevel === lv
+        const isCur = lv === user?.level
+        return (
+          <div key={lv} style={{ marginBottom: 12 }}>
+            {/* Header */}
+            <div onClick={() => { setOpenLevel(isOpen ? null : lv); stopSpeaking() }}
+              style={{ background: t.main, color: t.on, borderRadius: isOpen ? '13px 13px 0 0' : 13, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.sh }}>
+              <div style={{ width: 38, height: 38, borderRadius: 9, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, color: t.on, flexShrink: 0 }}>{lv}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-.01em' }}>Level {lv}{isCur ? ' · your level' : ''}</div>
+                <div style={{ fontSize: 11, opacity: .85 }}>{list.length} phrases · {t.label}</div>
+              </div>
+              <span style={{ fontSize: 13, opacity: .9 }}>{isOpen ? '▲' : '▼'}</span>
+            </div>
+            {/* Body */}
+            {isOpen && (
+              <div style={{ background: t.light, borderRadius: '0 0 13px 13px', padding: '10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {list.map((p, i) => {
+                  const normKey = `${lv}:${i}:normal`
+                  const slowKey = `${lv}:${i}:slow`
+                  const failed = failKey === `${lv}:${i}`
+                  return (
+                    <div key={i} style={{ background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, borderLeft: `4px solid ${t.main}`, padding: '10px 12px', display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: t.main, minWidth: 24, marginTop: 2 }}>#{i + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.navy, lineHeight: 1.5 }}>{p.de}</div>
+                        <div style={{ fontSize: 11, color: C.textM, fontStyle: 'italic', marginTop: 2, lineHeight: 1.45 }}>{p.en}</div>
+                        {failed && <div style={{ fontSize: 9, color: C.red, marginTop: 4 }}>🔇 Could not play — check volume / silent mode, then tap again.</div>}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        <button onClick={() => play(lv, i, 1)} title="Normal speed"
+                          style={{ ...iconBtn, border: 'none', background: playing === normKey ? C.red : t.main, color: '#fff' }}>
+                          {playing === normKey ? '⏹' : '🔊'}
+                        </button>
+                        <button onClick={() => play(lv, i, 0.7)} title="Slow"
+                          style={{ ...iconBtn, border: `1.5px solid ${playing === slowKey ? C.red : t.main}`, background: playing === slowKey ? C.red : '#fff', color: playing === slowKey ? '#fff' : t.main }}>
+                          {playing === slowKey ? '⏹' : '🐢'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      ) : (
-        <div style={{ background: C.amberL, border: `1px solid ${C.amber}44`, borderRadius: 10, padding: '10px 13px', marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, marginBottom: 4 }}>📱 Listening Tips</div>
-          <div style={{ fontSize: 10, color: C.textM, lineHeight: 1.6 }}>
-            • Tap <strong>🔊 Normal Speed</strong> to play — make sure your volume is on<br />
-            • Use <strong>🐢 Slow</strong> to hear each sound clearly, then repeat aloud<br />
-            • Recorded in a German female voice — no setup needed
-          </div>
-        </div>
-      )}
-
-      {/* Jump grid */}
-      <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '12px 14px' }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.textS, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 8 }}>Jump to Phrase</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxHeight: 130, overflow: 'auto' }}>
-          {phrases.map((_, i) => (
-            <button key={i} onClick={() => goTo(i)}
-              style={{ width: 32, height: 32, borderRadius: 7, border: `1.5px solid ${i === cur ? C.blue : C.border}`, background: i === cur ? C.blue : i < cur ? C.blueL : 'transparent', color: i === cur ? '#fff' : i < cur ? C.blue : C.textS, cursor: 'pointer', fontSize: 9, fontWeight: 600 }}>
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      </div>
+        )
+      })}
     </div>
   )
 }
