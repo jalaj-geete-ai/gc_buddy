@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { C, LEVELS } from '../lib/constants'
+import { C, LEVELS, LEVEL_THEME } from '../lib/constants'
 import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { sb, trackEvent } from '../lib/supabase'
 import { B1_TESTS } from '../lib/b1DailyTests'
@@ -2172,17 +2172,18 @@ export default function DailyTestPage({ user, onTestComplete }) {
           }).length
           const isCur = lv === user?.level
           const isExp = expLevel === lv
+          const th = LEVEL_THEME[lv]
           return (
             <div key={lv} style={{ marginBottom: 10 }}>
               <div onClick={() => setExpLevel(isExp ? null : lv)}
-                style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: C.sh }}>
-                <div style={{ width: 34, height: 34, borderRadius: 8, background: isCur ? C.blue : C.border, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, color: isCur ? '#fff' : C.textS, flexShrink: 0 }}>{lv}</div>
+                style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, borderLeft: `4px solid ${th.main}`, padding: '13px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, boxShadow: C.sh }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: th.main, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, color: th.on, flexShrink: 0 }}>{lv}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <span style={{ fontWeight: 600, color: C.navy, fontSize: 12 }}>Level {lv} Daily Tests</span>
-                    {isCur && <Badge label="Current" color={C.blue} bg={C.blueL} />}
+                    {isCur && <Badge label="Current" color={th.main} bg={th.light} />}
                   </div>
-                  <PBar pct={(passedCount / levelTests.length) * 100} color={isCur ? C.blue : C.green} h={4} />
+                  <PBar pct={(passedCount / levelTests.length) * 100} color={th.main} h={4} />
                   <div style={{ fontSize: 10, color: C.textS, marginTop: 2 }}>{passedCount}/{levelTests.length} tests passed</div>
                 </div>
                 <span style={{ color: C.textS, fontSize: 12 }}>{isExp ? '▲' : '▼'}</span>

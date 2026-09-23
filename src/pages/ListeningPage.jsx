@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { C, LEVELS } from '../lib/constants'
+import { C, LEVELS, LEVEL_THEME } from '../lib/constants'
 import { trackEvent } from '../lib/supabase'
 import { playGerman, stopAll, clipUrlPhrase } from '../lib/tts'
 
@@ -760,16 +760,6 @@ B2:[
 }
 
 export default function ListeningPage({ user }) {
-  // Per-level theme colours (requested): A1 Egyptian blue, A2 burnt orange,
-  // B1 mustard yellow, B2 pine green. `on` is the header text colour picked for
-  // contrast (dark on the light mustard, white on the darker three).
-  const LEVEL_THEME = {
-    A1: { label: 'Egyptian Blue',  main: '#1034A6', light: '#E7ECF8', on: '#ffffff' },
-    A2: { label: 'Burnt Orange',   main: '#CC5500', light: '#FBEADD', on: '#ffffff' },
-    B1: { label: 'Mustard Yellow', main: '#E1AD01', light: '#FBF1D0', on: '#3A2C00' },
-    B2: { label: 'Pine Green',     main: '#01796F', light: '#DCEFED', on: '#ffffff' },
-  }
-
   const initLevel = PH[user?.level] ? user.level : 'A1'
   const [openLevel, setOpenLevel] = useState(initLevel)
   const [playing, setPlaying] = useState(null)   // `${lvl}:${i}:${mode}` | null
@@ -827,7 +817,7 @@ export default function ListeningPage({ user }) {
               <div style={{ width: 38, height: 38, borderRadius: 9, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, color: t.on, flexShrink: 0 }}>{lv}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-.01em' }}>Level {lv}{isCur ? ' · your level' : ''}</div>
-                <div style={{ fontSize: 11, opacity: .85 }}>{list.length} phrases · {t.label}</div>
+                <div style={{ fontSize: 11, opacity: .85 }}>{list.length} phrases</div>
               </div>
               <span style={{ fontSize: 13, opacity: .9 }}>{isOpen ? '▲' : '▼'}</span>
             </div>
