@@ -62,6 +62,31 @@ function BlurredRows({ count, label = 'more locked', maxShow = 10 }) {
   )
 }
 
+// Like BlurredRows, but renders the REAL locked item titles behind the same
+// progressive blur. Only the handful of titles shipped in demoData are shown
+// (the rest stay a count) — no lesson bodies, questions or answers are exposed.
+function BlurredTitleRows({ titles = [], count, label = 'more locked' }) {
+  const shown = titles.slice(0, count)
+  const remaining = count - shown.length
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {shown.map((title, i) => {
+        const pct = Math.min((i + 1) * 10, 100)        // 10%, 20%, … capped at 100%
+        const blurPx = (pct / 100) * MAX_BLUR
+        return (
+        <div key={i} style={{ position: 'relative', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 14px', overflow: 'hidden' }}>
+          <div style={{ filter: `blur(${blurPx}px)`, userSelect: 'none', pointerEvents: 'none', paddingRight: 22 }} aria-hidden>
+            <div style={{ fontSize: 14, fontWeight: 600, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+          </div>
+          <span style={{ position: 'absolute', top: '50%', right: 14, transform: 'translateY(-50%)', fontSize: 15 }}>🔒</span>
+        </div>
+        )
+      })}
+      {remaining > 0 && <div style={{ fontSize: 11, color: C.textS, textAlign: 'center' }}>+ {remaining} {label}</div>}
+    </div>
+  )
+}
+
 function BackBar({ th, label, onBack }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
@@ -270,7 +295,7 @@ function CurriculumPage() {
             </div>
           ))}
         </div>
-        {d.lockedCount > 0 && <><BlurredRows count={d.lockedCount} /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more topics in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
+        {d.lockedCount > 0 && <><BlurredTitleRows titles={d.lockedTitles} count={d.lockedCount} /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more topics in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
       </div>
     )
   }
@@ -299,7 +324,7 @@ function DailyTestPage() {
           <div style={{ fontSize: 10, color: C.textS, marginBottom: 10 }}>{d.unlocked.questions.length} questions · auto-graded</div>
           <Btn label="▶ Start Test" variant="primary" style={{ width: '100%', background: th.main }} onClick={() => setQuiz(d.unlocked)} />
         </div>
-        {d.lockedCount > 0 && <><BlurredRows count={d.lockedCount} label="more tests locked" /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more tests in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
+        {d.lockedCount > 0 && <><BlurredTitleRows titles={d.lockedTitles} count={d.lockedCount} label="more tests locked" /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more tests in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
       </div>
     )
   }
@@ -451,7 +476,7 @@ function ListeningPage() {
             </div>
           ))}
         </div>
-        {d.lockedCount > 0 && <><BlurredRows count={d.lockedCount} label="more phrases locked" /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more phrases in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
+        {d.lockedCount > 0 && <><BlurredTitleRows titles={d.lockedTitles} count={d.lockedCount} label="more phrases locked" /><div style={{ marginTop: 12 }}><SubscribeCard text={`${d.lockedCount} more phrases in Level ${lv}. Subscribe to the course to unlock them.`} /></div></>}
       </div>
     )
   }
