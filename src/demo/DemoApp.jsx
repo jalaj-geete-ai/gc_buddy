@@ -6,10 +6,9 @@ import { playGerman, stopAll, clipUrlPhrase, clipUrlWord } from '../lib/tts'
 import { sb } from '../lib/supabase'
 import demo from './demoData.json'
 
-// ⚠️ Replace with your real subscribe / enrolment URL before sharing the demo.
-const SUBSCRIBE_URL = 'https://globalcareersbytestbook.pages.dev/'
-
-const openSubscribe = () => { try { window.open(SUBSCRIBE_URL, '_blank', 'noopener') } catch { /* noop */ } }
+// Every "Subscribe / unlock" action fires a confetti + thank-you popup (a lead
+// has already been captured at entry) instead of navigating anywhere.
+const fireThanks = () => { try { window.dispatchEvent(new CustomEvent('gc-demo-thanks')) } catch { /* noop */ } }
 
 const NAV = [
   { id: 'home', icon: '🏠', lbl: 'Home' },
@@ -29,7 +28,7 @@ function SubscribeCard({ text = 'Subscribe to the course to unlock this.', compa
     <div style={{ background: C.blueL, border: `1px solid ${C.blue}44`, borderRadius: 12, padding: compact ? '12px 14px' : '16px 16px', textAlign: 'center' }}>
       <div style={{ fontSize: compact ? 20 : 26, marginBottom: 6 }}>🔒</div>
       <div style={{ fontSize: 12.5, color: C.navy, fontWeight: 700, lineHeight: 1.5, marginBottom: 10 }}>{text}</div>
-      <Btn label="Subscribe to unlock →" variant="accent" onClick={openSubscribe} />
+      <Btn label="Subscribe to unlock →" variant="accent" onClick={fireThanks} />
     </div>
   )
 }
@@ -465,7 +464,7 @@ function InterviewPage() {
         <div style={{ fontSize: 12.5, color: C.textM, lineHeight: 1.6, marginTop: 8, maxWidth: 320, marginInline: 'auto' }}>
           This section is only for students who have cleared the <strong>B1 level</strong> of the course.
         </div>
-        <div style={{ marginTop: 16 }}><Btn label="Subscribe to the course →" variant="accent" onClick={openSubscribe} /></div>
+        <div style={{ marginTop: 16 }}><Btn label="Subscribe to the course →" variant="accent" onClick={fireThanks} /></div>
       </div>
     </div>
   )
@@ -530,6 +529,62 @@ function LeadGate({ onEnter }) {
   )
 }
 
+// ── Thank-you confetti popup (fires on any Subscribe / unlock action) ────────
+function ThanksOverlay() {
+  const [show, setShow] = useState(false)
+  const canvasRef = useRef(null)
+  const rafRef = useRef(0)
+  const hideRef = useRef(0)
+
+  useEffect(() => {
+    const onFire = () => setShow(true)
+    window.addEventListener('gc-demo-thanks', onFire)
+    return () => window.removeEventListener('gc-demo-thanks', onFire)
+  }, [])
+
+  useEffect(() => {
+    if (!show) return undefined
+    hideRef.current = setTimeout(() => setShow(false), 10000) // auto-dismiss after 10s
+    const canvas = canvasRef.current
+    if (!canvas) return () => clearTimeout(hideRef.current)
+    const ctx = canvas.getContext('2d')
+    const dpr = window.devicePixelRatio || 1
+    const W = () => window.innerWidth, H = () => window.innerHeight
+    const resize = () => { canvas.width = W() * dpr; canvas.height = H() * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0) }
+    resize(); window.addEventListener('resize', resize)
+    const colors = ['#1034A6', '#CC5500', '#E1AD01', '#01796F', '#1e90ff', '#2d9e6b', '#ff5e7e', '#ffd166']
+    let parts = []
+    const spawn = n => { for (let i = 0; i < n; i++) parts.push({ x: W() / 2 + (Math.random() - 0.5) * 140, y: H() * 0.34, vx: (Math.random() - 0.5) * 11, vy: Math.random() * -12 - 4, g: 0.28, size: 5 + Math.random() * 7, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.3, color: colors[(Math.random() * colors.length) | 0], life: 0, ttl: 120 + Math.random() * 90 }) }
+    spawn(160); const t1 = setTimeout(() => spawn(120), 250); const t2 = setTimeout(() => spawn(100), 550)
+    const start = performance.now()
+    const loop = () => {
+      ctx.clearRect(0, 0, W(), H())
+      parts.forEach(p => {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= 0.99; p.rot += p.vr; p.life++
+        ctx.save(); ctx.globalAlpha = Math.max(0, 1 - p.life / p.ttl); ctx.translate(p.x, p.y); ctx.rotate(p.rot)
+        ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6); ctx.restore()
+      })
+      parts = parts.filter(p => p.life < p.ttl && p.y < H() + 40)
+      if (performance.now() - start < 9500 || parts.length) rafRef.current = requestAnimationFrame(loop)
+    }
+    rafRef.current = requestAnimationFrame(loop)
+    return () => { cancelAnimationFrame(rafRef.current); window.removeEventListener('resize', resize); clearTimeout(hideRef.current); clearTimeout(t1); clearTimeout(t2) }
+  }, [show])
+
+  if (!show) return null
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,15,40,.45)', padding: 20 }} onClick={() => setShow(false)}>
+      <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+      <div onClick={e => e.stopPropagation()} style={{ position: 'relative', background: '#fff', borderRadius: 18, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,.35)' }}>
+        <div style={{ fontSize: 44 }}>🎉</div>
+        <div style={{ fontSize: 17, fontWeight: 800, color: C.navy, margin: '8px 0 6px' }}>Thank you for showing interest!</div>
+        <div style={{ fontSize: 13, color: C.textM, lineHeight: 1.6 }}>Our team will get in touch with you.</div>
+        <button onClick={() => setShow(false)} style={{ marginTop: 16, background: C.navy, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Close</button>
+      </div>
+    </div>
+  )
+}
+
 // ── Shell ────────────────────────────────────────────────────────────────────
 export default function DemoApp() {
   const [lead, setLead] = useState(null)
@@ -557,6 +612,7 @@ export default function DemoApp() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column' }}>
+      <ThanksOverlay />
       <header style={{ background: C.navy, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
         <div onClick={() => setTab('home')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><img src="/mascot-face.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
@@ -565,7 +621,7 @@ export default function DemoApp() {
             <div style={{ fontSize: 8, color: 'rgba(255,255,255,.4)' }}>by Global Careers × Testbook</div>
           </div>
         </div>
-        <button onClick={openSubscribe} style={{ background: C.amber, color: '#fff', border: 'none', borderRadius: 20, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Subscribe</button>
+        <button onClick={fireThanks} style={{ background: C.amber, color: '#fff', border: 'none', borderRadius: 20, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Subscribe</button>
       </header>
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <nav className="sidebar" style={{ width: 175, background: '#fff', borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', padding: '8px 0', flexShrink: 0, overflowY: 'auto' }}>
