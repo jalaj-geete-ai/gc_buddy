@@ -34,20 +34,29 @@ function SubscribeCard({ text = 'Subscribe to the course to unlock this.', compa
 }
 
 // Blurred dummy rows — deliberately NO real text (locked content is never shipped).
-function BlurredRows({ count, label = 'more locked', maxShow = 5 }) {
+// Locked rows blur progressively: the first locked row (the "third topic",
+// since the first two per level are unlocked) is 10% blurred, the next 20%,
+// then 30%… escalating 10% per row. 100% blur maps to MAX_BLUR px; every row
+// at or beyond 100% stays fully blurred.
+const MAX_BLUR = 10 // px == 100% blur
+function BlurredRows({ count, label = 'more locked', maxShow = 10 }) {
   const n = Math.min(count, maxShow)
-  const widths = ['82%', '68%', '90%', '74%', '60%']
+  const widths = ['82%', '68%', '90%', '74%', '60%', '86%', '71%', '64%', '88%', '76%']
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {Array.from({ length: n }).map((_, i) => (
+      {Array.from({ length: n }).map((_, i) => {
+        const pct = Math.min((i + 1) * 10, 100)        // 10%, 20%, … capped at 100%
+        const blurPx = (pct / 100) * MAX_BLUR
+        return (
         <div key={i} style={{ position: 'relative', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 14px', overflow: 'hidden' }}>
-          <div style={{ filter: 'blur(7px)', userSelect: 'none', pointerEvents: 'none' }} aria-hidden>
+          <div style={{ filter: `blur(${blurPx}px)`, userSelect: 'none', pointerEvents: 'none' }} aria-hidden>
             <div style={{ height: 11, width: widths[i % widths.length], background: '#c7d2e8', borderRadius: 6, marginBottom: 7 }} />
             <div style={{ height: 8, width: '40%', background: '#dbe3f2', borderRadius: 6 }} />
           </div>
           <span style={{ position: 'absolute', top: '50%', right: 14, transform: 'translateY(-50%)', fontSize: 15 }}>🔒</span>
         </div>
-      ))}
+        )
+      })}
       {count > maxShow && <div style={{ fontSize: 11, color: C.textS, textAlign: 'center' }}>+ {count - maxShow} {label}</div>}
     </div>
   )
