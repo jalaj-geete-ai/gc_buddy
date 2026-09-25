@@ -10,6 +10,24 @@ import demo from './demoData.json'
 // has already been captured at entry) instead of navigating anywhere.
 const fireThanks = () => { try { window.dispatchEvent(new CustomEvent('gc-demo-thanks')) } catch { /* noop */ } }
 
+// Demo leads are also pushed into the CRM (a separate Supabase project) via the
+// gc-buddy-lead edge function, which routes them: a phone already in the CRM ->
+// the Retargeting tab; a new phone -> the TL staging inbox (source "gc_buddy").
+// The key below is the CRM's public publishable key (already shipped in the CRM
+// client). Fire-and-forget — a CRM outage must never block demo entry.
+const CRM_LEAD_ENDPOINT = 'https://lrcimdchhbsgbnvdmpwd.supabase.co/functions/v1/gc-buddy-lead'
+const CRM_PUBLISHABLE_KEY = 'sb_publishable_ToMUKupYWDGTTx4oPgxzrw_SOjYXzuL'
+function pushLeadToCRM(name, phone) {
+  try {
+    fetch(CRM_LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: CRM_PUBLISHABLE_KEY, Authorization: `Bearer ${CRM_PUBLISHABLE_KEY}` },
+      body: JSON.stringify({ name, phone, page_url: location.href, referrer: document.referrer || null }),
+      keepalive: true,
+    }).catch(() => { /* noop */ })
+  } catch { /* noop */ }
+}
+
 const NAV = [
   { id: 'home', icon: '🏠', lbl: 'Home' },
   { id: 'curriculum', icon: '📘', lbl: 'Curriculum' },
@@ -542,6 +560,7 @@ function LeadGate({ onEnter }) {
     if (p.length !== 10) { setErr('Please enter a valid 10-digit phone number.'); return }
     setErr(''); setLoading(true)
     try { await sb.from('demo_leads').insert({ name: n, phone: p }) } catch { /* don't block entry on save failure */ }
+    pushLeadToCRM(n, p)
     try { localStorage.setItem('gc_demo_lead', JSON.stringify({ name: n, phone: p })) } catch { /* noop */ }
     onEnter({ name: n, phone: p })
   }
