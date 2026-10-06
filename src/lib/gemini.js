@@ -38,7 +38,7 @@ async function gemini(messages, system = '', maxTokens = 1200) {
         body: JSON.stringify({
           model,
           messages: msgs,
-          max_tokens: Math.min(maxTokens, 2048),
+          max_tokens: Math.min(maxTokens, 4096),
           temperature: 0.7,
         }),
         signal: ctrl.signal,
@@ -78,7 +78,7 @@ async function geminiStream(messages, system = '', onToken, maxTokens = 1200) {
         body: JSON.stringify({
           model,
           messages: msgs,
-          max_tokens: Math.min(maxTokens, 2048),
+          max_tokens: Math.min(maxTokens, 4096),
           temperature: 0.7,
           stream: true,
         }),
@@ -119,6 +119,6 @@ async function geminiStream(messages, system = '', onToken, maxTokens = 1200) {
 }
 
 export const ai = (messages, system, max) => gemini(messages, system, max)
-export const gcBuddyChat = (messages, system) => gemini(messages, system, 1024)
+export const gcBuddyChat = (messages, system) => gemini(messages, system, 3000)
 export const aiStream = (messages, system, onToken, max) => geminiStream(messages, system, onToken, max)
-export const gcBuddyStream = (messages, system, onToken) => geminiStream(messages, system, onToken, 1024)
+export const gcBuddyStream = (messages, system, onToken) => geminiStream(messages, system, onToken, 3000)
