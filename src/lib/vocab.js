@@ -6,9 +6,9 @@ import { sb } from './supabase'
 export const INTERVALS = [1, 3, 7, 21, 60]
 export const MAX_BOX = 5
 export const WORDS_PER_SET = 10
-export const DAYS_PER_SESSION = 3   // catch-up allowance per calendar day
+export const DAYS_PER_SESSION = 5   // catch-up allowance per calendar day (5 sets × 10 = 50 words/day)
 export const MAX_WORDS_PER_DAY = WORDS_PER_SET * DAYS_PER_SESSION
-export const TOTAL_DAYS = 120
+export const TOTAL_DAYS = 217
 
 export const today = () => new Date().toISOString().slice(0, 10)
 
@@ -45,7 +45,7 @@ export {
 // ── Word bank ────────────────────────────────────────────────────────────────
 // Ships as a static asset rather than in the bundle (235 kB would nearly
 // double a 785 kB single-file build). Cached in localStorage after first load.
-const CACHE_KEY = 'gc_vocab_bank_v1'
+const CACHE_KEY = 'gc_vocab_bank_v2'
 
 export async function loadVocabBank() {
   try {
@@ -125,7 +125,7 @@ export function remainingToday(state) {
   return Math.max(0, DAYS_PER_SESSION - usedToday)
 }
 
-// Words unlocked so far on the current calendar day (0, 10, 20 or 30).
+// Words unlocked so far on the current calendar day (0, 10, 20, 30, 40 or 50).
 export function wordsToday(state) {
   if (!state || state.last_day_on !== today()) return 0
   return (state.days_today || 0) * WORDS_PER_SET
@@ -135,4 +135,4 @@ export function nextDayNumber(state) {
   return Math.min((state?.current_day || 0) + 1, TOTAL_DAYS)
 }
 
-export const MILESTONES = [50, 100, 250, 500, 1000, 1200]
+export const MILESTONES = [50, 100, 250, 500, 1000, 1500, 1962]

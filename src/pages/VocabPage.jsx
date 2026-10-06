@@ -268,7 +268,7 @@ export default function VocabPage({ user }) {
             <div style={{ background: C.blueL, borderRadius: 9, padding: '9px 12px', marginTop: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.blue }}>{done} of {MAX_WORDS_PER_DAY} words unlocked today</div>
               <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 6 }}>
-                {[0, 1, 2].map(i => (
+                {Array.from({ length: MAX_WORDS_PER_DAY / WORDS_PER_SET }).map((_, i) => (
                   <span key={i} style={{ width: 34, height: 5, borderRadius: 3, background: i < done / WORDS_PER_SET ? C.blue : '#fff' }} />
                 ))}
               </div>
@@ -366,15 +366,15 @@ export default function VocabPage({ user }) {
   return (
     <div style={wrap}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: C.navy, marginBottom: 3 }}>🔤 Daily Vocabulary</h2>
-      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>10 words a set · up to {MAX_WORDS_PER_DAY} a day · A1 &amp; A2</p>
+      <p style={{ fontSize: 11, color: C.textS, marginBottom: 12 }}>10 words a set · up to {MAX_WORDS_PER_DAY} a day · A1, A2 &amp; B1</p>
 
       {/* Today card */}
       <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '16px 16px', marginBottom: 12, boxShadow: C.sh }}>
         {finished ? (
           <div style={{ textAlign: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 30 }}>🏆</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: C.navy, marginTop: 6 }}>All 120 days complete</div>
-            <div style={{ fontSize: 11, color: C.textM, marginTop: 3 }}>1,200 words. Keep the reviews going — B1 is coming.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: C.navy, marginTop: 6 }}>All {TOTAL_DAYS} days complete</div>
+            <div style={{ fontSize: 11, color: C.textM, marginTop: 3 }}>1,962 words across A1, A2 &amp; B1. Keep the reviews going!</div>
           </div>
         ) : (
           <>
@@ -403,7 +403,7 @@ export default function VocabPage({ user }) {
                     <span style={{ fontSize: 10, color: C.textM, fontWeight: 600 }}>{doneToday} / {MAX_WORDS_PER_DAY} words</span>
                   </div>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    {[0, 1, 2].map(i => (
+                    {Array.from({ length: MAX_WORDS_PER_DAY / WORDS_PER_SET }).map((_, i) => (
                       <span key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i < doneToday / WORDS_PER_SET ? C.green : C.border }} />
                     ))}
                   </div>
