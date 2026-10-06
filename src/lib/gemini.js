@@ -119,6 +119,6 @@ async function geminiStream(messages, system = '', onToken, maxTokens = 1200) {
 }
 
 export const ai = (messages, system, max) => gemini(messages, system, max)
-export const gcBuddyChat = (messages, system) => gemini(messages, system, 3000)
+export const gcBuddyChat = (messages, system) => gemini(messages, system, 3800)
 export const aiStream = (messages, system, onToken, max) => geminiStream(messages, system, onToken, max)
-export const gcBuddyStream = (messages, system, onToken) => geminiStream(messages, system, onToken, 3000)
+export const gcBuddyStream = (messages, system, onToken) => geminiStream(messages, system, onToken, 3800)
