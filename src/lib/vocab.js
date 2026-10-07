@@ -5,6 +5,12 @@ import { sb } from './supabase'
 // Mirrors the Day 1 / 2 / 4 / 7 schedule the vocabulary book itself recommends.
 export const INTERVALS = [1, 3, 7, 21, 60]
 export const MAX_BOX = 5
+// "Master Your Words": a word counts as mastered once the student has answered
+// its meaning correctly this many times. This is the app-wide definition of
+// "mastered" (the Vocab card, dashboard stat and revisit list all use it).
+// Spaced-repetition boxes still drive review scheduling, but no longer define
+// mastery.
+export const MASTER_THRESHOLD = 3
 export const WORDS_PER_SET = 10
 export const DAYS_PER_SESSION = 5   // catch-up allowance per calendar day (5 sets × 10 = 50 words/day)
 export const MAX_WORDS_PER_DAY = WORDS_PER_SET * DAYS_PER_SESSION
@@ -72,7 +78,7 @@ export async function loadVocabProgress(roll) {
   if (!roll) return { prog: {}, state: null }
   const [pRes, sRes] = await Promise.all([
     sb.from('vocab_progress')
-      .select('word_id,box,state,due_on,times_correct,times_wrong')
+      .select('word_id,box,state,due_on,times_correct,times_wrong,master_correct,mastered_at')
       .eq('roll_number', roll),
     sb.from('vocab_state').select('*').eq('roll_number', roll).maybeSingle(),
   ])
@@ -100,6 +106,32 @@ export async function rateWord(roll, wordId, correct, prev) {
   return row
 }
 
+// A word is mastered once it has 3 correct meaning answers in "Master Your Words".
+export function isMastered(rec) {
+  return (rec?.master_correct || 0) >= MASTER_THRESHOLD
+}
+
+// Record one "Master Your Words" answer. Increments master_correct on a correct
+// meaning answer and stamps mastered_at the moment the word crosses the
+// threshold. Only touches the mastery columns, so spaced-repetition box/state
+// are left untouched.
+export async function recordMasterAnswer(roll, wordId, correct, prev) {
+  const mc = (prev?.master_correct || 0) + (correct ? 1 : 0)
+  const crossed = correct && !isMastered(prev) && mc >= MASTER_THRESHOLD
+  const row = {
+    roll_number: roll,
+    word_id: wordId,
+    master_correct: mc,
+    last_seen: new Date().toISOString(),
+  }
+  if (crossed) row.mastered_at = new Date().toISOString()
+  if (roll) {
+    try { await sb.from('vocab_progress').upsert(row, { onConflict: 'roll_number,word_id' }) }
+    catch { /* keep local state; a later sync will pick it up */ }
+  }
+  return { ...prev, ...row }
+}
+
 export async function saveVocabState(roll, next) {
   if (!roll) return next
   const row = { roll_number: roll, ...next, updated_at: new Date().toISOString() }
@@ -115,7 +147,7 @@ export function dueWordIds(prog, upto = today()) {
 }
 
 export function masteredCount(prog) {
-  return Object.values(prog).filter(r => r.box >= MAX_BOX).length
+  return Object.values(prog).filter(isMastered).length
 }
 
 // How many new days the student may still start today.
