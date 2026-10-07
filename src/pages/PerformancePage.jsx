@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { C, CURRICULUM, LEVELS } from '../lib/constants'
 import { PBar, Spin, Btn } from '../components/UI'
 import { sb } from '../lib/supabase'
+import { MAX_BOX } from '../lib/vocab'
 
 const TEST_LABELS = { A1_T1:'Test 1: Phonetics', A1_T2:'Test 2: Greetings & Sein', A1_T3:'Test 3: End-of-Block', A2_T1:'Test 1: Clauses', A2_T2:'Test 2: Adjectives', A2_T3:'Test 3: End-of-Block', B1_T1:'Test 1: Infinitives', B1_T2:'Test 2: Konjunktiv', B1_T3:'Test 3: End-of-Block' }
 const TEST_MARKS  = { A1_T1:20, A1_T2:30, A1_T3:50, A2_T1:30, A2_T2:30, A2_T3:40, B1_T1:30, B1_T2:30, B1_T3:40 }
@@ -64,6 +65,8 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
   const [loading, setLoading] = useState(true)
   const [testData, setTestData] = useState([])
   const [usageEvents, setUsageEvents] = useState([])
+  const [masteredWords, setMasteredWords] = useState(0)
+  const [clipsHeard, setClipsHeard] = useState(0)
   const [tab, setTab] = useState('overview')
 
   useEffect(() => { if (user?.rollNumber) load() }, [user])
@@ -75,12 +78,16 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
 
   async function load() {
     setLoading(true)
-    const [{ data: tests }, { data: events }] = await Promise.all([
+    const [{ data: tests }, { data: events }, { count: mastered }, { count: clips }] = await Promise.all([
       sb.from('daily_test_submissions').select('*').eq('roll_number', user.rollNumber).order('submitted_at', { ascending: true }),
       sb.from('usage_events').select('section, event_type, created_at').eq('roll_number', user.rollNumber).order('created_at', { ascending: false }).limit(500),
+      sb.from('vocab_progress').select('*', { count: 'exact', head: true }).eq('roll_number', user.rollNumber).gte('box', MAX_BOX),
+      sb.from('usage_events').select('*', { count: 'exact', head: true }).eq('roll_number', user.rollNumber).eq('event_type', 'listening_play'),
     ])
     setTestData(tests || [])
     setUsageEvents(events || [])
+    setMasteredWords(mastered || 0)
+    setClipsHeard(clips || 0)
     setLoading(false)
   }
 
@@ -98,6 +105,10 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
   const passedTests = clearedTests  // alias for existing UI references
   const levelUpReached = myTests.length > 0 && clearedTests >= requiredCleared
   const overallAvg  = testData.length ? Math.round(testData.reduce((a, r) => a + Number(r.percentage), 0) / testData.length) : 0
+  // Daily tests the student has actually passed = distinct test_ids with best ≥60%
+  const distinctPassedTests = new Set(
+    testData.filter(r => Number(r.percentage) >= 60).map(r => r.test_id)
+  ).size
 
   // Section usage counts
   const sectionCounts = usageEvents.reduce((acc, e) => {
@@ -202,11 +213,13 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
             </div>
           </div>
 
-          {/* 4 key stats */}
+          {/* key stats */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:12 }}>
             {[
               { lbl:'Tests Attempted', val:testData.length, icon:'📝', color:C.blue, bg:C.blueL },
-              { lbl:'Tests Passed', val:`${passedTests}/${myTests.length}`, icon:'✅', color:C.green, bg:C.greenL },
+              { lbl:'Tests Passed', val:distinctPassedTests, icon:'✅', color:C.green, bg:C.greenL },
+              { lbl:'Words Mastered', val:masteredWords, icon:'🧠', color:C.navy, bg:C.blueL },
+              { lbl:'Clips Heard', val:clipsHeard, icon:'🎧', color:C.blue, bg:C.blueL },
               { lbl:'Topics Done', val:`${completedCount}/${Object.values(CURRICULUM).flat().length}`, icon:'📚', color:C.navy, bg:C.blueL },
               { lbl:'Avg Test Score', val:testData.length ? `${overallAvg}%` : '—', icon:'🎯', color:C.amber, bg:C.amberL },
             ].map(({ lbl, val, icon, color, bg }) => (
