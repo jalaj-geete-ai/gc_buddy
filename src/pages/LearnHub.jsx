@@ -206,7 +206,6 @@ export default function LearnHub({ user, onAddScore }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
               {LEVELS.map(lv => {
                 const lt = LEVEL_THEME[lv] || LEVEL_THEME.A1
-                const n = (EXERCISES[lv] || []).length
                 const isMine = user?.level === lv
                 return (
                   <div key={lv} onClick={() => setExLevel(lv)}
@@ -216,7 +215,7 @@ export default function LearnHub({ user, onAddScore }) {
                     {isMine && <span style={{ position: 'absolute', top: 8, right: 8, background: C.green, color: '#fff', fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 6 }}>YOUR LEVEL</span>}
                     <div style={{ width: 38, height: 38, borderRadius: 10, background: lt.main, color: lt.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, marginBottom: 10 }}>{lv}</div>
                     <div style={{ fontWeight: 800, fontSize: 14, color: C.navy }}>{lv} Exercises</div>
-                    <div style={{ fontSize: 10.5, color: C.textM, marginTop: 2 }}>40 sets · {n} questions</div>
+                    <div style={{ fontSize: 10.5, color: C.textM, marginTop: 2 }}>40 sets</div>
                   </div>
                 )
               })}
