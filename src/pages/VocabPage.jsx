@@ -5,8 +5,8 @@ import { trackEvent } from '../lib/supabase'
 import {
   loadVocabBank, loadVocabProgress, rateWord, saveVocabState,
   wordsForDay, allWords, dueWordIds, masteredCount, remainingToday,
-  nextDayNumber, today, wordsToday,
-  MAX_BOX, TOTAL_DAYS, MILESTONES, WORDS_PER_SET, MAX_WORDS_PER_DAY,
+  nextDayNumber, today, wordsToday, isMastered, recordMasterAnswer,
+  MASTER_THRESHOLD, TOTAL_DAYS, MILESTONES, WORDS_PER_SET, MAX_WORDS_PER_DAY,
 } from '../lib/vocab'
 import { playGerman, stopAll, clipUrlWord } from '../lib/tts'
 
@@ -52,7 +52,7 @@ function CapNotice() {
 }
 
 function WordRow({ w, rec }) {
-  const tone = !rec ? C.textS : rec.box >= MAX_BOX ? C.green : rec.box >= 3 ? C.blue : C.amber
+  const tone = isMastered(rec) ? C.green : !rec ? C.textS : rec.box >= 3 ? C.blue : C.amber
   return (
     <div style={{ background: '#fff', borderRadius: 10, border: `1px solid ${C.border}`, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -85,6 +85,8 @@ export default function VocabPage({ user }) {
   const [revealed, setRevealed] = useState(false)
   const [quiz, setQuiz] = useState(null)
   const [openDay, setOpenDay] = useState(null)
+  const [master, setMaster] = useState(null)   // { queue:[wordId...], sel, q, justMastered, done, sessionMastered }
+  const [openWord, setOpenWord] = useState(null)
 
   useEffect(() => {
     let alive = true
@@ -120,6 +122,18 @@ export default function VocabPage({ user }) {
     for (const w of allWords(bank)) m[w.i] = w
     return m
   }, [bank])
+
+  // Words the student has unlocked so far (across days 1..current_day).
+  const unlockedWords = useMemo(
+    () => (bank?.days || []).filter(d => d.d <= (vstate?.current_day || 0)).flatMap(d => d.w),
+    [bank, vstate])
+  // Unlocked words not yet mastered — the pool for "Master Your Words".
+  const toMaster = useMemo(() => unlockedWords.filter(w => !isMastered(prog[w.i])), [unlockedWords, prog])
+  // Every mastered word, newest first — the revisit list.
+  const masteredWords = useMemo(
+    () => allWords(bank).filter(w => isMastered(prog[w.i]))
+      .sort((a, b) => (prog[b.i]?.mastered_at || '').localeCompare(prog[a.i]?.mastered_at || '')),
+    [bank, prog])
 
   function begin(mode) {
     const words = mode === 'new'
@@ -160,6 +174,38 @@ export default function VocabPage({ user }) {
       trackEvent(roll, 'vocab_review_complete', 'vocabulary', `${session.words.length} words`, user?.level)
       setSession(null); setView('today')
     }
+  }
+
+  // ── Master Your Words ──────────────────────────────────────────────────────
+  function beginMaster() {
+    const queue = shuffle(toMaster.map(w => w.i))
+    if (!queue.length) return
+    setMaster({ queue, sel: null, q: buildMeaningQ(byId[queue[0]], bank), justMastered: false, done: false, sessionMastered: 0 })
+    setView('master')
+    trackEvent(roll, 'vocab_master_start', 'vocabulary', `${queue.length} to master`, user?.level)
+  }
+
+  async function answerMaster(i) {
+    if (!master || master.sel !== null) return
+    const wid = master.queue[0]
+    const ok = i === master.q.ans
+    const row = await recordMasterAnswer(roll, wid, ok, prog[wid])
+    setProg(p => ({ ...p, [wid]: row }))
+    const nowMastered = ok && isMastered(row)
+    setMaster(m => ({ ...m, sel: i, justMastered: nowMastered, sessionMastered: m.sessionMastered + (nowMastered ? 1 : 0) }))
+    if (nowMastered) trackEvent(roll, 'vocab_word_mastered', 'vocabulary', byId[wid]?.de || String(wid), user?.level)
+    setTimeout(() => {
+      setMaster(m => {
+        if (!m) return m
+        // Mastered → drop from the queue; otherwise rotate to the back so it comes round again.
+        const queue = nowMastered ? m.queue.slice(1) : [...m.queue.slice(1), m.queue[0]]
+        if (!queue.length) {
+          trackEvent(roll, 'vocab_master_complete', 'vocabulary', `${m.sessionMastered} mastered`, user?.level)
+          return { ...m, sel: null, queue: [], done: true }
+        }
+        return { ...m, sel: null, justMastered: false, queue, q: buildMeaningQ(byId[queue[0]], bank) }
+      })
+    }, 900)
   }
 
   if (loading) {
@@ -327,6 +373,123 @@ export default function VocabPage({ user }) {
     )
   }
 
+  // ── MASTER YOUR WORDS ────────────────────────────────────────────────────────
+  if (view === 'master' && master) {
+    if (master.done) {
+      return (
+        <div style={wrap}>
+          <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '26px 20px', textAlign: 'center', boxShadow: C.sh }}>
+            <div style={{ fontSize: 34 }}>🏆</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.navy, marginTop: 6 }}>All caught up!</div>
+            <div style={{ fontSize: 12, color: C.textM, marginTop: 4, lineHeight: 1.6 }}>
+              You've mastered every word you've unlocked{master.sessionMastered ? ` — ${master.sessionMastered} this session` : ''}. Learn more words to keep going.
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <Btn label="⭐ Revisit mastered" variant="outline" style={{ flex: 1 }} onClick={() => { setMaster(null); setOpenWord(null); setView('mastered') }} />
+              <Btn label="Back to today" variant="accent" style={{ flex: 1 }} onClick={() => { setMaster(null); setView('today') }} />
+            </div>
+          </div>
+        </div>
+      )
+    }
+    const q = master.q
+    const wid = master.queue[0]
+    const got = prog[wid]?.master_correct || 0
+    return (
+      <div style={wrap}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>🎯 Master Your Words</div>
+            <div style={{ fontSize: 10, color: C.textS }}>Mastered this session: {master.sessionMastered} · {master.queue.length} to go</div>
+          </div>
+          <button onClick={() => { setMaster(null); setView('today') }} style={{ border: 'none', background: 'transparent', color: C.textS, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>Exit</button>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 16px 18px', boxShadow: C.sh }}>
+          <div style={{ fontSize: 10, color: C.textS, marginBottom: 8 }}>What does this word mean?</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: C.navy, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ flex: 1 }}>{q.prompt}</span>
+            <Speaker text={q.speak} id={q.speakId} />
+          </div>
+          {/* 3-correct progress */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+            {Array.from({ length: MASTER_THRESHOLD }).map((_, n) => (
+              <span key={n} style={{ width: 26, height: 5, borderRadius: 3, background: n < got ? C.green : C.border }} />
+            ))}
+            <span style={{ fontSize: 9, color: C.textS, marginLeft: 6 }}>{Math.min(got, MASTER_THRESHOLD)}/{MASTER_THRESHOLD} correct</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 12 }}>
+            {q.opts.map((o, n) => {
+              const chosen = master.sel === n
+              const isAns = n === q.ans
+              const show = master.sel !== null
+              const bg = !show ? '#fff' : isAns ? C.greenL : chosen ? C.redL : '#fff'
+              const bd = !show ? C.border : isAns ? C.green : chosen ? C.red : C.border
+              return (
+                <button key={n} disabled={show} onClick={() => answerMaster(n)}
+                  style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 9, border: `1.5px solid ${bd}`, background: bg, cursor: show ? 'default' : 'pointer', fontSize: 13, color: C.text, fontFamily: 'inherit' }}>
+                  {o}
+                </button>
+              )
+            })}
+          </div>
+          {master.justMastered && (
+            <div style={{ marginTop: 12, background: C.greenL, border: `1px solid ${C.green}44`, borderRadius: 9, padding: '8px 12px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.green }}>
+              🎉 Mastered! Added to your mastered words.
+            </div>
+          )}
+        </div>
+        <p style={{ fontSize: 10, color: C.textS, textAlign: 'center', marginTop: 12 }}>
+          Answer a word's meaning correctly {MASTER_THRESHOLD} times to master it.
+        </p>
+      </div>
+    )
+  }
+
+  // ── MASTERED WORDS (revisit) ─────────────────────────────────────────────────
+  if (view === 'mastered') {
+    return (
+      <div style={wrap}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <Btn label="← Back" variant="outline" size="sm" onClick={() => setView('today')} />
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>⭐ Mastered words</div>
+            <div style={{ fontSize: 10, color: C.textS }}>{masteredWords.length} word{masteredWords.length !== 1 ? 's' : ''} · tap to revisit</div>
+          </div>
+        </div>
+        {!masteredWords.length
+          ? <p style={{ fontSize: 12, color: C.textS, lineHeight: 1.6 }}>No words mastered yet. Answer a word's meaning correctly {MASTER_THRESHOLD} times in “Master Your Words” and it will appear here.</p>
+          : <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {masteredWords.map(w => {
+                const open = openWord === w.i
+                return (
+                  <div key={w.i} onClick={() => setOpenWord(open ? null : w.i)}
+                    style={{ background: '#fff', borderRadius: 11, border: `1px solid ${open ? C.green : C.border}`, padding: '11px 13px', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <span style={{ fontWeight: 700, color: C.navy, fontSize: 14 }}>{w.de}</span>
+                        {w.pl && <span style={{ color: C.textS, fontSize: 10, marginLeft: 6 }}>· pl. {w.pl}</span>}
+                        {!open && <div style={{ fontSize: 11, color: C.textM, marginTop: 2 }}>{w.en}</div>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12 }}>✅</span>
+                        <Speaker text={w.de} id={w.i} size="sm" />
+                      </div>
+                    </div>
+                    {open && (
+                      <div style={{ marginTop: 8, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.green }}>{w.en}</div>
+                        {w.ex && <div style={{ fontSize: 11, color: C.textM, marginTop: 5, fontStyle: 'italic' }}>"{w.ex}"</div>}
+                        {w.m && <div style={{ fontSize: 10, color: C.textS, marginTop: 6, lineHeight: 1.6 }}>💡 {w.m}</div>}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>}
+      </div>
+    )
+  }
+
   // ── BROWSE ─────────────────────────────────────────────────────────────────
   if (view === 'browse') {
     const unlocked = (bank?.days || []).filter(d => d.d <= (vstate?.current_day || 0))
@@ -427,6 +590,19 @@ export default function VocabPage({ user }) {
         {dueIds.length > 0 && <Btn label="Review" variant="accent" size="sm" onClick={() => begin('review')} />}
       </div>
 
+      {/* Master Your Words */}
+      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: '13px 15px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>🎯 Master Your Words</div>
+          <div style={{ fontSize: 10, color: C.textM, marginTop: 2, lineHeight: 1.5 }}>
+            {toMaster.length
+              ? <>Pick the right meaning {MASTER_THRESHOLD}× to master a word · <b>{toMaster.length}</b> to go</>
+              : unlockedWords.length ? 'All unlocked words mastered — learn more to continue' : 'Learn some words first, then master them here'}
+          </div>
+        </div>
+        {toMaster.length > 0 && <Btn label="Start" variant="accent" size="sm" onClick={beginMaster} />}
+      </div>
+
       {/* Mastery */}
       <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '13px 15px', marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
@@ -454,6 +630,12 @@ export default function VocabPage({ user }) {
         </div>
         {hitMilestone && (
           <div style={{ fontSize: 10, color: C.amber, marginTop: 8, fontWeight: 600 }}>🏅 {hitMilestone} words mastered — keep going!</div>
+        )}
+        {mastered > 0 && (
+          <button onClick={() => { setOpenWord(null); setView('mastered') }}
+            style={{ width: '100%', marginTop: 12, padding: '9px', borderRadius: 9, border: `1.5px solid ${C.green}55`, background: C.greenL, color: C.green, fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+            ⭐ Revisit mastered words →
+          </button>
         )}
       </div>
 
@@ -491,18 +673,27 @@ function SessionHead({ title, sub, idx, total, onQuit }) {
 }
 
 // ── Quiz generation ──────────────────────────────────────────────────────────
+// Pick 3 distinct distractor words from the pool that differ from `exclude` on `key`.
+function pickDistractors(pool, exclude, key) {
+  const out = []
+  const tried = new Set()
+  while (out.length < 3 && tried.size < 60) {
+    const c = pool[Math.floor(Math.random() * pool.length)]
+    tried.add(c.i)
+    if (c.i !== exclude.i && c[key] && !out.some(o => o[key] === c[key]) && c[key] !== exclude[key]) out.push(c)
+  }
+  return out
+}
+
+// A single "what does this German word mean?" multiple-choice question.
+function buildMeaningQ(w, bank) {
+  const opts = shuffle([w, ...pickDistractors(allWords(bank), w, 'en')])
+  return { prompt: w.de, speak: w.de, speakId: w.i, opts: opts.map(o => o.en), ans: opts.findIndex(o => o.i === w.i) }
+}
+
 function buildQuiz(words, bank) {
   const pool = allWords(bank)
-  const pick = (exclude, key) => {
-    const out = []
-    const tried = new Set()
-    while (out.length < 3 && tried.size < 60) {
-      const c = pool[Math.floor(Math.random() * pool.length)]
-      tried.add(c.i)
-      if (c.i !== exclude.i && c[key] && !out.some(o => o[key] === c[key]) && c[key] !== exclude[key]) out.push(c)
-    }
-    return out
-  }
+  const pick = (exclude, key) => pickDistractors(pool, exclude, key)
 
   const qs = words.map((w, n) => {
     const kind = n % 3

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { C, CURRICULUM, LEVELS } from '../lib/constants'
 import { PBar, Spin, Btn } from '../components/UI'
 import { sb } from '../lib/supabase'
-import { MAX_BOX } from '../lib/vocab'
+import { MASTER_THRESHOLD } from '../lib/vocab'
 
 const TEST_LABELS = { A1_T1:'Test 1: Phonetics', A1_T2:'Test 2: Greetings & Sein', A1_T3:'Test 3: End-of-Block', A2_T1:'Test 1: Clauses', A2_T2:'Test 2: Adjectives', A2_T3:'Test 3: End-of-Block', B1_T1:'Test 1: Infinitives', B1_T2:'Test 2: Konjunktiv', B1_T3:'Test 3: End-of-Block' }
 const TEST_MARKS  = { A1_T1:20, A1_T2:30, A1_T3:50, A2_T1:30, A2_T2:30, A2_T3:40, B1_T1:30, B1_T2:30, B1_T3:40 }
@@ -81,7 +81,7 @@ export default function PerformancePage({ user, completedTopics, exerciseScores,
     const [{ data: tests }, { data: events }, { count: mastered }, { count: clips }] = await Promise.all([
       sb.from('daily_test_submissions').select('*').eq('roll_number', user.rollNumber).order('submitted_at', { ascending: true }),
       sb.from('usage_events').select('section, event_type, created_at').eq('roll_number', user.rollNumber).order('created_at', { ascending: false }).limit(500),
-      sb.from('vocab_progress').select('*', { count: 'exact', head: true }).eq('roll_number', user.rollNumber).gte('box', MAX_BOX),
+      sb.from('vocab_progress').select('*', { count: 'exact', head: true }).eq('roll_number', user.rollNumber).gte('master_correct', MASTER_THRESHOLD),
       sb.from('usage_events').select('*', { count: 'exact', head: true }).eq('roll_number', user.rollNumber).eq('event_type', 'listening_play'),
     ])
     setTestData(tests || [])
