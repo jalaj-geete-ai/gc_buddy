@@ -4,6 +4,7 @@ import { EXERCISES } from '../lib/data'
 import { GRAMMAR, GRAMMAR_LEVELS } from '../lib/grammar'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
+import { storage } from '../lib/storage'
 import MediaPage from './MediaPage'
 
 // ── Grammar block renderer ────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ export default function LearnHub({ user, onAddScore }) {
   const [gramQuery, setGramQuery] = useState('')                  // search text
 
   // Stats for the currently-open level folder (exLevel)
-  const scores = JSON.parse(localStorage.getItem(`gc_ex_${exLevel}`) || '[]')
+  const scores = storage.getJSON(`gc_ex_${exLevel}`, [])
   const lastScore = scores[scores.length - 1]
   const bestScore = scores.length ? Math.max(...scores) : null
 
@@ -112,15 +113,13 @@ export default function LearnHub({ user, onAddScore }) {
         trackEvent(user?.rollNumber, 'exercise_complete', 'exercise', `${exLevel} Set ${setNum} Score ${ns.score}`, exLevel, ns.score)
         onAddScore && onAddScore(ns.score)
         const k = `gc_ex_${exLevel}`
-        const prev = JSON.parse(localStorage.getItem(k) || '[]')
+        const prev = storage.getJSON(k, [])
         prev.push(ns.score); if (prev.length > 100) prev.shift()
-        localStorage.setItem(k, JSON.stringify(prev))
+        storage.setJSON(k, prev)
         // Mark this specific set complete (keeps its best score) so the grid shows ✅
-        try {
-          const sk = `gc_ex_set_${exLevel}_${setNum}`
-          const prevBest = JSON.parse(localStorage.getItem(sk) || 'null')
-          localStorage.setItem(sk, JSON.stringify(prevBest === null ? ns.score : Math.max(prevBest, ns.score)))
-        } catch { /* storage unavailable — fine */ }
+        const sk = `gc_ex_set_${exLevel}_${setNum}`
+        const prevBest = storage.getJSON(sk, null)
+        storage.setJSON(sk, prevBest === null ? ns.score : Math.max(prevBest, ns.score))
         setExSt({ ...ns, done: true })
       } else {
         setExSt({ ...ns, cur: ns.cur + 1, sel: null })
@@ -255,7 +254,7 @@ export default function LearnHub({ user, onAddScore }) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, marginBottom: 8 }}>
                   {Array.from({ length: 40 }, (_, i) => i + 1).map(n => {
-                    const done = JSON.parse(localStorage.getItem(`gc_ex_set_${exLevel}_${n}`) || 'null')
+                    const done = storage.getJSON(`gc_ex_set_${exLevel}_${n}`, null)
                     return (
                       <div key={n} onClick={() => startSet(n)}
                         style={{ background: done !== null ? eth.light : '#fff', border: `2px solid ${done !== null ? eth.main : C.border}`, borderRadius: 11, padding: '12px 8px', textAlign: 'center', cursor: 'pointer', transition: 'all .15s' }}

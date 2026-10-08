@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { C } from './lib/constants'
 import { sb, checkRoll, loadProg, saveProg, trackEvent, getActiveDevice, claimDevice, releaseDevice } from './lib/supabase'
 import { getDeviceId, getDeviceKind, getDeviceLabel } from './lib/device'
+import { storage } from './lib/storage'
 import { Btn, Inp, Spin } from './components/UI'
 import Onboard from './pages/Onboard'
 import PlacementIntro from './pages/PlacementIntro'
@@ -43,7 +44,7 @@ export default function App() {
   // Sign out locally because this account was taken over on another device of
   // the same kind (or on manual/forced logout). deviceId persists (see device.js).
   function forceLogout(kind) {
-    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>storage.remove(k))
     setUser(null); setProgress(null); setCompletedTopics([]); setExerciseScores([])
     setKicked(`You were signed out because your account was opened on another ${kind==='mobile'?'phone':'laptop'}.`)
     setScreen('onboard')
@@ -58,20 +59,20 @@ export default function App() {
 
   // Restore session
   useEffect(() => {
-    const roll = localStorage.getItem('gc_roll')
-    const placed = localStorage.getItem('gc_placed')
+    const roll = storage.get('gc_roll')
+    const placed = storage.get('gc_placed')
     if (roll && placed==='1') {
       const kind = getDeviceKind(), myId = getDeviceId()
       // If another device of this kind took over while we were away, don't restore.
       getActiveDevice(roll, kind).then(active => {
         if (active && active.device_id && active.device_id !== myId) {
-          ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+          ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>storage.remove(k))
           setKicked(`You were signed out because your account was opened on another ${kind==='mobile'?'phone':'laptop'}.`)
           setScreen('onboard'); return
         }
         claimDevice(roll, kind, myId, getDeviceLabel()) // (re)assert this device as active
         loadProg(roll).then(prog => {
-          const u = { name: localStorage.getItem('gc_name')||'', email: localStorage.getItem('gc_email')||'', rollNumber: roll, level: prog?.level||'A1' }
+          const u = { name: storage.get('gc_name')||'', email: storage.get('gc_email')||'', rollNumber: roll, level: prog?.level||'A1' }
           setUser(u); setProgress(prog)
           setCompletedTopics(prog?.completed_topics||[])
           setExerciseScores(prog?.exercise_scores||[])
@@ -160,7 +161,7 @@ export default function App() {
     // 🎉 Promote to next level
     const updatedUser = { ...currentUser, level: nextLevel }
     setUser(updatedUser)
-    localStorage.setItem('gc_level', nextLevel)
+    storage.set('gc_level', nextLevel)
     await saveProg(updatedUser.rollNumber, {
       level: nextLevel,
       name: updatedUser.name,
@@ -177,14 +178,14 @@ export default function App() {
     const approved = await checkRoll(roll)
     if (!approved) throw new Error('Roll number not found. Contact your coordinator.')
     const prog = await loadProg(roll.toUpperCase())
-    localStorage.setItem('gc_roll', roll.toUpperCase())
-    localStorage.setItem('gc_name', name)
-    localStorage.setItem('gc_email', email)
-    localStorage.setItem('gc_placed', '1')
+    storage.set('gc_roll', roll.toUpperCase())
+    storage.set('gc_name', name)
+    storage.set('gc_email', email)
+    storage.set('gc_placed', '1')
     // New student — create record
     if (!prog) await saveProg(roll.toUpperCase(), { name, email, level:'A1', completed_topics:[], exercise_scores:[], streak:0 })
     const level = prog?.level || 'A1'
-    localStorage.setItem('gc_level', level)
+    storage.set('gc_level', level)
     const u = { name, email, rollNumber: roll.toUpperCase(), level }
     setUser(u); setProgress(prog)
     setCompletedTopics(prog?.completed_topics || [])
@@ -196,7 +197,7 @@ export default function App() {
   function handleLogout() {
     const roll = user?.rollNumber
     if (roll) releaseDevice(roll, getDeviceKind(), getDeviceId()) // free this device's slot
-    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>localStorage.removeItem(k))
+    ;['gc_roll','gc_name','gc_email','gc_level','gc_placed'].forEach(k=>storage.remove(k))
     setUser(null); setProgress(null); setCompletedTopics([]); setExerciseScores([])
     setKicked(null)
     setScreen('onboard')
@@ -233,7 +234,7 @@ export default function App() {
         exerciseScores={exerciseScores}
         onLogout={handleLogout}
         onMarkTopic={id=>{if(!completedTopics.includes(id)){setCompletedTopics(p=>[...p,id]);trackEvent(user.rollNumber,'lesson_complete','curriculum',id,user.level)}}}
-        onAddScore={score=>{setExerciseScores(p=>{const n=[...p,score];const k=`gc_ex_${user.level}`;const prev=JSON.parse(localStorage.getItem(k)||'[]');prev.push(score);if(prev.length>50)prev.shift();localStorage.setItem(k,JSON.stringify(prev));return n})}}
+        onAddScore={score=>{setExerciseScores(p=>{const n=[...p,score];const k=`gc_ex_${user.level}`;const prev=storage.getJSON(k,[]);prev.push(score);if(prev.length>50)prev.shift();storage.setJSON(k,prev);return n})}}
         onTestComplete={()=>checkLevelUp(user)}
       />
     </>
