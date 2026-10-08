@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { readAuth, writeAuth, watchAuthExpiry, expiryLabel } from '../../lib/adminAuth'
 import { C, CURRICULUM, LEVELS } from '../../lib/constants'
 import { Btn, Inp, Spin, PBar, Badge } from '../../components/UI'
-import { sb } from '../../lib/supabase'
+import { sb, asArray } from '../../lib/supabase'
 
 const now = () => Date.now()
 const day = 86400000
@@ -126,8 +126,8 @@ export default function AdminPanel() {
         const myTests = testMap[a.roll_number] || []
         const bestPct = myTests.length ? Math.max(...myTests.map(t => Number(t.percentage))) : 0
         const score = engScore({
-          completedTopics: p.completed_topics || [],
-          exerciseScores: p.exercise_scores || [],
+          completedTopics: asArray(p.completed_topics),
+          exerciseScores: asArray(p.exercise_scores),
           lastActive: p.last_active,
           streak: p.streak || 0,
           testPct: bestPct,
@@ -137,8 +137,8 @@ export default function AdminPanel() {
           roll_number: a.roll_number,
           name: a.name || '—',
           level: p.level || 'A1',
-          completed_topics: p.completed_topics || [],
-          exercise_scores: p.exercise_scores || [],
+          completed_topics: asArray(p.completed_topics),
+          exercise_scores: asArray(p.exercise_scores),
           streak: p.streak || 0,
           last_active: p.last_active || null,
           placement_done: p.placement_done || false,

@@ -24,13 +24,22 @@ export const sb = createClient(
   KEY || 'unconfigured'
 )
 
+// Coerce a jsonb column that is meant to be an array into a real array. Some
+// rows were seeded with {} (an empty object) instead of [], and `{} || []`
+// stays `{}` — then calling .includes()/.map()/.length on it throws and, with
+// no error boundary, white-screens the whole app right after login. Anything
+// that isn't an array (object, string, number, null) becomes [].
+export const asArray = v => (Array.isArray(v) ? v : [])
+
 export const checkRoll = async roll => {
   const { data } = await sb.from('approved_students').select('roll_number,name').eq('roll_number', roll.trim().toUpperCase()).single()
   return data
 }
 export const loadProg = async roll => {
   const { data } = await sb.from('student_progress').select('*').eq('roll_number', roll).single()
-  return data
+  if (!data) return data
+  // Normalise the array-typed jsonb columns so every caller gets real arrays.
+  return { ...data, completed_topics: asArray(data.completed_topics), exercise_scores: asArray(data.exercise_scores) }
 }
 export const saveProg = async (roll, updates) => {
   // ── Streak logic ──
