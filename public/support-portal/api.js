@@ -1,16 +1,19 @@
 /* ============================================================
    GC Support Portal — data layer (GCApi)
    ------------------------------------------------------------
-   Default:  in-browser demo data via localStorage (no backend).
-   Live:     set GC_CONFIG.useMockData=false and GC_CONFIG.apiBaseUrl,
-             then implement the REST endpoints referenced below.
+   Mock mode:  in-browser demo data via localStorage (no backend,
+               isolated per browser — admin can't see student data).
+   Live mode:  shared Supabase backend (GC_CONFIG.useMockData=false)
+               so a student submission is genuinely visible to the
+               admin team across browsers/devices.
 
    >>> INTEGRATION POINT 1: lookupStudent()  -> GC Buddy roll-number directory
    >>> INTEGRATION POINT 2: adminLogin()     -> your admin auth / RBAC
-   >>> INTEGRATION POINT 3: create/update/list -> grievance persistence
+   >>> INTEGRATION POINT 3: create/update/list -> grievance persistence (Supabase)
    ============================================================ */
 const GCApi = (function () {
   const LSK = 'gc_grievances_v1';
+  const SB_TABLE = 'support_grievances';   // Supabase table (see migration)
   let listeners = [];
   let cache = {};
   let poll = null;
@@ -32,11 +35,17 @@ const GCApi = (function () {
   function lsLoad() { try { return JSON.parse(localStorage.getItem(LSK) || '{}'); } catch (e) { return {}; } }
   function lsSave(map) { try { localStorage.setItem(LSK, JSON.stringify(map)); } catch (e) {} }
   function emit() { const list = Object.values(cache); listeners.forEach(cb => { try { cb(list); } catch (e) {} }); }
-  function apiUrl(p) { return (GC_CONFIG.apiBaseUrl || '').replace(/\/$/, '') + p; }
-  function headers() {
-    const h = { 'Content-Type': 'application/json' };
-    try { const t = sessionStorage.getItem('gc_admin_token'); if (t) h['Authorization'] = 'Bearer ' + t; } catch (e) {}
-    return h;
+
+  /* ---------- Supabase REST helpers (live mode) ---------- */
+  function sbConfigured() { return !!(GC_CONFIG.supabaseUrl && GC_CONFIG.supabaseAnonKey); }
+  function sbUrl(path) { return (GC_CONFIG.supabaseUrl || '').replace(/\/$/, '') + '/rest/v1' + path; }
+  function sbHeaders(extra) {
+    const key = GC_CONFIG.supabaseAnonKey;
+    return Object.assign({
+      'apikey': key,
+      'Authorization': 'Bearer ' + key,
+      'Content-Type': 'application/json'
+    }, extra || {});
   }
 
   /* ---------- lifecycle ---------- */
@@ -47,8 +56,9 @@ const GCApi = (function () {
       window.addEventListener('storage', e => { if (e.key === LSK) { cache = lsLoad(); emit(); } }); // cross-tab sync
       emit();
     } else {
+      if (!sbConfigured()) throw new Error('Supabase is not configured (set supabaseUrl + supabaseAnonKey in config.js).');
       await refresh();
-      poll = setInterval(() => { refresh().catch(() => {}); }, 15000); // near-realtime; swap for SSE/WebSocket if available
+      poll = setInterval(() => { refresh().catch(() => {}); }, 10000); // near-realtime; swap for Supabase Realtime if you want instant
     }
   }
   function subscribe(cb) {
@@ -60,40 +70,49 @@ const GCApi = (function () {
   /* ---------- grievance CRUD (INTEGRATION POINT 3) ---------- */
   async function create(g) {
     if (GC_CONFIG.useMockData) { cache[g.id] = g; lsSave(cache); emit(); return g; }
-    const r = await fetch(apiUrl('/grievances'), { method: 'POST', headers: headers(), body: JSON.stringify(g) });
-    if (!r.ok) throw new Error('create failed'); const saved = await r.json(); cache[saved.id] = saved; emit(); return saved;
+    const r = await fetch(sbUrl('/' + SB_TABLE), {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ id: g.id, doc: g })
+    });
+    if (!r.ok) throw new Error('create failed: ' + r.status);
+    const rows = await r.json(); const saved = (rows && rows[0] && rows[0].doc) || g;
+    cache[saved.id] = saved; emit(); return saved;
   }
   async function update(id, next) {
     if (GC_CONFIG.useMockData) { cache[id] = next; lsSave(cache); emit(); return next; }
-    const r = await fetch(apiUrl('/grievances/' + encodeURIComponent(id)), { method: 'PUT', headers: headers(), body: JSON.stringify(next) });
-    if (!r.ok) throw new Error('update failed'); const saved = await r.json(); cache[id] = saved; emit(); return saved;
+    const r = await fetch(sbUrl('/' + SB_TABLE + '?id=eq.' + encodeURIComponent(id)), {
+      method: 'PATCH',
+      headers: sbHeaders({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ doc: next })
+    });
+    if (!r.ok) throw new Error('update failed: ' + r.status);
+    const rows = await r.json(); const saved = (rows && rows[0] && rows[0].doc) || next;
+    cache[id] = saved; emit(); return saved;
   }
   async function refresh() {
-    const r = await fetch(apiUrl('/grievances'), { headers: headers() });
-    if (!r.ok) throw new Error('list failed'); const arr = await r.json();
-    cache = {}; arr.forEach(g => { cache[g.id] = g; }); emit();
+    const r = await fetch(sbUrl('/' + SB_TABLE + '?select=doc&order=updated_at.desc'), { headers: sbHeaders() });
+    if (!r.ok) throw new Error('list failed: ' + r.status);
+    const rows = await r.json();
+    cache = {}; rows.forEach(row => { const g = row.doc; if (g && g.id) cache[g.id] = g; }); emit();
   }
 
-  /* ---------- student lookup (INTEGRATION POINT 1: GC Buddy) ---------- */
+  /* ---------- student lookup (INTEGRATION POINT 1: GC Buddy) ----------
+     Still a local directory for now (the 5 demo rolls auto-fill; any other
+     roll is allowed with blank details). Wire this to the live GC Buddy
+     roll-number service to enforce registered-only access. */
   async function lookupStudent(roll) {
-    if (GC_CONFIG.useMockData) return MOCK_STUDENTS[roll] || null;
-    const r = await fetch(apiUrl('/students/' + encodeURIComponent(roll)), { headers: headers() });
-    if (r.status === 404) return null;
-    if (!r.ok) throw new Error('lookup failed');
-    return await r.json(); // { name?, course, batch, mobile, email }
+    return MOCK_STUDENTS[roll] || null;
   }
 
-  /* ---------- admin auth (INTEGRATION POINT 2) ---------- */
+  /* ---------- admin auth (INTEGRATION POINT 2) ----------
+     Still a demo client-side check. Move this server-side (edge function /
+     JWT) before any real use — see README security checklist. */
   async function adminLogin(username, password) {
-    if (GC_CONFIG.useMockData) {
-      const a = MOCK_ADMINS[username];
-      return (a && a.pass === password) ? { user: username, name: a.name, role: a.role, dept: a.dept, superadmin: a.superadmin } : null;
-    }
-    const r = await fetch(apiUrl('/admin/login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-    if (!r.ok) return null;
-    const d = await r.json(); // { token, admin: {name, role, dept, superadmin} }
-    try { if (d.token) sessionStorage.setItem('gc_admin_token', d.token); } catch (e) {}
-    return d.admin || null;
+    const a = MOCK_ADMINS[username];
+    return (a && a.pass === password)
+      ? { user: username, name: a.name, role: a.role, dept: a.dept, superadmin: a.superadmin }
+      : null;
   }
 
   /* ---------- demo seed (mock mode only) ---------- */
