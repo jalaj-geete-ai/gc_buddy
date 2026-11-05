@@ -76,7 +76,15 @@ async function initApi(){
     GCApi.subscribe(list=>{
       const map={}; list.forEach(g=>{ map[g.id]=g; });
       state.grievances=map;
-      if(!state.suspendSync) render();
+      // Background sync (live-mode polling) must not rebuild the DOM while the
+      // user is mid-input, or it wipes what they're typing. Skip auto-render:
+      //  - during form submission guard (suspendSync)
+      //  - on the login screen (no session yet; its inputs aren't in state)
+      //  - whenever a field is focused (don't interrupt typing anywhere)
+      if(state.suspendSync || !state.session) return;
+      const ae=document.activeElement;
+      if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+      render();
     });
   }catch(e){ state.dbNote=true; render(); }
 }
