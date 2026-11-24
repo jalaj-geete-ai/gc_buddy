@@ -174,7 +174,7 @@ async function studentLogin(){
   rec = rec || {course:'',batch:'',mobile:'',email:''};
   state.session={type:'student',roll,...rec,name};
   ls.set('gc_session',state.session); state.loginErr=''; state.view='mine';
-  state.lastSeen=ls.get('seen_'+roll,0); render();
+  state.lastSeen=ls.get('seen_'+roll,0); render(); histBase();
   toast('Welcome, '+name.split(' ')[0]+'!','ok');
 }
 async function adminLogin(){
@@ -184,10 +184,10 @@ async function adminLogin(){
   catch(e){ state.loginErr='Could not reach the server. Please try again.'; return render(); }
   if(!rec){ state.loginErr='Invalid admin credentials.'; return render(); }
   state.session={type:'admin',user:u,...rec};
-  ls.set('gc_session',state.session); state.loginErr=''; state.view='admin-queue'; render();
+  ls.set('gc_session',state.session); state.loginErr=''; state.view='admin-queue'; render(); histBase();
   toast('Signed in as '+rec.name+' · '+rec.role,'ok');
 }
-function logout(){ state.session=null; ls.del('gc_session'); state.view='mine'; state.current=null; state.notifOpen=false; render(); }
+function logout(){ state.session=null; ls.del('gc_session'); state.view='mine'; state.current=null; state.notifOpen=false; render(); histBase(); }
 
 /* ============================================================
    RENDER ROOT
@@ -482,7 +482,7 @@ function showSuccess(g){
 /* ============================================================
    GRIEVANCE DETAIL (student view=read, admin=editable)
    ============================================================ */
-function openGrievance(id){ state.current=id; state.view = state.session.type==='admin'?'admin-detail':'detail'; state.railOpen=false; render(); }
+function openGrievance(id){ state.current=id; state.view = state.session.type==='admin'?'admin-detail':'detail'; state.railOpen=false; histPush(); render(); }
 
 function viewDetail(isAdmin){
   const g=state.grievances[state.current];
@@ -883,12 +883,42 @@ function notifBell(){
 /* ============================================================
    CONTROLLER (app.*) + navigation
    ============================================================ */
-function go(v){ state.view=v; state.railOpen=false; state.notifOpen=false;
+/* ---- browser history / native Back-button routing ----
+   The portal swaps views via state.view without changing the URL. With no
+   history entries, Chrome's native Back has nothing in-app to return to and
+   leaves the site. We push one history entry per in-app page and restore the
+   view on popstate, so BOTH the native Back button and the in-portal Back
+   button walk the portal's own pages. We never change the URL (pushState with
+   no url arg), so refresh, deep-links and the SPA _redirects fallback are
+   unaffected, and auth/API/UI are untouched. */
+let navDepth = 0;
+function histState(){ return { gcView: state.view, gcCurrent: state.current, gcDepth: navDepth }; }
+function histBase(){ navDepth = 0; try{ history.replaceState(histState(), ''); }catch(e){} }
+function histPush(){ navDepth++; try{ history.pushState(histState(), ''); }catch(e){} }
+try{
+  window.addEventListener('popstate', function(e){
+    if(!state.session) return;            // on the login screen let the browser navigate normally
+    const st = e.state || {};
+    navDepth = (typeof st.gcDepth === 'number') ? st.gcDepth : Math.max(0, navDepth - 1);
+    state.current = st.gcCurrent || null;
+    state.view = st.gcView || (state.session.type==='admin' ? 'admin-queue' : 'mine');
+    state.railOpen = false; state.notifOpen = false;
+    state.suspendSync = (state.view==='raise' || state.view==='callback');
+    render();
+  });
+}catch(e){}
+
+function go(v){
+  const changed = (v!==state.view) || !!state.current; // leaving a detail view also changes the page
+  state.view=v; state.current=null; state.railOpen=false; state.notifOpen=false;
   if(v!=='raise'&&v!=='callback'){ state.suspendSync=false; }
   if(v==='callback'){ state.draft={category:'Call Back Request'}; }
   if(v==='raise'){ state.draft=state.draft.category==='Call Back Request'?{}:state.draft; }
+  if(changed) histPush();
   render(); }
-function goBack(){ state.suspendSync=false;
+function goBack(){
+  if(navDepth>0){ history.back(); return; } // walk real history; popstate restores the previous view
+  state.suspendSync=false;
   state.view = state.session.type==='admin'?'admin-queue':'mine'; state.current=null; render(); }
 
 const app={
@@ -962,5 +992,6 @@ try{ window.addEventListener('hashchange',function(){ syncAuthMode(); if(!state.
   if(saved){ state.session=saved; state.view = saved.type==='admin'?'admin-queue':'mine';
     if(saved.roll) state.lastSeen=ls.get('seen_'+saved.roll,0); }
   state.booting=false; render();
+  if(state.session) histBase();   // tag the restored view as the history base page
   await initApi();
 })();
