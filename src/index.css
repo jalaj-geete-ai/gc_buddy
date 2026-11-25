@@ -11,6 +11,16 @@ body{font-family:'Inter',sans-serif;background:#f0f4ff;-webkit-font-smoothing:an
 input,textarea,button{font-family:inherit}
 textarea:focus,input:focus{outline:none}
 
+/* Tap-to-hear German terms inside AI replies & lessons (GC Buddy Chat, Lessons).
+   The German bits are already highlighted; this makes them tappable to hear
+   correct pronunciation on any device, including the Android WebView. */
+.say{cursor:pointer;border-bottom:1px dotted currentColor}
+.say::after{content:'🔊';font-size:.72em;margin-left:3px;opacity:.55;vertical-align:middle}
+.say:active{opacity:.6}
+.say.say-on::after{content:'🔈';opacity:1}
+@keyframes sayPulse{0%,100%{opacity:1}50%{opacity:.45}}
+.say.say-on{animation:sayPulse 1s ease infinite}
+
 /* Mobile bottom nav */
 @media(max-width:640px){
   .sidebar{position:fixed!important;bottom:0!important;left:0!important;right:0!important;

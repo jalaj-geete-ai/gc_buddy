@@ -4,6 +4,39 @@ import { useNav } from '../lib/nav'
 import { PBar, Btn, Spin, Badge } from '../components/UI'
 import { sb, trackEvent } from '../lib/supabase'
 import { B1_TESTS } from '../lib/b1DailyTests'
+import { LISTENING, LISTEN_LEVELS, LISTEN_PROMPT } from '../lib/listening'
+import { playClip, stopAll, clipUrlListen } from '../lib/tts'
+
+// Fresh listening tests, one per level — each question plays a German clip and the
+// student picks what it means / what was said. Question type stays 'mcq' so the
+// existing scoring path handles them unchanged; the `audio` field drives the player.
+const LISTEN_TESTS = LISTEN_LEVELS.map(lv => {
+  const items = (LISTENING[lv] || []).slice(0, 10)
+  return {
+    id: `${lv}_LISTEN`,
+    name: '🎧 Listening Test',
+    classes: 'Listening',
+    level: lv,
+    totalMarks: items.length,
+    timeMinutes: Math.max(5, Math.ceil(items.length * 0.8)),
+    passMark: 60,
+    sections: [{
+      title: 'Listening — Hear & Choose',
+      marks: items.length,
+      type: 'listening',
+      questions: items.map((it, n) => ({
+        id: `${lv}L${n + 1}`,
+        type: 'mcq',
+        audio: clipUrlListen(it.id),
+        de: it.de,
+        text: `🎧 ${LISTEN_PROMPT[it.kind]}`,
+        opts: it.opts,
+        ans: it.ans,
+        marks: 1,
+      })),
+    }],
+  }
+}).filter(t => t.sections[0].questions.length)
 
 // ── TEST DATA (from PDF) ────────────────────────────────────────────────────
 const TESTS = [
@@ -1968,6 +2001,7 @@ const TESTS = [
     ]
   },
   ...B1_TESTS,
+  ...LISTEN_TESTS,
 ]
 
 // Levels that actually have tests, for the header (e.g. "A1–B1"), computed so
@@ -2024,6 +2058,13 @@ export default function DailyTestPage({ user, onTestComplete }) {
   ) : []
   const totalQs = allQs.length
   const curQ = allQs[qIdx]
+
+  // Auto-play the clip for listening questions as they appear; stop on leaving.
+  useEffect(() => {
+    if (phase === 'test' && curQ?.audio) playClip(curQ.audio)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, qIdx])
+  useEffect(() => stopAll, [])
 
   function startTest(test) {
     setSelTest(test)
@@ -2296,6 +2337,14 @@ export default function DailyTestPage({ user, onTestComplete }) {
           <div style={{ fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.6, marginBottom: 14 }}>
             {curQ?.text}
           </div>
+
+          {/* Listening clip */}
+          {curQ?.audio && (
+            <button onClick={() => playClip(curQ.audio)}
+              style={{ width: '100%', marginBottom: 14, padding: '16px', borderRadius: 11, border: `1.5px dashed ${C.blue}66`, background: C.blueL, color: C.blue, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              🔊 Tap to hear again
+            </button>
+          )}
 
           {/* MCQ options */}
           {isMCQ && curQ.opts && (

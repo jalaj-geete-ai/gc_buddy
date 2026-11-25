@@ -12,6 +12,14 @@ import { playGerman, stopAll, clipUrlWord } from '../lib/tts'
 
 const shuffle = a => [...a].sort(() => Math.random() - 0.5)
 
+// Dictation: lenient spelling check. Ignores case, a leading article, and
+// accepts umlaut/ß either properly typed or transliterated (ä→ae, ß→ss…), since
+// learners on Indian phone keyboards often can't type umlauts easily.
+const canon = s => String(s || '').toLowerCase().trim().replace(/\s+/g, ' ')
+  .replace(/^(der|die|das)\s+/, '')
+  .replace(/ß/g, 'ss').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+const dictOk = (typed, de) => !!canon(typed) && canon(typed) === canon(de)
+
 function Ring({ pct, size = 62 }) {
   const r = (size - 8) / 2, circ = 2 * Math.PI * r
   return (
@@ -85,8 +93,9 @@ export default function VocabPage({ user }) {
   const [revealed, setRevealed] = useState(false)
   const [quiz, setQuiz] = useState(null)
   const [openDay, setOpenDay] = useState(null)
-  const [master, setMaster] = useState(null)   // { queue:[wordId...], sel, q, justMastered, done, sessionMastered }
+  const [master, setMaster] = useState(null)   // { queue:[wordId...], mode:'see'|'hear', sel, q, justMastered, done, sessionMastered }
   const [openWord, setOpenWord] = useState(null)
+  const [dict, setDict] = useState(null)        // dictation: { queue:[word...], idx, input, checked, lastOk, score, done }
 
   useEffect(() => {
     let alive = true
@@ -106,7 +115,22 @@ export default function VocabPage({ user }) {
 
   useEffect(() => stopAll, [])
 
+  // Auto-play the clip when a new word appears in audio-master or dictation.
+  useEffect(() => {
+    if (view === 'master' && master && master.mode === 'hear' && !master.done) {
+      const w = byId[master.queue[0]]
+      if (w) playGerman(clipUrlWord(w.i), w.de)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, master?.queue[0], master?.mode, master?.done])
 
+  useEffect(() => {
+    if (view === 'dictation' && dict && !dict.done && !dict.checked) {
+      const w = dict.queue[dict.idx]
+      if (w) playGerman(clipUrlWord(w.i), w.de)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, dict?.idx, dict?.done])
 
   const dueIds = useMemo(() => dueWordIds(prog), [prog])
   const mastered = useMemo(() => masteredCount(prog), [prog])
@@ -177,12 +201,39 @@ export default function VocabPage({ user }) {
   }
 
   // ── Master Your Words ──────────────────────────────────────────────────────
-  function beginMaster() {
+  function beginMaster(mode = 'see') {
     const queue = shuffle(toMaster.map(w => w.i))
     if (!queue.length) return
-    setMaster({ queue, sel: null, q: buildMeaningQ(byId[queue[0]], bank), justMastered: false, done: false, sessionMastered: 0 })
+    setMaster({ queue, mode, sel: null, q: buildMeaningQ(byId[queue[0]], bank), justMastered: false, done: false, sessionMastered: 0 })
     setView('master')
-    trackEvent(roll, 'vocab_master_start', 'vocabulary', `${queue.length} to master`, user?.level)
+    trackEvent(roll, 'vocab_master_start', 'vocabulary', `${queue.length} to master · ${mode}`, user?.level)
+  }
+
+  // ── Dictation ────────────────────────────────────────────────────────────────
+  function beginDict() {
+    const pool = shuffle(unlockedWords)
+    if (!pool.length) return
+    const queue = pool.slice(0, Math.min(12, pool.length))
+    setDict({ queue, idx: 0, input: '', checked: false, lastOk: false, score: 0, done: false })
+    setView('dictation')
+    trackEvent(roll, 'vocab_dictation_start', 'vocabulary', `${queue.length} words`, user?.level)
+  }
+  function submitDict() {
+    setDict(d => {
+      if (!d || d.checked || !d.input.trim()) return d
+      const ok = dictOk(d.input, d.queue[d.idx].de)
+      return { ...d, checked: true, lastOk: ok, score: d.score + (ok ? 1 : 0) }
+    })
+  }
+  function nextDict() {
+    setDict(d => {
+      if (!d) return d
+      if (d.idx + 1 >= d.queue.length) {
+        trackEvent(roll, 'vocab_dictation_complete', 'vocabulary', `${d.score}/${d.queue.length}`, user?.level)
+        return { ...d, done: true }
+      }
+      return { ...d, idx: d.idx + 1, input: '', checked: false, lastOk: false }
+    })
   }
 
   async function answerMaster(i) {
@@ -405,11 +456,20 @@ export default function VocabPage({ user }) {
           <button onClick={() => { setMaster(null); setView('today') }} style={{ border: 'none', background: 'transparent', color: C.textS, cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>Exit</button>
         </div>
         <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 16px 18px', boxShadow: C.sh }}>
-          <div style={{ fontSize: 10, color: C.textS, marginBottom: 8 }}>What does this word mean?</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: C.navy, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ flex: 1 }}>{q.prompt}</span>
-            <Speaker text={q.speak} id={q.speakId} />
+          <div style={{ fontSize: 10, color: C.textS, marginBottom: 8 }}>
+            {master.mode === 'hear' ? 'Listen — what does this word mean?' : 'What does this word mean?'}
           </div>
+          {master.mode === 'hear' ? (
+            <button onClick={() => playGerman(clipUrlWord(q.speakId), q.speak)}
+              style={{ width: '100%', marginBottom: 8, padding: '16px', borderRadius: 11, border: `1.5px dashed ${C.blue}66`, background: C.blueL, color: C.blue, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              🔊 Tap to hear again
+            </button>
+          ) : (
+            <div style={{ fontSize: 20, fontWeight: 700, color: C.navy, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ flex: 1 }}>{q.prompt}</span>
+              <Speaker text={q.speak} id={q.speakId} />
+            </div>
+          )}
           {/* 3-correct progress */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
             {Array.from({ length: MASTER_THRESHOLD }).map((_, n) => (
@@ -440,6 +500,62 @@ export default function VocabPage({ user }) {
         </div>
         <p style={{ fontSize: 10, color: C.textS, textAlign: 'center', marginTop: 12 }}>
           Answer a word's meaning correctly {MASTER_THRESHOLD} times to master it.
+        </p>
+      </div>
+    )
+  }
+
+  // ── DICTATION ────────────────────────────────────────────────────────────────
+  if (view === 'dictation' && dict) {
+    if (dict.done) {
+      const pct = Math.round((dict.score / dict.queue.length) * 100)
+      return (
+        <div style={wrap}>
+          <div style={{ background: '#fff', borderRadius: 14, border: `1px solid ${C.border}`, padding: '26px 20px', textAlign: 'center', boxShadow: C.sh }}>
+            <div style={{ fontSize: 34 }}>{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📖'}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.navy, marginTop: 6 }}>{dict.score}/{dict.queue.length}</div>
+            <div style={{ fontSize: 12, color: C.textM, marginTop: 4 }}>{pct}% spelled correctly from listening</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <Btn label="← Back" variant="outline" style={{ flex: 1 }} onClick={() => { setDict(null); setView('today') }} />
+              <Btn label="Again 🔄" variant="accent" style={{ flex: 1 }} onClick={beginDict} />
+            </div>
+          </div>
+        </div>
+      )
+    }
+    const w = dict.queue[dict.idx]
+    return (
+      <div style={wrap}>
+        <SessionHead title="✍️ Dictation" sub="Hear the word, then type it in German" idx={dict.idx} total={dict.queue.length}
+          onQuit={() => { stopAll(); setDict(null); setView('today') }} />
+        <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '16px 16px 18px', boxShadow: C.sh }}>
+          <button onClick={() => playGerman(clipUrlWord(w.i), w.de)}
+            style={{ width: '100%', padding: '18px', borderRadius: 11, border: `1.5px dashed ${C.blue}66`, background: C.blueL, color: C.blue, cursor: 'pointer', fontFamily: 'inherit', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            🔊 Tap to hear again
+          </button>
+          <input autoFocus value={dict.input} disabled={dict.checked}
+            onChange={e => setDict(d => ({ ...d, input: e.target.value }))}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); dict.checked ? nextDict() : submitDict() } }}
+            placeholder="Type the German word you heard…"
+            style={{ width: '100%', boxSizing: 'border-box', marginTop: 12, padding: '12px 14px', borderRadius: 10, border: `1.5px solid ${dict.checked ? (dict.lastOk ? C.green : C.red) : C.border}`, background: dict.checked ? (dict.lastOk ? C.greenL : C.redL) : C.surfAlt, fontSize: 16, fontWeight: 600, color: C.navy, fontFamily: 'inherit', outline: 'none', textAlign: 'center' }} />
+          {dict.checked && (
+            <div style={{ marginTop: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: dict.lastOk ? C.green : C.red }}>
+                {dict.lastOk ? '✓ Correct!' : '✗ Not quite'}
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: C.navy, marginTop: 6 }}>{w.de}</div>
+              <div style={{ fontSize: 12, color: C.textM, marginTop: 2 }}>{w.en}</div>
+              {w.ex && <div style={{ fontSize: 11, color: C.textS, marginTop: 4, fontStyle: 'italic' }}>"{w.ex}"</div>}
+            </div>
+          )}
+          <div style={{ marginTop: 14 }}>
+            {!dict.checked
+              ? <Btn label="Check" variant="accent" style={{ width: '100%' }} disabled={!dict.input.trim()} onClick={submitDict} />
+              : <Btn label={dict.idx + 1 >= dict.queue.length ? 'See score →' : 'Next word →'} variant="accent" style={{ width: '100%' }} onClick={nextDict} />}
+          </div>
+        </div>
+        <p style={{ fontSize: 10, color: C.textS, textAlign: 'center', marginTop: 12 }}>
+          Umlauts are optional — typing "ae", "oe", "ue" or "ss" is accepted.
         </p>
       </div>
     )
@@ -600,7 +716,25 @@ export default function VocabPage({ user }) {
               : unlockedWords.length ? 'All unlocked words mastered — learn more to continue' : 'Learn some words first, then master them here'}
           </div>
         </div>
-        {toMaster.length > 0 && <Btn label="Start" variant="accent" size="sm" onClick={beginMaster} />}
+        {toMaster.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
+            <Btn label="Start" variant="accent" size="sm" onClick={() => beginMaster('see')} />
+            <Btn label="🎧 Listen" variant="outline" size="sm" onClick={() => beginMaster('hear')} />
+          </div>
+        )}
+      </div>
+
+      {/* Dictation */}
+      <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12, padding: '13px 15px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>✍️ Dictation</div>
+          <div style={{ fontSize: 10, color: C.textM, marginTop: 2, lineHeight: 1.5 }}>
+            {unlockedWords.length
+              ? 'Hear a word and type its German spelling — trains your ear and spelling together'
+              : 'Learn some words first, then practise spelling them here'}
+          </div>
+        </div>
+        {unlockedWords.length > 0 && <Btn label="Start" variant="accent" size="sm" onClick={beginDict} />}
       </div>
 
       {/* Mastery */}

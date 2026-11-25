@@ -4,21 +4,31 @@ import { Spin } from '../components/UI'
 import { gcBuddyStream } from '../lib/gemini'
 import { buildPrompt, INTENT_LABELS } from '../lib/gcBuddyPrompt'
 import { trackEvent } from '../lib/supabase'
-import { speakDe as speakDE_, cancelSpeech } from '../lib/tts'
+import { speakOnDemand, stopAll } from '../lib/tts'
+
+const escAttr = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
 function renderMsg(text) {
   return text
-    .replace(/\*\*([^*]+)\*\*/g,'<strong style="color:#0a2463;background:rgba(30,144,255,.09);padding:1px 5px;border-radius:4px">$1</strong>')
+    // German terms the tutor highlights become tap-to-hear chips.
+    .replace(/\*\*([^*]+)\*\*/g,(_,g)=>`<strong class="say" data-say="${escAttr(g)}" style="color:#0a2463;background:rgba(30,144,255,.09);padding:1px 5px;border-radius:4px">${g}</strong>`)
     .replace(/\*\(([^)]+)\)\*/g,'<em style="color:#2d9e6b;font-style:italic">($1)</em>')
     .replace(/\*([^*\n]+)\*/g,'<em style="color:#2d9e6b">$1</em>')
     .replace(/\n\n/g,'<div style="margin-bottom:8px"></div>')
     .replace(/\n/g,'<br/>')
 }
 
-function speakDE(text) {
-  const clean = text.replace(/<[^>]+>/g,'').replace(/\*+/g,'')
-  cancelSpeech()
-  setTimeout(() => speakDE_(clean, 0.85), 100)
+// Tap a highlighted German term/phrase to hear it (on-demand TTS, works in WebView).
+function onSayClick(e) {
+  const el = e.target.closest('.say')
+  if (!el) return
+  e.stopPropagation()
+  const text = el.dataset.say
+  if (!text) return
+  const clear = () => el.classList.remove('say-on')
+  document.querySelectorAll('.say.say-on').forEach(n => n.classList.remove('say-on'))
+  el.classList.add('say-on')
+  speakOnDemand(text, { onEnd: clear, onFail: clear })
 }
 
 const now = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
@@ -27,7 +37,6 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
   const [msgs,setMsgs]=useState([])
   const [input,setInput]=useState('')
   const [loading,setLoading]=useState(false)
-  const [speaking,setSpeaking]=useState(null)
   const [listening,setListening]=useState(false)
   const bottomRef=useRef(null)
   const recRef=useRef(null)
@@ -36,6 +45,7 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:'smooth'})},[msgs,loading])
   useEffect(()=>{if(!initRef.current){initRef.current=true;greet()}},[])
+  useEffect(()=>stopAll,[])
 
   async function greet() {
     setLoading(true)
@@ -62,12 +72,6 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
     })
     setMsgs([...nm,{role:'assistant',content:r,time:stamp}])
     setLoading(false)
-  }
-
-  function handleSpeak(i,content) {
-    if(speaking===i){cancelSpeech();setSpeaking(null);return}
-    setSpeaking(i);speakDE(content)
-    setTimeout(()=>setSpeaking(null),Math.min(content.length*80,15000))
   }
 
   function toggleListen() {
@@ -121,14 +125,13 @@ export default function GCBuddyChat({ user, progress, completedTopics, exerciseS
               {m.role==='user'?ini:<img src="/mascot-face.png" alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>}
             </div>
             <div style={{maxWidth:'78%'}}>
-              <div style={{background:m.role==='user'?`linear-gradient(135deg,${C.navy},${C.navyM})`:'#fff',color:m.role==='user'?'#fff':C.text,padding:'10px 13px',borderRadius:m.role==='user'?'14px 14px 3px 14px':'14px 14px 14px 3px',fontSize:13,lineHeight:1.65,boxShadow:'0 2px 8px rgba(10,36,99,.07)',wordBreak:'break-word',border:m.role==='assistant'?`1px solid ${C.border}`:'none'}}
+              <div onClick={m.role==='assistant'?onSayClick:undefined}
+                style={{background:m.role==='user'?`linear-gradient(135deg,${C.navy},${C.navyM})`:'#fff',color:m.role==='user'?'#fff':C.text,padding:'10px 13px',borderRadius:m.role==='user'?'14px 14px 3px 14px':'14px 14px 14px 3px',fontSize:13,lineHeight:1.65,boxShadow:'0 2px 8px rgba(10,36,99,.07)',wordBreak:'break-word',border:m.role==='assistant'?`1px solid ${C.border}`:'none'}}
                 dangerouslySetInnerHTML={{__html:m.role==='assistant'?renderMsg(m.content):m.content}}/>
               <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2,justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
                 <span style={{fontSize:9,color:C.textS}}>{m.time}</span>
-                {m.role==='assistant'&&(
-                  <button onClick={()=>handleSpeak(i,m.content)} style={{background:'none',border:'none',cursor:'pointer',fontSize:12,padding:'0 2px',opacity:speaking===i?1:.5,transition:'opacity .15s'}} title="Listen">
-                    {speaking===i?'🔊':'🔈'}
-                  </button>
+                {m.role==='assistant'&&i===0&&(
+                  <span style={{fontSize:9,color:C.textS}}>· tap any <b style={{color:C.blue}}>German</b> 🔊 to hear it</span>
                 )}
               </div>
             </div>

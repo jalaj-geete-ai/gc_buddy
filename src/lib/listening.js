@@ -1,0 +1,130 @@
+// Listening-comprehension question bank — FRESH content, authored for listening
+// (not reused from the text MCQ banks). Each item's `de` is spoken aloud from a
+// pre-generated clip at /audio/lq/<id>.mp3 (uniform Aoede voice, same pipeline as
+// the vocabulary bank). The student hears the German and answers.
+//
+//   kind 'meaning' → prompt "What does it mean?"  · opts are English
+//   kind 'heard'   → prompt "What did you hear?"   · opts are German (near-pairs)
+//
+// Nurse/hospital context throughout, graded A1 → A2 → B1.
+
+export const LISTEN_PROMPT = {
+  meaning: 'What does it mean?',
+  heard: 'What did you hear?',
+}
+
+export const LISTENING = {
+  A1: [
+    { id: 'la1_01', kind: 'meaning', de: 'Guten Morgen! Wie geht es Ihnen?', en: 'Good morning! How are you?',
+      opts: ['Good morning! How are you?', 'Good night! Sleep well.', 'Good evening! See you tomorrow.', 'Hello! What is your name?'], ans: 0 },
+    { id: 'la1_02', kind: 'meaning', de: 'Wo haben Sie Schmerzen?', en: 'Where do you have pain?',
+      opts: ['Where do you have pain?', 'When did the pain start?', 'Do you feel dizzy?', 'Are you hungry?'], ans: 0 },
+    { id: 'la1_03', kind: 'heard', de: 'Haben Sie Fieber?', en: 'Do you have a fever?',
+      opts: ['Haben Sie Fieber?', 'Haben Sie Hunger?', 'Haben Sie Durst?', 'Haben Sie Angst?'], ans: 0 },
+    { id: 'la1_04', kind: 'meaning', de: 'Bitte öffnen Sie den Mund.', en: 'Please open your mouth.',
+      opts: ['Please open your mouth.', 'Please close your eyes.', 'Please raise your arm.', 'Please turn around.'], ans: 0 },
+    { id: 'la1_05', kind: 'heard', de: 'Ich messe jetzt Ihren Blutdruck.', en: 'I will measure your blood pressure now.',
+      opts: ['Ich messe jetzt Ihren Blutdruck.', 'Ich messe jetzt Ihre Temperatur.', 'Ich messe jetzt Ihren Blutzucker.', 'Ich wechsle jetzt Ihren Verband.'], ans: 0 },
+    { id: 'la1_06', kind: 'meaning', de: 'Der Arzt kommt gleich.', en: 'The doctor is coming soon.',
+      opts: ['The doctor is coming soon.', 'The doctor is not here today.', 'The nurse has gone home.', 'The doctor called you.'], ans: 0 },
+    { id: 'la1_07', kind: 'meaning', de: 'Bitte trinken Sie viel Wasser.', en: 'Please drink plenty of water.',
+      opts: ['Please drink plenty of water.', 'Please eat something now.', 'Please do not drink anything.', 'Please take your tablet.'], ans: 0 },
+    { id: 'la1_08', kind: 'heard', de: 'Haben Sie gut geschlafen?', en: 'Did you sleep well?',
+      opts: ['Haben Sie gut geschlafen?', 'Haben Sie gut gegessen?', 'Haben Sie gut gehört?', 'Haben Sie gut gesehen?'], ans: 0 },
+    { id: 'la1_09', kind: 'meaning', de: 'Ich gebe Ihnen jetzt Ihre Medikamente.', en: 'I will give you your medication now.',
+      opts: ['I will give you your medication now.', 'I will take your blood now.', 'I will change your bed now.', 'I will call your family now.'], ans: 0 },
+    { id: 'la1_10', kind: 'meaning', de: 'Atmen Sie bitte tief ein.', en: 'Please breathe in deeply.',
+      opts: ['Please breathe in deeply.', 'Please breathe out slowly.', 'Please hold your breath.', 'Please cough for me.'], ans: 0 },
+    { id: 'la1_11', kind: 'heard', de: 'Wie ist Ihr Name, bitte?', en: 'What is your name, please?',
+      opts: ['Wie ist Ihr Name, bitte?', 'Wie alt sind Sie, bitte?', 'Wie geht es Ihnen, bitte?', 'Wo wohnen Sie, bitte?'], ans: 0 },
+    { id: 'la1_12', kind: 'meaning', de: 'Bitte legen Sie sich hin.', en: 'Please lie down.',
+      opts: ['Please lie down.', 'Please stand up.', 'Please sit here.', 'Please wait outside.'], ans: 0 },
+    { id: 'la1_13', kind: 'meaning', de: 'Haben Sie Allergien?', en: 'Do you have any allergies?',
+      opts: ['Do you have any allergies?', 'Do you have any children?', 'Do you have any questions?', 'Do you have any pain?'], ans: 0 },
+    { id: 'la1_14', kind: 'heard', de: 'Der Puls ist normal.', en: 'The pulse is normal.',
+      opts: ['Der Puls ist normal.', 'Der Puls ist schnell.', 'Der Druck ist normal.', 'Das Fieber ist normal.'], ans: 0 },
+    { id: 'la1_15', kind: 'meaning', de: 'Ich bin gleich wieder da.', en: 'I will be right back.',
+      opts: ['I will be right back.', 'I am going home now.', 'I will see you tomorrow.', 'I am very busy today.'], ans: 0 },
+    { id: 'la1_16', kind: 'heard', de: 'Brauchen Sie etwas?', en: 'Do you need anything?',
+      opts: ['Brauchen Sie etwas?', 'Hören Sie etwas?', 'Sehen Sie etwas?', 'Essen Sie etwas?'], ans: 0 },
+    { id: 'la1_17', kind: 'meaning', de: 'Gute Besserung!', en: 'Get well soon!',
+      opts: ['Get well soon!', 'Good luck!', 'Thank you very much!', 'See you soon!'], ans: 0 },
+    { id: 'la1_18', kind: 'meaning', de: 'Bitte drücken Sie die Klingel, wenn Sie Hilfe brauchen.', en: 'Please press the bell if you need help.',
+      opts: ['Please press the bell if you need help.', 'Please close the door when you leave.', 'Please call the doctor in the morning.', 'Please stay in bed until lunch.'], ans: 0 },
+  ],
+  A2: [
+    { id: 'la2_01', kind: 'meaning', de: 'Wie lange haben Sie die Schmerzen schon?', en: 'How long have you had the pain?',
+      opts: ['How long have you had the pain?', 'How strong is the pain?', 'Where exactly is the pain?', 'When does the pain come?'], ans: 0 },
+    { id: 'la2_02', kind: 'heard', de: 'Ich nehme Ihnen jetzt Blut ab.', en: 'I will take a blood sample now.',
+      opts: ['Ich nehme Ihnen jetzt Blut ab.', 'Ich nehme Ihnen jetzt den Verband ab.', 'Ich messe Ihnen jetzt den Blutdruck.', 'Ich gebe Ihnen jetzt eine Spritze.'], ans: 0 },
+    { id: 'la2_03', kind: 'meaning', de: 'Sie müssen vor der Operation nüchtern bleiben.', en: 'You must stay fasting before the operation.',
+      opts: ['You must stay fasting before the operation.', 'You must rest after the operation.', 'You can eat before the operation.', 'You must drink before the operation.'], ans: 0 },
+    { id: 'la2_04', kind: 'heard', de: 'Der Arzt hat Ihnen ein neues Medikament verschrieben.', en: 'The doctor has prescribed you a new medication.',
+      opts: ['Der Arzt hat Ihnen ein neues Medikament verschrieben.', 'Der Arzt hat Ihnen eine neue Diät verschrieben.', 'Der Arzt hat Ihnen ein neues Rezept gegeben.', 'Der Arzt hat Sie nach Hause geschickt.'], ans: 0 },
+    { id: 'la2_05', kind: 'meaning', de: 'Nehmen Sie die Tablette dreimal täglich nach dem Essen ein.', en: 'Take the tablet three times a day after meals.',
+      opts: ['Take the tablet three times a day after meals.', 'Take the tablet once a day before meals.', 'Take the tablet twice a day with water.', 'Take the tablet only when you have pain.'], ans: 0 },
+    { id: 'la2_06', kind: 'meaning', de: 'Können Sie bitte den Arm ausstrecken?', en: 'Can you please stretch out your arm?',
+      opts: ['Can you please stretch out your arm?', 'Can you please bend your knee?', 'Can you please make a fist?', 'Can you please lift your leg?'], ans: 0 },
+    { id: 'la2_07', kind: 'heard', de: 'Haben Sie Beschwerden beim Wasserlassen?', en: 'Do you have trouble urinating?',
+      opts: ['Haben Sie Beschwerden beim Wasserlassen?', 'Haben Sie Beschwerden beim Atmen?', 'Haben Sie Beschwerden beim Schlucken?', 'Haben Sie Beschwerden beim Gehen?'], ans: 0 },
+    { id: 'la2_08', kind: 'meaning', de: 'Ich muss Ihre Wunde noch einmal verbinden.', en: 'I need to bandage your wound again.',
+      opts: ['I need to bandage your wound again.', 'I need to clean your room again.', 'I need to check your file again.', 'I need to call the doctor again.'], ans: 0 },
+    { id: 'la2_09', kind: 'heard', de: 'Bitte bleiben Sie nach der Spritze noch sitzen.', en: 'Please stay seated after the injection.',
+      opts: ['Bitte bleiben Sie nach der Spritze noch sitzen.', 'Bitte bleiben Sie nach dem Essen noch liegen.', 'Bitte stehen Sie nach der Spritze langsam auf.', 'Bitte gehen Sie nach der Visite spazieren.'], ans: 0 },
+    { id: 'la2_10', kind: 'meaning', de: 'Wenn es Ihnen schlechter geht, sagen Sie mir sofort Bescheid.', en: 'If you feel worse, tell me immediately.',
+      opts: ['If you feel worse, tell me immediately.', 'If you feel better, you can go home.', 'If you are tired, you should sleep.', 'If you are hungry, ring the bell.'], ans: 0 },
+    { id: 'la2_11', kind: 'meaning', de: 'Die Visite beginnt heute um acht Uhr.', en: 'The ward round begins today at eight o’clock.',
+      opts: ['The ward round begins today at eight o’clock.', 'Lunch is served today at twelve.', 'The doctor comes today at ten.', 'Visiting hours start at four.'], ans: 0 },
+    { id: 'la2_12', kind: 'heard', de: 'Ich kontrolliere jetzt die Infusion.', en: 'I will check the IV drip now.',
+      opts: ['Ich kontrolliere jetzt die Infusion.', 'Ich kontrolliere jetzt die Temperatur.', 'Ich kontrolliere jetzt die Wunde.', 'Ich kontrolliere jetzt den Katheter.'], ans: 0 },
+    { id: 'la2_13', kind: 'meaning', de: 'Drücken Sie bitte auf den Knopf, wenn die Schmerzen zurückkommen.', en: 'Please press the button if the pain comes back.',
+      opts: ['Please press the button if the pain comes back.', 'Please call your family if you feel lonely.', 'Please ring the bell when the food arrives.', 'Please wait here until the doctor returns.'], ans: 0 },
+    { id: 'la2_14', kind: 'heard', de: 'Sie dürfen heute zum ersten Mal wieder aufstehen.', en: 'You may get up again today for the first time.',
+      opts: ['Sie dürfen heute zum ersten Mal wieder aufstehen.', 'Sie müssen heute den ganzen Tag liegen bleiben.', 'Sie dürfen heute zum ersten Mal wieder essen.', 'Sie können heute nach Hause gehen.'], ans: 0 },
+    { id: 'la2_15', kind: 'meaning', de: 'Ihr Blutzucker ist heute etwas zu hoch.', en: 'Your blood sugar is a little too high today.',
+      opts: ['Your blood sugar is a little too high today.', 'Your blood pressure is normal today.', 'Your temperature is a little too low today.', 'Your pulse is a little too fast today.'], ans: 0 },
+    { id: 'la2_16', kind: 'meaning', de: 'Haben Sie das Rezept von der Apotheke abgeholt?', en: 'Did you pick up the prescription from the pharmacy?',
+      opts: ['Did you pick up the prescription from the pharmacy?', 'Did you bring your insurance card?', 'Did you take your tablets this morning?', 'Did you call the family doctor?'], ans: 0 },
+  ],
+  B1: [
+    { id: 'lb1_01', kind: 'meaning', de: 'Sobald die Werte stabil sind, können wir Sie auf die normale Station verlegen.', en: 'As soon as the values are stable, we can move you to the normal ward.',
+      opts: ['As soon as the values are stable, we can move you to the normal ward.', 'As soon as you feel better, you can go home.', 'Once the doctor arrives, we will start the treatment.', 'When the results come back, we will call your family.'], ans: 0 },
+    { id: 'lb1_02', kind: 'meaning', de: 'Es wäre gut, wenn Sie sich in den nächsten Tagen noch schonen würden.', en: 'It would be good if you took it easy over the next few days.',
+      opts: ['It would be good if you took it easy over the next few days.', 'It would be better if you started working again soon.', 'It is important that you move around as much as possible.', 'You should come back to the clinic every day this week.'], ans: 0 },
+    { id: 'lb1_03', kind: 'heard', de: 'Ich erkläre Ihnen kurz, worauf Sie zu Hause achten müssen.', en: 'I’ll briefly explain what you need to watch out for at home.',
+      opts: ['Ich erkläre Ihnen kurz, worauf Sie zu Hause achten müssen.', 'Ich erkläre Ihnen kurz, warum Sie noch bleiben müssen.', 'Ich erkläre Ihnen kurz, wie das Medikament wirkt.', 'Ich erkläre Ihnen kurz, wann der Arzt kommt.'], ans: 0 },
+    { id: 'lb1_04', kind: 'meaning', de: 'Falls die Beschwerden wieder auftreten, sollten Sie sich umgehend melden.', en: 'If the symptoms occur again, you should report immediately.',
+      opts: ['If the symptoms occur again, you should report immediately.', 'If the pain gets weaker, you can stop the medication.', 'If you sleep badly, you can take a second tablet.', 'If you feel fine, you do not need to come back.'], ans: 0 },
+    { id: 'lb1_05', kind: 'heard', de: 'Die Nebenwirkungen lassen normalerweise nach ein paar Tagen nach.', en: 'The side effects usually subside after a few days.',
+      opts: ['Die Nebenwirkungen lassen normalerweise nach ein paar Tagen nach.', 'Die Beschwerden verschwinden normalerweise nach ein paar Wochen.', 'Die Nebenwirkungen treten normalerweise sofort auf.', 'Die Schmerzen lassen normalerweise nach ein paar Stunden nach.'], ans: 0 },
+    { id: 'lb1_06', kind: 'meaning', de: 'Bevor ich Ihnen das Medikament gebe, muss ich noch Ihre Allergien überprüfen.', en: 'Before I give you the medication, I still have to check your allergies.',
+      opts: ['Before I give you the medication, I still have to check your allergies.', 'After I give you the medication, you should rest for an hour.', 'Before the operation, you must not eat anything.', 'While you take the medication, you should avoid alcohol.'], ans: 0 },
+    { id: 'lb1_07', kind: 'heard', de: 'Könnten Sie mir bitte genau beschreiben, wie sich der Schmerz anfühlt?', en: 'Could you please describe to me exactly how the pain feels?',
+      opts: ['Könnten Sie mir bitte genau beschreiben, wie sich der Schmerz anfühlt?', 'Könnten Sie mir bitte genau sagen, wann der Schmerz begonnen hat?', 'Könnten Sie mir bitte zeigen, wo genau es wehtut?', 'Könnten Sie mir bitte erklären, was Sie gegessen haben?'], ans: 0 },
+    { id: 'lb1_08', kind: 'meaning', de: 'Wir müssen die Dosierung anpassen, weil Ihr Körper gut darauf reagiert.', en: 'We need to adjust the dosage because your body is responding well to it.',
+      opts: ['We need to adjust the dosage because your body is responding well to it.', 'We need to stop the medication because of the side effects.', 'We have to repeat the test because the result was unclear.', 'We will discharge you because your values are normal.'], ans: 0 },
+    { id: 'lb1_09', kind: 'meaning', de: 'Ich hätte da noch eine Frage zu Ihrer Krankengeschichte.', en: 'I have one more question about your medical history.',
+      opts: ['I have one more question about your medical history.', 'I have good news about your test results.', 'I need your signature on this form.', 'I would like to introduce the doctor.'], ans: 0 },
+    { id: 'lb1_10', kind: 'heard', de: 'Vermeiden Sie bitte schwere körperliche Anstrengung in den nächsten zwei Wochen.', en: 'Please avoid heavy physical exertion for the next two weeks.',
+      opts: ['Vermeiden Sie bitte schwere körperliche Anstrengung in den nächsten zwei Wochen.', 'Vermeiden Sie bitte fettes Essen in den nächsten zwei Wochen.', 'Vermeiden Sie bitte lange Reisen in den nächsten zwei Tagen.', 'Vermeiden Sie bitte zu wenig Schlaf in den nächsten Wochen.'], ans: 0 },
+    { id: 'lb1_11', kind: 'meaning', de: 'Es tut mir leid, aber der Termin muss leider auf nächste Woche verschoben werden.', en: 'I’m sorry, but the appointment unfortunately has to be postponed to next week.',
+      opts: ['I’m sorry, but the appointment unfortunately has to be postponed to next week.', 'Good news, the appointment can be moved earlier.', 'Unfortunately the doctor is on holiday this week.', 'Your appointment is confirmed for tomorrow morning.'], ans: 0 },
+    { id: 'lb1_12', kind: 'heard', de: 'Achten Sie bitte darauf, dass die Wunde trocken bleibt.', en: 'Please make sure the wound stays dry.',
+      opts: ['Achten Sie bitte darauf, dass die Wunde trocken bleibt.', 'Achten Sie bitte darauf, dass die Wunde sauber bleibt.', 'Achten Sie bitte darauf, dass der Verband fest sitzt.', 'Achten Sie bitte darauf, dass Sie genug trinken.'], ans: 0 },
+    { id: 'lb1_13', kind: 'meaning', de: 'Wenn Sie einverstanden sind, bespreche ich das kurz mit dem zuständigen Arzt.', en: 'If you agree, I’ll briefly discuss this with the doctor in charge.',
+      opts: ['If you agree, I’ll briefly discuss this with the doctor in charge.', 'If you prefer, you can speak to the doctor yourself.', 'If you have time, please fill in this form.', 'If you feel ready, we can start right away.'], ans: 0 },
+    { id: 'lb1_14', kind: 'meaning', de: 'Die Untersuchung hat ergeben, dass alles in Ordnung ist.', en: 'The examination showed that everything is fine.',
+      opts: ['The examination showed that everything is fine.', 'The examination showed that we need more tests.', 'The operation went better than expected.', 'The results will be ready tomorrow afternoon.'], ans: 0 },
+    { id: 'lb1_15', kind: 'heard', de: 'Melden Sie sich bitte an der Rezeption, falls Sie Fragen zur Entlassung haben.', en: 'Please check in at reception if you have questions about the discharge.',
+      opts: ['Melden Sie sich bitte an der Rezeption, falls Sie Fragen zur Entlassung haben.', 'Melden Sie sich bitte beim Arzt, falls die Schmerzen zurückkommen.', 'Melden Sie sich bitte im Labor, falls Sie nüchtern sind.', 'Melden Sie sich bitte bei der Pflege, falls Sie Hilfe brauchen.'], ans: 0 },
+    { id: 'lb1_16', kind: 'meaning', de: 'Ich würde Ihnen raten, mit dem Rauchen aufzuhören, um die Heilung zu unterstützen.', en: 'I would advise you to stop smoking to support the healing.',
+      opts: ['I would advise you to stop smoking to support the healing.', 'I would advise you to drink more coffee in the morning.', 'I would recommend more rest and less exercise.', 'I would suggest changing your family doctor.'], ans: 0 },
+  ],
+}
+
+export const LISTEN_LEVELS = ['A1', 'A2', 'B1']
+
+// Flat lookup by clip id — used by the Daily Test listening cards.
+export const LISTEN_BY_ID = Object.fromEntries(
+  LISTEN_LEVELS.flatMap(lv => (LISTENING[lv] || []).map(it => [it.id, { ...it, level: lv }]))
+)

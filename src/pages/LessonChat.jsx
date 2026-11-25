@@ -2,13 +2,28 @@ import { useState, useEffect, useRef } from 'react'
 import { C } from '../lib/constants'
 import { Btn, Spin, Badge } from '../components/UI'
 import { aiStream } from '../lib/gemini'
+import { speakOnDemand, stopAll } from '../lib/tts'
+
+const escAttr = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
 const render = t => t
-  .replace(/\*\*([^*]+)\*\*/g,'<strong style="color:#0a2463;background:rgba(30,144,255,.08);padding:1px 5px;border-radius:4px">$1</strong>')
+  // German terms are highlighted — make them tap-to-hear (on-demand TTS).
+  .replace(/\*\*([^*]+)\*\*/g,(_,g)=>`<strong class="say" data-say="${escAttr(g)}" style="color:#0a2463;background:rgba(30,144,255,.08);padding:1px 5px;border-radius:4px">${g}</strong>`)
   .replace(/\*([^*\n]+)\*/g,'<em style="color:#2d9e6b">$1</em>')
   .replace(/^## (.+)$/gm,'<div style="font-weight:700;font-size:14px;color:#0a2463;margin:12px 0 5px;border-bottom:2px solid #dde4f5;padding-bottom:3px">$1</div>')
   .replace(/^[-•] (.+)$/gm,'<div style="display:flex;gap:8px;margin:4px 0;padding:5px 8px;background:rgba(30,144,255,.04);border-radius:6px;border-left:3px solid #1e90ff"><span style="color:#1e90ff;flex-shrink:0">•</span><span>$1</span></div>')
   .replace(/\n\n/g,'<div style="margin-bottom:8px"></div>').replace(/\n/g,'<br/>')
+
+function onSayClick(e) {
+  const el = e.target.closest('.say')
+  if (!el) return
+  const text = el.dataset.say
+  if (!text) return
+  const clear = () => el.classList.remove('say-on')
+  document.querySelectorAll('.say.say-on').forEach(n => n.classList.remove('say-on'))
+  el.classList.add('say-on')
+  speakOnDemand(text, { onEnd: clear, onFail: clear })
+}
 
 export default function LessonChat({ user, topic, level, onBack, onMarkDone }) {
   const [msgs,setMsgs]=useState([])
@@ -20,6 +35,7 @@ export default function LessonChat({ user, topic, level, onBack, onMarkDone }) {
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:'smooth'})},[msgs,typing])
   useEffect(()=>{if(!initRef.current){initRef.current=true;startLesson()}},[])
+  useEffect(()=>stopAll,[])
 
   async function startLesson() {
     setTyping(true)
@@ -81,7 +97,7 @@ Formatting rules:
         <Btn label="← Back" onClick={onBack} variant="ghost" size="sm"/>
         <div style={{flex:1}}>
           <div style={{fontWeight:700,fontSize:12,color:C.navy}}>{topic.icon} {topic.title}</div>
-          <div style={{fontSize:9,color:C.textS}}>Level {level} · AI Teaching</div>
+          <div style={{fontSize:9,color:C.textS}}>Level {level} · AI Teaching · tap <b style={{color:C.blue}}>German</b> 🔊 to hear</div>
         </div>
         {msgs.length>0&&!done&&<Btn label="✓ Done" onClick={()=>{setDone(true);onMarkDone(topic.id)}} variant="success" size="sm"/>}
         {done&&<Badge label="✅ Completed" color={C.green} bg={C.greenL}/>}
@@ -92,7 +108,8 @@ Formatting rules:
             <div style={{width:26,height:26,borderRadius:7,background:m.role==='user'?C.blue:C.navy,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:m.role==='user'?9:12,fontWeight:700,flexShrink:0}}>
               {m.role==='user'?ini:'🧠'}
             </div>
-            <div style={{maxWidth:'88%',padding:'11px 14px',background:m.role==='user'?C.blueL:'#fff',border:`1px solid ${m.role==='user'?C.blue+'44':C.border}`,borderRadius:13,borderTopLeftRadius:m.role==='user'?13:3,borderTopRightRadius:m.role==='user'?3:13,fontSize:13,color:C.text,lineHeight:1.7,wordBreak:'break-word'}}
+            <div onClick={m.role==='assistant'?onSayClick:undefined}
+              style={{maxWidth:'88%',padding:'11px 14px',background:m.role==='user'?C.blueL:'#fff',border:`1px solid ${m.role==='user'?C.blue+'44':C.border}`,borderRadius:13,borderTopLeftRadius:m.role==='user'?13:3,borderTopRightRadius:m.role==='user'?3:13,fontSize:13,color:C.text,lineHeight:1.7,wordBreak:'break-word'}}
               dangerouslySetInnerHTML={{__html:render(m.content)}}/>
           </div>
         ))}
