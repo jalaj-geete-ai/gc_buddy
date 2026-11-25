@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { C, LEVEL_THEME, LEVELS } from '../lib/constants'
 import { EXERCISES } from '../lib/data'
 import { GRAMMAR, GRAMMAR_LEVELS } from '../lib/grammar'
+import { LISTENING, LISTEN_LEVELS, LISTEN_PROMPT } from '../lib/listening'
 import { PBar, Btn } from '../components/UI'
 import { trackEvent } from '../lib/supabase'
 import { storage } from '../lib/storage'
+import { playClip, stopAll, clipUrlListen } from '../lib/tts'
 import MediaPage from './MediaPage'
+
+const shuffle = a => [...a].sort(() => Math.random() - 0.5)
 
 // ── Grammar block renderer ────────────────────────────────────────────────────
 // Grammar content is structured (see lib/grammar.js) so we render clean lists,
@@ -81,6 +85,43 @@ export default function LearnHub({ user, onAddScore }) {
   const [gramLevel, setGramLevel] = useState(user?.level || 'A1') // level filter
   const [gramQuery, setGramQuery] = useState('')                  // search text
 
+  // LISTENING STATE
+  const [liLevel, setLiLevel] = useState(null)   // selected level folder; null = grid
+  const [liSt, setLiSt] = useState(null)         // { qs, cur, sel, score, done }
+
+  // Auto-play the clip whenever a listening question appears.
+  useEffect(() => {
+    if (sub === 'listening' && liSt && !liSt.done) {
+      const it = liSt.qs[liSt.cur]
+      if (it) playClip(clipUrlListen(it.id))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sub, liSt?.cur, liSt?.done])
+  useEffect(() => stopAll, [])
+
+  function startListen(level) {
+    const qs = shuffle(LISTENING[level] || []).slice(0, 10)
+    if (!qs.length) return
+    setLiLevel(level)
+    setLiSt({ qs, cur: 0, sel: null, score: 0, done: false })
+    trackEvent(user?.rollNumber, 'listening_start', 'listening', `${level} ${qs.length}Q`, level)
+  }
+  function answerListen(i) {
+    if (!liSt || liSt.sel !== null) return
+    const ok = i === liSt.qs[liSt.cur].ans
+    const ns = { ...liSt, sel: i, score: liSt.score + (ok ? 1 : 0) }
+    setLiSt(ns)
+    setTimeout(() => {
+      stopAll()
+      if (ns.cur + 1 >= ns.qs.length) {
+        trackEvent(user?.rollNumber, 'listening_complete', 'listening', `${liLevel} ${ns.score}/${ns.qs.length}`, liLevel, ns.score)
+        setLiSt({ ...ns, done: true })
+      } else {
+        setLiSt({ ...ns, cur: ns.cur + 1, sel: null })
+      }
+    }, 950)
+  }
+
   // Stats for the currently-open level folder (exLevel)
   const scores = storage.getJSON(`gc_ex_${exLevel}`, [])
   const lastScore = scores[scores.length - 1]
@@ -147,9 +188,9 @@ export default function LearnHub({ user, onAddScore }) {
 
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 3, marginBottom: 14, background: '#fff', borderRadius: 10, padding: 3, border: `1px solid ${C.border}` }}>
-        {[['exercises', '💪 Exercises'], ['grammar', '📐 Grammar'], ['media', '🎬 Media']].map(([id, lbl]) => (
-          <button key={id} onClick={() => setSub(id)}
-            style={{ flex: 1, padding: '7px', borderRadius: 7, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 11, fontFamily: 'inherit', background: sub === id ? C.navy : 'transparent', color: sub === id ? '#fff' : C.textS, transition: 'all .15s' }}>
+        {[['exercises', '💪 Exercises'], ['listening', '🎧 Listening'], ['grammar', '📐 Grammar'], ['media', '🎬 Media']].map(([id, lbl]) => (
+          <button key={id} onClick={() => { stopAll(); setSub(id) }}
+            style={{ flex: 1, padding: '7px 4px', borderRadius: 7, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 10.5, fontFamily: 'inherit', background: sub === id ? C.navy : 'transparent', color: sub === id ? '#fff' : C.textS, transition: 'all .15s', whiteSpace: 'nowrap' }}>
             {lbl}
           </button>
         ))}
@@ -271,6 +312,90 @@ export default function LearnHub({ user, onAddScore }) {
               </div>
             )
           })()
+        )
+      )}
+
+      {/* ── LISTENING ── */}
+      {sub === 'listening' && (
+        liSt ? (
+          liSt.done ? (
+            <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${C.border}`, padding: '24px', textAlign: 'center' }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>{liSt.score >= liSt.qs.length * 0.8 ? '🏆' : liSt.score >= liSt.qs.length * 0.5 ? '🎧' : '📖'}</div>
+              <div style={{ fontSize: 34, fontWeight: 700, color: C.navy, marginBottom: 3 }}>{liSt.score}/{liSt.qs.length}</div>
+              <div style={{ fontSize: 12, color: C.textM, marginBottom: 12 }}>{Math.round((liSt.score / liSt.qs.length) * 100)}% correct · {liLevel} Listening</div>
+              <PBar pct={(liSt.score / liSt.qs.length) * 100} color={liSt.score >= liSt.qs.length * 0.8 ? C.green : liSt.score >= liSt.qs.length * 0.5 ? C.blue : C.amber} h={8} style={{ marginBottom: 14 }} />
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <Btn label="← Levels" onClick={() => { setLiSt(null); setLiLevel(null) }} variant="outline" />
+                <Btn label="Again 🔄" onClick={() => startListen(liLevel)} variant="primary" />
+              </div>
+            </div>
+          ) : (() => {
+            const it = liSt.qs[liSt.cur]
+            const eng = it.kind === 'meaning'
+            return (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, alignItems: 'center' }}>
+                  <Btn label="← Levels" onClick={() => { stopAll(); setLiSt(null); setLiLevel(null) }} variant="ghost" size="sm" />
+                  <span style={{ fontSize: 10, color: C.textS }}>{liLevel} · Q{liSt.cur + 1}/{liSt.qs.length} · Score: {liSt.score}</span>
+                </div>
+                <PBar pct={(liSt.cur / liSt.qs.length) * 100} h={4} style={{ marginBottom: 10 }} />
+                <div style={{ background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`, padding: '16px 15px', marginBottom: 9 }}>
+                  <div style={{ fontSize: 10, color: C.textS, marginBottom: 8 }}>{LISTEN_PROMPT[it.kind]}</div>
+                  <button onClick={() => playClip(clipUrlListen(it.id))}
+                    style={{ width: '100%', padding: '18px', borderRadius: 11, border: `1.5px dashed ${C.blue}66`, background: C.blueL, color: C.blue, cursor: 'pointer', fontFamily: 'inherit', fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    🔊 Tap to hear again
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {it.opts.map((opt, i) => {
+                    const isSel = liSt.sel === i, isOk = i === it.ans, show = liSt.sel !== null
+                    let bg = '#fff', border = C.border, color = C.text
+                    if (show) { if (isOk) { bg = C.greenL; border = C.green; color = C.green } else if (isSel) { bg = C.redL; border = C.red; color = C.red } }
+                    return (
+                      <div key={i} onClick={() => answerListen(i)}
+                        style={{ background: bg, border: `2px solid ${border}`, borderRadius: 9, padding: '10px 13px', cursor: show ? 'default' : 'pointer', fontSize: eng ? 12 : 13, color, fontWeight: (isSel || (show && isOk)) ? 600 : 400, display: 'flex', alignItems: 'center', gap: 8, transition: 'all .12s', lineHeight: 1.45 }}>
+                        <span style={{ width: 19, height: 19, borderRadius: '50%', background: show && isOk ? C.green : show && isSel ? C.red : C.border, color: show ? '#fff' : C.textS, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>
+                          {show ? (isOk ? '✓' : isSel ? '✗' : String.fromCharCode(65 + i)) : String.fromCharCode(65 + i)}
+                        </span>{opt}
+                      </div>
+                    )
+                  })}
+                </div>
+                {liSt.sel !== null && (
+                  <div style={{ marginTop: 10, background: C.surfAlt, borderRadius: 9, padding: '9px 12px', fontSize: 11.5, color: C.textM, lineHeight: 1.5 }}>
+                    <b style={{ color: C.navy }}>{it.de}</b> — <i>{it.en}</i>
+                  </div>
+                )}
+              </div>
+            )
+          })()
+        ) : (
+          <div>
+            <p style={{ fontSize: 12, color: C.textM, marginBottom: 12, lineHeight: 1.6 }}>
+              Train your ear for real hospital German. You'll <strong>hear a sentence</strong> and choose what it means — or exactly what was said. Pick a level:
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+              {LISTEN_LEVELS.map(lv => {
+                const lt = LEVEL_THEME[lv] || LEVEL_THEME.A1
+                const isMine = user?.level === lv
+                return (
+                  <div key={lv} onClick={() => startListen(lv)}
+                    style={{ background: lt.light, border: `2px solid ${lt.main}`, borderRadius: 14, padding: '16px 10px', cursor: 'pointer', position: 'relative', textAlign: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = C.shM}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                    {isMine && <span style={{ position: 'absolute', top: 6, right: 6, background: C.green, color: '#fff', fontSize: 7, fontWeight: 700, padding: '1px 5px', borderRadius: 6 }}>YOU</span>}
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: lt.main, color: lt.on, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, margin: '0 auto 8px' }}>{lv}</div>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: C.navy }}>{lv}</div>
+                    <div style={{ fontSize: 9.5, color: C.textM, marginTop: 2 }}>{(LISTENING[lv] || []).length} clips</div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ background: C.blueL, border: `1px solid ${C.blue}22`, borderRadius: 10, padding: '11px 13px', marginTop: 14 }}>
+              <div style={{ fontSize: 11, color: C.navy, fontWeight: 700, marginBottom: 2 }}>🎧 10 questions per round</div>
+              <div style={{ fontSize: 10.5, color: C.textM, lineHeight: 1.5 }}>The audio plays automatically — tap the speaker to replay as often as you need.</div>
+            </div>
+          </div>
         )
       )}
 

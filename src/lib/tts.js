@@ -74,6 +74,7 @@ export function stopAudio() {
     try { currentAudio.pause(); currentAudio.currentTime = 0 } catch { /* noop */ }
     currentAudio = null
   }
+  stopSource()
 }
 
 export function stopAll() {
@@ -129,6 +130,139 @@ export function playGerman(src, text, opts = {}) {
 
 export const clipUrlWord = (id) => `/audio/w/${id}.mp3`
 export const clipUrlPhrase = (level, i) => `/audio/ph/${level}-${i}.mp3`
+export const clipUrlListen = (id) => `/audio/lq/${id}.mp3`
+
+// ── On-demand German speech ──────────────────────────────────────────────────
+// For dynamic text (AI chat replies, AI-generated lesson terms) there is no
+// pre-generated clip. We synthesize it on the fly via the LiteLLM audio gateway
+// and play it with the Web Audio API — which, unlike window.speechSynthesis,
+// DOES work inside an Android WebView. Results are cached per-session by text so
+// tapping the same phrase twice never costs a second request.
+const LLM_KEY = import.meta.env.VITE_LLM_API_KEY
+const SPEECH_URL = (import.meta.env.VITE_LLM_ENDPOINT || 'https://litellm.classplusapp.com/v1/chat/completions')
+  .replace(/\/chat\/completions\/?$/, '/audio/speech')
+const TTS_MODEL = import.meta.env.VITE_TTS_MODEL || 'gemini-3.8-flash-lite-tts'
+const TTS_VOICE = import.meta.env.VITE_TTS_VOICE || 'Aoede'
+
+let audioCtx = null
+let currentSource = null
+const bufCache = new Map()   // normalized text -> AudioBuffer (or in-flight Promise)
+
+function getCtx() {
+  if (typeof window === 'undefined') return null
+  const AC = window.AudioContext || window.webkitAudioContext
+  if (!AC) return null
+  if (!audioCtx) { try { audioCtx = new AC() } catch { return null } }
+  try { if (audioCtx.state === 'suspended') audioCtx.resume() } catch { /* noop */ }
+  return audioCtx
+}
+
+function stopSource() {
+  if (currentSource) {
+    try { currentSource.onended = null; currentSource.stop() } catch { /* noop */ }
+    currentSource = null
+  }
+}
+
+// Decode the gateway WAV, then trim the trailing synthesis artifact (a short loud
+// burst after a silence gap — the "khasss" sound) and any leading silence, the
+// same cleanup applied to the pre-generated bank, done here on the raw samples.
+function trimBuffer(ctx, buf) {
+  try {
+    const sr = buf.sampleRate
+    const data = buf.getChannelData(0)
+    const n = data.length
+    const win = Math.max(1, Math.round(0.02 * sr))   // 20ms windows
+    const SIL = 0.012                                // RMS floor ≈ int16 300
+    const env = []
+    for (let i = 0; i < n; i += win) {
+      let s = 0, c = 0
+      for (let j = i; j < i + win && j < n; j++) { s += data[j] * data[j]; c++ }
+      env.push(c ? Math.sqrt(s / c) : 0)
+    }
+    const L = env.length
+    // silence runs of >= 3 windows
+    const gaps = []
+    for (let i = 0; i < L;) {
+      if (env[i] <= SIL) { const s = i; while (i < L && env[i] <= SIL) i++; if (i - s >= 3) gaps.push([s, i]) }
+      else i++
+    }
+    let cutWin = L
+    if (gaps.length) {
+      const [s, e] = gaps[gaps.length - 1]
+      const tailLoud = (L - e) * win / sr
+      if (e === L) cutWin = s           // trailing silence
+      else if (tailLoud <= 0.40) cutWin = s   // silence then a short loud burst = artifact
+    }
+    let endSample = Math.min(n, Math.round(cutWin * win + 0.05 * sr))
+    if (endSample < Math.round(0.30 * sr)) endSample = n   // safety: never over-trim
+    // leading: skip silence before the first audible window (keep one window of lead-in)
+    let startWin = 0
+    while (startWin < L && env[startWin] <= SIL) startWin++
+    let startSample = Math.max(0, (startWin - 1)) * win
+    if (startSample >= endSample) startSample = 0
+    const len = endSample - startSample
+    if (len <= 0 || (startSample === 0 && endSample === n)) return buf
+    const out = ctx.createBuffer(1, len, sr)
+    out.copyToChannel(data.subarray(startSample, endSample), 0)
+    return out
+  } catch { return buf }
+}
+
+async function fetchBuffer(ctx, text) {
+  const r = await fetch(SPEECH_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${LLM_KEY}` },
+    body: JSON.stringify({ model: TTS_MODEL, input: text, voice: TTS_VOICE, response_format: 'wav' }),
+  })
+  if (!r.ok) throw new Error('tts ' + r.status)
+  const arr = await r.arrayBuffer()
+  const decoded = await new Promise((res, rej) => {
+    const p = ctx.decodeAudioData(arr, res, rej)
+    if (p && typeof p.then === 'function') p.then(res, rej)
+  })
+  return trimBuffer(ctx, decoded)
+}
+
+function playBuffer(ctx, buf, { onStart, onEnd } = {}) {
+  stopSource()
+  const src = ctx.createBufferSource()
+  src.buffer = buf
+  src.connect(ctx.destination)
+  src.onended = () => { if (currentSource === src) currentSource = null; onEnd?.() }
+  currentSource = src
+  onStart?.()
+  src.start(0)
+}
+
+// Speak arbitrary German text now. Returns a promise that resolves once playback
+// has started (or rejects / falls back if synthesis is unavailable).
+export async function speakOnDemand(text, opts = {}) {
+  const { onStart, onEnd, onFail } = opts
+  const clean = String(text || '').replace(/<[^>]+>/g, '').replace(/[*_`]+/g, '').trim()
+  if (!clean) { onFail?.('empty'); return }
+  stopAll()
+  const ctx = getCtx()
+  if (!ctx || !LLM_KEY) {
+    // Fallback: the browser speech engine (desktop only; absent in WebView).
+    const started = speakDe(clean, 0.9, { onStart, onEnd, onFail: () => onFail?.('unavailable') })
+    if (!started && !ttsAvailable()) onFail?.('unavailable')
+    return
+  }
+  try {
+    let entry = bufCache.get(clean)
+    if (!entry) { entry = fetchBuffer(ctx, clean); bufCache.set(clean, entry) }
+    const buf = await entry
+    bufCache.set(clean, buf)   // store resolved buffer
+    playBuffer(ctx, buf, { onStart, onEnd })
+  } catch (e) {
+    bufCache.delete(clean)
+    const started = speakDe(clean, 0.9, { onStart, onEnd, onFail: () => onFail?.('error') })
+    if (!started) onFail?.('error')
+  }
+}
+
+export function speaking() { return !!currentSource }
 export function speakDe(text, rate = 0.85, handlers = {}) {
   const s = synth()
   if (!s || !text) { handlers.onFail?.('unsupported'); return false }
